@@ -6,8 +6,6 @@ import styles from "./page.module.css";
 
 export default function PublicarPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
-  const totalSteps = 6;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Estado del formulario
@@ -30,9 +28,6 @@ export default function PublicarPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, totalSteps));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
