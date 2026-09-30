@@ -91,8 +91,14 @@
 }
 
 .mainContent {
-  min-height: calc(100vh - 80px); /* 80px is header height */
-  /* Remove top padding here so the hero can go under the transparent header */
+  min-height: calc(100vh - 80px);
+  padding-top: 80px; /* Evita que el header fijo tape el contenido */
+}
+
+@media (max-width: 639px) {
+  .mainContent {
+    padding-top: 70px;
+  }
 }
 
 .footer {
