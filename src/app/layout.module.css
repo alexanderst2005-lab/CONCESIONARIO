@@ -18,11 +18,26 @@
   height: 80px;
 }
 
+@media (max-width: 639px) {
+  .header {
+    position: relative; /* Evita que el hero quede tapado en movil si crece el header */
+  }
+  .headerContainer {
+    height: auto;
+    padding: 15px 1.5rem;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .actions {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .logo a {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--primary-color);
-  letter-spacing: -0.02em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .logoAccent {

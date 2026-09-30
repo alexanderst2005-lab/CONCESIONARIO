@@ -16,13 +16,6 @@ export default async function Home() {
     .orderBy(desc(vehiclesTable.createdAt))
     .limit(4);
 
-  const categories = [
-    { name: "Carros y Camionetas", count: 12450, image: "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=500&auto=format&fit=crop" },
-    { name: "Motos", count: 3200, image: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?q=80&w=500&auto=format&fit=crop" },
-    { name: "Deportivos", count: 850, image: "https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=500&auto=format&fit=crop" },
-    { name: "Pick-ups", count: 2100, image: "https://images.unsplash.com/photo-1620882813824-c15668e1ebdc?q=80&w=500&auto=format&fit=crop" },
-  ];
-
   const brands = [
     "Mazda", "Toyota", "Renault", "Chevrolet", "BMW", "Mercedes-Benz", "Audi", "Ford", "Nissan", "Volkswagen"
   ];
@@ -78,25 +71,6 @@ export default async function Home() {
               <Link href="/vehiculos">Ver filtros avanzados →</Link>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* CATEGORÍAS */}
-      <section className={`container ${styles.section}`}>
-        <div className={styles.sectionHeader}>
-          <h2 className={`${styles.sectionTitle} serif-title`}>Explora por categoría</h2>
-        </div>
-        <div className={styles.categoriesGrid}>
-          {categories.map((cat) => (
-            <Link href="/vehiculos" key={cat.name} className={styles.categoryCard}>
-              <Image src={cat.image} alt={cat.name} fill className={styles.categoryImg} />
-              <div className={styles.categoryOverlay}></div>
-              <div className={styles.categoryContent}>
-                <h3>{cat.name}</h3>
-                <p>{cat.count.toLocaleString()} vehículos</p>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
 
