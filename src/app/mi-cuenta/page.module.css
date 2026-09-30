@@ -10,90 +10,8 @@
   .dashboardContainer {
     flex-direction: row;
     align-items: flex-start;
+    gap: 4rem;
   }
-}
-
-.sidebar {
-  width: 100%;
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-}
-
-@media (min-width: 1024px) {
-  .sidebar {
-    width: 280px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 90px;
-  }
-}
-
-.userInfo {
-  padding: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-bottom: 1px solid #f1f5f9;
-  background-color: #f8fafc;
-}
-
-.avatar {
-  width: 48px;
-  height: 48px;
-  background-color: var(--interaction-color);
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-}
-
-.userName {
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.userRole {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.navMenu {
-  display: flex;
-  flex-direction: column;
-}
-
-.navItem {
-  padding: 1rem 1.5rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  border-bottom: 1px solid #f1f5f9;
-  transition: all var(--transition-fast);
-}
-
-.navItem:hover {
-  background-color: #f8fafc;
-  color: var(--interaction-color);
-}
-
-.navItem.active {
-  background-color: #eff6ff;
-  color: var(--interaction-color);
-  border-left: 3px solid var(--interaction-color);
-  font-weight: 600;
-}
-
-.navItem.logout {
-  color: #ef4444;
-}
-
-.navItem.logout:hover {
-  background-color: #fef2f2;
 }
 
 .mainContent {
@@ -103,123 +21,232 @@
 
 .header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
 }
 
-.header h1 {
-  font-size: 1.75rem;
-  color: var(--primary-color);
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
 }
 
+.headerTitleWrapper h1 {
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-weight: 400;
+}
+
+.headerTitleWrapper p {
+  color: #888888;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+/* Estadísticas */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 4rem;
+}
+
+@media (min-width: 640px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .statCard {
-  background-color: var(--surface-color);
-  padding: 1.5rem;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e2e8f0;
+  background-color: #0A0A0A;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--gold-accent);
+  opacity: 0.5;
 }
 
 .statCard h3 {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: #666666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .statNumber {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-size: 3rem;
+  font-weight: 300;
+  color: #ffffff;
+  font-family: var(--font-playfair);
+  line-height: 1;
 }
 
+/* Lista de Vehículos */
 .vehicleList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 }
 
 .vehicleListItem {
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e2e8f0;
-  padding: 1rem;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
+  transition: border-color 0.3s ease;
+}
+
+.vehicleListItem:hover {
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 @media (min-width: 768px) {
   .vehicleListItem {
     flex-direction: row;
     align-items: center;
+    padding: 1.5rem 2rem;
   }
 }
 
 .listImagePlaceholder {
-  width: 120px;
-  height: 80px;
-  background-color: #e2e8f0;
-  border-radius: var(--border-radius-md);
+  width: 100%;
+  height: 200px;
+  background-color: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
-  font-weight: 600;
+  color: #333;
+  font-weight: 400;
   flex-shrink: 0;
+  font-family: var(--font-playfair);
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+}
+
+@media (min-width: 768px) {
+  .listImagePlaceholder {
+    width: 160px;
+    height: 100px;
+  }
 }
 
 .listInfo {
   flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .listInfo h4 {
-  font-size: 1.1rem;
-  color: var(--primary-color);
-  margin-bottom: 0.25rem;
+  font-size: 1.25rem;
+  color: #ffffff;
+  font-family: var(--font-playfair);
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .listInfo p {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: #888888;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.badgesWrapper {
+  margin-top: 0.5rem;
 }
 
 .badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--border-radius-xl);
+  font-size: 0.65rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 2px;
   font-weight: 600;
-  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .badgeActive {
-  background-color: #d1fae5;
-  color: #065f46;
+  background-color: #0A0A0A;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.badgeActive::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: var(--gold-accent);
+  border-radius: 50%;
 }
 
 .badgePending {
-  background-color: #fef3c7;
-  color: #92400e;
+  background-color: #111111;
+  color: #aaaaaa;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.badgeSold {
+  background-color: #050505;
+  color: #555555;
+  border: 1px solid rgba(255, 255, 255, 0.02);
 }
 
 .listPrice {
-  font-weight: 700;
-  color: var(--primary-color);
-  font-size: 1.1rem;
-  min-width: 120px;
+  font-weight: 400;
+  color: #ffffff;
+  font-size: 1.25rem;
+  min-width: 140px;
+  font-family: var(--font-playfair);
 }
 
 .listActions {
   display: flex;
   gap: 0.5rem;
+}
+
+.actionBtn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionBtn:hover {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.05);
 }

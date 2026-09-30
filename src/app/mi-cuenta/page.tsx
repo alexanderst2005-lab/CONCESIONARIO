@@ -6,6 +6,8 @@ import { db } from "@/db";
 import { users, vehicles as vehiclesTable, brands, models } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import DashboardSidebar from "@/components/DashboardSidebar";
+import Image from "next/image";
 
 export default async function MiCuentaPage() {
   const session = await getServerSession();
@@ -53,51 +55,37 @@ export default async function MiCuentaPage() {
 
   return (
     <div className={`container ${styles.dashboardContainer}`}>
-      <aside className={styles.sidebar}>
-        <div className={styles.userInfo}>
-          <div className={styles.avatar}>{initials}</div>
-          <div className={styles.userDetails}>
-            <p className={styles.userName}>{fullName}</p>
-            <p className={styles.userRole}>{userRole}</p>
-          </div>
-        </div>
-        
-        <nav className={styles.navMenu}>
-          <Link href="/mi-cuenta" className={`${styles.navItem} ${styles.active}`}>Mis Vehículos</Link>
-          <Link href="/favoritos" className={styles.navItem}>Favoritos</Link>
-          <Link href="#" className={styles.navItem}>Mi Perfil</Link>
-          <Link href="#" className={styles.navItem}>Configuración</Link>
-          {/* Note: Logout client side action usually handled by next-auth signOut, here styled only */}
-          <Link href="/api/auth/signout" className={`${styles.navItem} ${styles.logout}`}>Cerrar Sesión</Link>
-        </nav>
-      </aside>
+      <DashboardSidebar initials={initials} fullName={fullName} userRole={userRole} />
 
       <main className={styles.mainContent}>
         <div className={styles.header}>
-          <h1>Mis Vehículos</h1>
+          <div className={styles.headerTitleWrapper}>
+            <h1 className="serif-title">Mis vehículos</h1>
+            <p>Administra y consulta tus publicaciones.</p>
+          </div>
           <Link href="/publicar" className="btn-primary">
-            + Publicar nuevo
+            PUBLICAR VEHÍCULO
           </Link>
         </div>
 
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <h3>Activos</h3>
-            <p className={styles.statNumber}>{activeCount}</p>
+            <p className={styles.statNumber}>{activeCount.toString().padStart(2, '0')}</p>
           </div>
           <div className={styles.statCard}>
             <h3>En revisión</h3>
-            <p className={styles.statNumber}>{pendingCount}</p>
+            <p className={styles.statNumber}>{pendingCount.toString().padStart(2, '0')}</p>
           </div>
           <div className={styles.statCard}>
             <h3>Vendidos</h3>
-            <p className={styles.statNumber}>{soldCount}</p>
+            <p className={styles.statNumber}>{soldCount.toString().padStart(2, '0')}</p>
           </div>
         </div>
 
         <div className={styles.vehicleList}>
           {userVehicles.length === 0 ? (
-            <p style={{ padding: "2rem", textAlign: "center", color: "var(--text-muted)", border: "1px dashed var(--border-color)", borderRadius: "var(--border-radius-md)" }}>
+            <p style={{ padding: "3rem", textAlign: "center", color: "#666", border: "1px dashed rgba(255,255,255,0.1)", borderRadius: "4px" }}>
               No has publicado ningún vehículo todavía.
             </p>
           ) : (
@@ -113,20 +101,23 @@ export default async function MiCuentaPage() {
 
               return (
                 <div key={v.id} className={styles.vehicleListItem}>
-                  <div className={styles.listImagePlaceholder}>Auto</div>
+                  <div className={styles.listImagePlaceholder}>AUTO</div>
                   <div className={styles.listInfo}>
                     <h4>{v.brandName || "Marca Desconocida"} {v.modelName || "Modelo Desconocido"} {v.version}</h4>
-                    <p>{v.year} • {(v.mileage || 0).toLocaleString()} km • {v.city}</p>
-                    {isActive && <span className={`${styles.badge} ${styles.badgeActive}`}>Activo</span>}
-                    {isPending && <span className={`${styles.badge} ${styles.badgePending}`}>En Revisión</span>}
-                    {v.status === "VENDIDO" && <span className={`${styles.badge} ${styles.badgeSold}`}>Vendido</span>}
+                    <p>{v.year} • {(v.mileage || 0).toLocaleString()} KM • {v.city}</p>
+                    <div className={styles.badgesWrapper}>
+                      {isActive && <span className={`${styles.badge} ${styles.badgeActive}`}>ACTIVO</span>}
+                      {isPending && <span className={`${styles.badge} ${styles.badgePending}`}>EN REVISIÓN</span>}
+                      {v.status === "VENDIDO" && <span className={`${styles.badge} ${styles.badgeSold}`}>VENDIDO</span>}
+                    </div>
                   </div>
                   <div className={styles.listPrice}>
                     <p>{formattedPrice}</p>
                   </div>
                   <div className={styles.listActions}>
-                    <Link href={`/vehiculo/${v.slug}`} className="btn-secondary">Ver</Link>
-                    {isActive && <button className="btn-secondary">Pausar</button>}
+                    <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER</Link>
+                    {isActive && <button className={styles.actionBtn}>PAUSAR</button>}
+                    {isActive && <button className={styles.actionBtn}>VENDIDO</button>}
                   </div>
                 </div>
               );
