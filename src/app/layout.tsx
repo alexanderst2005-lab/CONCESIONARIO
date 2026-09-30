@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, Manrope } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
 import Link from "next/link";
+import Image from "next/image";
 import { getServerSession } from "next-auth/next";
 import { GET, POST } from "@/app/api/auth/[...nextauth]/route";
 
-const inter = Inter({ subsets: ["latin"] });
+const playfair = Playfair_Display({ 
+  subsets: ["latin"], 
+  variable: '--font-playfair',
+});
+
+const manrope = Manrope({ 
+  subsets: ["latin"],
+  variable: '--font-manrope',
+});
 
 export const metadata: Metadata = {
   title: "Autos del Patrón | Encuentra tu vehículo ideal",
@@ -30,12 +39,12 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
-      <body className={inter.className}>
+      <body className={`${manrope.className} ${playfair.variable} ${manrope.variable}`}>
         <header className={styles.header}>
           <div className={`container ${styles.headerContainer}`}>
             <div className={styles.logo}>
               <Link href="/">
-                <span className={styles.logoAccent}>Autos</span> del Patrón
+                <Image src="/logo.png" alt="Autos del Patrón Logo" width={150} height={50} style={{ objectFit: 'contain' }} />
               </Link>
             </div>
             

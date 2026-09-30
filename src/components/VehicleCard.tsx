@@ -1,13 +1,14 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./VehicleCard.module.css";
-import { vehicles, brands, models } from "@/db/schema"; // Type reference only
+import { Heart, Gauge, Calendar, Settings2, MapPin } from "lucide-react";
 
-// Ajustamos el tipo de acuerdo a lo que recibimos, pero lo dejamos genérico para la demo
 export default function VehicleCard({ vehicle }: { vehicle: any }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
   // Manejar el precio de forma segura
   const formattedPrice = new Intl.NumberFormat("es-CO", {
     style: "currency",
@@ -27,15 +28,19 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
             <div className={styles.badge}>Destacado</div>
           )}
           <button 
-            className={styles.favoriteBtn} 
+            className={`${styles.favoriteBtn} ${isFavorite ? styles.favoriteBtnActive : ''}`} 
             onClick={(e) => {
               e.preventDefault();
-              alert("Guardado en favoritos");
+              setIsFavorite(!isFavorite);
             }}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-            </svg>
+            <Heart 
+              size={20} 
+              strokeWidth={isFavorite ? 0 : 1.5} 
+              fill={isFavorite ? "var(--gold-accent)" : "none"} 
+              color={isFavorite ? "var(--gold-accent)" : "currentColor"}
+              className={isFavorite ? styles.heartBeat : ""}
+            />
           </button>
           
           <Image 
@@ -49,23 +54,23 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
 
         <div className={styles.content}>
           <div className={styles.titleRow}>
-            <h3 className={styles.title}>{vehicle.brandName} {vehicle.modelName}</h3>
-            <span className={styles.year}>{vehicle.year}</span>
+            <h3 className={`${styles.title} serif-title`}>{vehicle.brandName} {vehicle.modelName}</h3>
+            <span className={styles.year}><Calendar size={14} strokeWidth={1.5} style={{marginRight: '4px'}}/> {vehicle.year}</span>
           </div>
           
           <p className={styles.version}>{vehicle.version}</p>
 
           <div className={styles.specsRow}>
-            <span className={styles.spec}>{(vehicle.mileage || 0).toLocaleString()} km</span>
+            <span className={styles.spec}><Gauge size={14} strokeWidth={1.5} style={{marginRight: '4px'}}/> {(vehicle.mileage || 0).toLocaleString()} km</span>
             <span className={styles.dot}>•</span>
-            <span className={styles.spec}>{vehicle.transmission || 'Auto'}</span>
+            <span className={styles.spec}><Settings2 size={14} strokeWidth={1.5} style={{marginRight: '4px'}}/> {vehicle.transmission || 'Auto'}</span>
             <span className={styles.dot}>•</span>
-            <span className={styles.spec}>{vehicle.city}</span>
+            <span className={styles.spec}><MapPin size={14} strokeWidth={1.5} style={{marginRight: '4px'}}/> {vehicle.city}</span>
           </div>
 
           <div className={styles.footerRow}>
             <p className={styles.price}>{formattedPrice}</p>
-            <span className={styles.viewBtn}>Ver →</span>
+            <span className={styles.viewBtn}>Ver detalles →</span>
           </div>
         </div>
 

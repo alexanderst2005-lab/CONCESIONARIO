@@ -40,7 +40,7 @@
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
-  font-family: __Inter_10a487, __Inter_Fallback_10a487, sans-serif;
+  font-family: var(--font-manrope), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -50,11 +50,20 @@ a {
   text-decoration: none;
 }
 
-/* Typography */
+/* Typography - Editorial Style */
 h1, h2, h3, h4, h5, h6 {
   color: var(--primary-color);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-family: var(--font-playfair), serif;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.subtitle-caps {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gold-accent);
 }
 
 .container {
