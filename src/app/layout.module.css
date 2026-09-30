@@ -1,0 +1,81 @@
+.header {
+  background-color: var(--primary-color);
+  color: var(--text-light);
+  padding: 1rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+
+.headerContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo a {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.logoAccent {
+  color: var(--gold-accent);
+}
+
+.navDesktop {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .navDesktop {
+    display: flex;
+    gap: 2rem;
+  }
+}
+
+.navLink {
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: color var(--transition-fast);
+}
+
+.navLink:hover {
+  color: var(--gold-accent);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.loginLink {
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .loginLink {
+    display: block;
+  }
+}
+
+.loginLink:hover {
+  text-decoration: underline;
+}
+
+.mainContent {
+  min-height: calc(100vh - 140px); /* Adjust based on header and footer height */
+}
+
+.footer {
+  background-color: #050d1d; /* Even darker blue */
+  color: var(--text-muted);
+  padding: 2rem 0;
+  text-align: center;
+  font-size: 0.875rem;
+  margin-top: 4rem;
+}
