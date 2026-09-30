@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import styles from "./layout.module.css";
+import Link from "next/link";
+import { getServerSession } from "next-auth/next";
+import { GET, POST } from "@/app/api/auth/[...nextauth]/route";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,32 +13,51 @@ export const metadata: Metadata = {
   description: "Marketplace automotriz premium para compra y venta de vehículos en Colombia.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Obtenemos la sesión del servidor para saber si está logueado
+  // Nota temporal: Para Vercel usaremos la lógica básica por ahora
+  let session = null;
+  try {
+    // Attempt to get session (might fail silently on build time if env is not configured)
+    session = await getServerSession();
+  } catch (e) {
+    console.error(e);
+  }
+
   return (
     <html lang="es">
       <body className={inter.className}>
         <header className={styles.header}>
           <div className={`container ${styles.headerContainer}`}>
             <div className={styles.logo}>
-              {/* Logo text instead of image for now */}
-              <a href="/">
+              <Link href="/">
                 <span className={styles.logoAccent}>Autos</span> del Patrón
-              </a>
+              </Link>
             </div>
             
             <nav className={styles.navDesktop}>
-              <a href="/" className={styles.navLink}>Inicio</a>
-              <a href="/vehiculos" className={styles.navLink}>Comprar vehículos</a>
-              <a href="/favoritos" className={styles.navLink}>Favoritos</a>
+              <Link href="/" className={styles.navLink}>Inicio</Link>
+              <Link href="/vehiculos" className={styles.navLink}>Comprar vehículos</Link>
+              <Link href="/favoritos" className={styles.navLink}>Favoritos</Link>
             </nav>
 
             <div className={styles.actions}>
-              <a href="/login" className={styles.loginLink}>Iniciar sesión</a>
-              <a href="/publicar" className="btn-primary">Publicar vehículo</a>
+              {session ? (
+                <Link href="/mi-cuenta" className={styles.loginLink}>
+                  Mi Cuenta
+                </Link>
+              ) : (
+                <Link href="/login" className={styles.loginLink}>
+                  Iniciar sesión
+                </Link>
+              )}
+              <Link href="/publicar" className="btn-primary">
+                Publicar vehículo
+              </Link>
             </div>
           </div>
         </header>
