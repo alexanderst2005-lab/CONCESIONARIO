@@ -1,17 +1,32 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Crown } from "lucide-react";
 import styles from "./Header.module.css";
 
 export default function Header({ session }: { session: any }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.addEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Prevenir scroll cuando el menú está abierto
   useEffect(() => {
@@ -64,9 +79,32 @@ export default function Header({ session }: { session: any }) {
           </div>
           
           {session ? (
-            <Link href="/mi-cuenta" className={styles.loginLink} onClick={() => setMenuOpen(false)}>
-              CUENTA
-            </Link>
+            <div className={styles.accountDropdownWrapper} ref={dropdownRef}>
+              <button 
+                className={styles.loginLink} 
+                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              >
+                MI CUENTA
+              </button>
+
+              {accountDropdownOpen && (
+                <div className={styles.accountDropdown}>
+                  <Link href="/mi-cuenta" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Historial</Link>
+                  <Link href="/favoritos" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Favoritos</Link>
+                  <Link href="/mi-cuenta" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Mis Publicaciones</Link>
+                  <Link href="/publicar" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Vender mi Vehículo</Link>
+                  <Link href="/mi-cuenta" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Perfil</Link>
+                  
+                  <Link href="/mi-cuenta" className={`${styles.dropdownItem} ${styles.dropdownHighlight}`} onClick={() => setAccountDropdownOpen(false)}>
+                    Destacar anuncios <Crown size={16} />
+                  </Link>
+                  
+                  <Link href="/mi-cuenta" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Pagos</Link>
+                  <Link href="/api/auth/signout" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Cerrar Sesión</Link>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login" className={styles.loginLink} onClick={() => setMenuOpen(false)}>
               LOGIN
