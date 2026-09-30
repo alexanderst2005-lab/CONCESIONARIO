@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, timestamp, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, boolean, timestamp, primaryKey, index } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Usuarios
@@ -80,7 +80,20 @@ export const vehicles = pgTable('vehicles', {
   
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+  
+  isDealerVehicle: boolean('is_dealer_vehicle').default(false).notNull(), // Permite distinguir inventario del concesionario
+}, (t) => ({
+  brandIdx: index('brand_idx').on(t.brandId),
+  modelIdx: index('model_idx').on(t.modelId),
+  categoryIdx: index('category_idx').on(t.categoryId),
+  priceIdx: index('price_idx').on(t.price),
+  yearIdx: index('year_idx').on(t.year),
+  mileageIdx: index('mileage_idx').on(t.mileage),
+  cityIdx: index('city_idx').on(t.city),
+  fuelIdx: index('fuel_idx').on(t.fuelType),
+  transmissionIdx: index('transmission_idx').on(t.transmission),
+  statusIdx: index('status_idx').on(t.status),
+}));
 
 // Imágenes de Vehículos
 export const vehicleImages = pgTable('vehicle_images', {

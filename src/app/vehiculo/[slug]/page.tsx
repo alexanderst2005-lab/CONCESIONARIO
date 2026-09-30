@@ -35,7 +35,26 @@ export default async function VehiculoDetalle({ params }: { params: { slug: stri
     maximumFractionDigits: 0,
   }).format(vehicle.price);
 
-  const whatsappMessage = encodeURIComponent(`Hola, estoy interesado en el ${vehicle.brandName} ${vehicle.modelName} ${vehicle.year} que vi publicado en la plataforma. Quisiera recibir más información.`);
+  // Obtener config global de WhatsApp
+  // const config = await db.query.settings.findFirst();
+  const config = { 
+    whatsappNumber: "573000000000", 
+    defaultMessage: "Hola, estoy interesado en el [MARCA] [MODELO] [AÑO] (Precio: [PRECIO]) que vi publicado en la plataforma. Quisiera recibir más información. Enlace: [URL]" 
+  };
+
+  // Generar URL pública
+  const vehicleUrl = `https://autos-del-patron.vercel.app/vehiculo/${vehicle.slug}`;
+
+  // Reemplazar variables en el mensaje predeterminado
+  let rawMessage = config.defaultMessage || "Hola, estoy interesado en el [MARCA] [MODELO] [AÑO]";
+  rawMessage = rawMessage.replace("[MARCA]", vehicle.brandName);
+  rawMessage = rawMessage.replace("[MODELO]", vehicle.modelName);
+  rawMessage = rawMessage.replace("[AÑO]", vehicle.year.toString());
+  rawMessage = rawMessage.replace("[PRECIO]", formattedPrice);
+  rawMessage = rawMessage.replace("[URL]", vehicleUrl);
+
+  const whatsappMessage = encodeURIComponent(rawMessage);
+  const whatsappLink = `https://wa.me/${config.whatsappNumber}?text=${whatsappMessage}`;
 
   return (
     <div className={`container ${styles.detailContainer}`}>
@@ -134,7 +153,7 @@ export default async function VehiculoDetalle({ params }: { params: { slug: stri
 
             <div className={styles.actions}>
               <a 
-                href={`https://wa.me/573000000000?text=${whatsappMessage}`} 
+                href={whatsappLink} 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className={`btn-primary ${styles.whatsappBtn}`}
