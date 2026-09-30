@@ -1,7 +1,40 @@
 import React from "react";
 import styles from "./page.module.css";
+import { db } from "@/db";
+import { users, vehicles as vehiclesTable, brands, models } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
+import { approveVehicle, rejectVehicle } from "./actions";
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  // 1. Estadísticas Generales Reales
+  const allVehicles = await db.select().from(vehiclesTable);
+  const totalVehiclesCount = allVehicles.length;
+  const pendingCount = allVehicles.filter(v => v.status === "PENDIENTE").length;
+  
+  const allUsers = await db.select().from(users);
+  const totalUsersCount = allUsers.length;
+
+  // 2. Obtener Vehículos Pendientes
+  const pendingVehicles = await db
+    .select({
+      id: vehiclesTable.id,
+      slug: vehiclesTable.slug,
+      brandName: brands.name,
+      modelName: models.name,
+      version: vehiclesTable.version,
+      city: vehiclesTable.city,
+      price: vehiclesTable.price,
+      createdAt: vehiclesTable.createdAt,
+      userName: users.name,
+      userLastName: users.lastName,
+    })
+    .from(vehiclesTable)
+    .where(eq(vehiclesTable.status, "PENDIENTE"))
+    .leftJoin(brands, eq(vehiclesTable.brandId, brands.id))
+    .leftJoin(models, eq(vehiclesTable.modelId, models.id))
+    .leftJoin(users, eq(vehiclesTable.userId, users.id))
+    .orderBy(desc(vehiclesTable.createdAt));
+
   return (
     <div className={`container ${styles.adminContainer}`}>
       {/* Barra Lateral Admin */}
@@ -12,11 +45,10 @@ export default function AdminDashboardPage() {
         </div>
         
         <nav className={styles.navMenu}>
-          <a href="#" className={`${styles.navItem} ${styles.active}`}>Dashboard</a>
+          <a href="/admin" className={`${styles.navItem} ${styles.active}`}>Dashboard</a>
           <a href="#" className={styles.navItem}>Vehículos</a>
           <a href="#" className={styles.navItem}>Usuarios</a>
           <a href="#" className={styles.navItem}>Leads / Interesados</a>
-          <a href="#" className={styles.navItem}>Marcas y Modelos</a>
           <a href="#" className={styles.navItem}>Configuración</a>
         </nav>
       </aside>
@@ -31,19 +63,15 @@ export default function AdminDashboardPage() {
         <div className={styles.statsGrid}>
           <div className={styles.statCard}>
             <h3>Total Vehículos</h3>
-            <p className={styles.statNumber}>1,245</p>
+            <p className={styles.statNumber}>{totalVehiclesCount}</p>
           </div>
           <div className={styles.statCard}>
             <h3>Pendientes de Aprobación</h3>
-            <p className={styles.statNumber}>12</p>
+            <p className={styles.statNumber}>{pendingCount}</p>
           </div>
           <div className={styles.statCard}>
-            <h3>Usuarios Activos</h3>
-            <p className={styles.statNumber}>3,450</p>
-          </div>
-          <div className={styles.statCard}>
-            <h3>Leads Generados</h3>
-            <p className={styles.statNumber}>450</p>
+            <h3>Usuarios Registrados</h3>
+            <p className={styles.statNumber}>{totalUsersCount}</p>
           </div>
         </div>
 
@@ -51,7 +79,6 @@ export default function AdminDashboardPage() {
         <div className={styles.tableSection}>
           <div className={styles.tableHeader}>
             <h2>Vehículos Pendientes de Aprobación</h2>
-            <button className="btn-secondary">Ver Todos</button>
           </div>
           
           <div className={styles.tableContainer}>
@@ -66,53 +93,52 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {/* Fila 1 */}
-                <tr>
-                  <td>
-                    <div className={styles.tdVehicle}>
-                      <div className={styles.miniImg}></div>
-                      <div>
-                        <strong>Toyota Hilux 2024</strong>
-                        <br/><span className={styles.textSmall}>Bogotá</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>Carlos Pérez</td>
-                  <td>$ 210.000.000</td>
-                  <td>Hoy, 10:30 AM</td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button className={styles.btnApprove}>Aprobar</button>
-                      <button className={styles.btnReject}>Rechazar</button>
-                    </div>
-                  </td>
-                </tr>
-                {/* Fila 2 */}
-                <tr>
-                  <td>
-                    <div className={styles.tdVehicle}>
-                      <div className={styles.miniImg}></div>
-                      <div>
-                        <strong>Renault Duster 2021</strong>
-                        <br/><span className={styles.textSmall}>Medellín</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>María Gómez</td>
-                  <td>$ 65.000.000</td>
-                  <td>Ayer, 4:15 PM</td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button className={styles.btnApprove}>Aprobar</button>
-                      <button className={styles.btnReject}>Rechazar</button>
-                    </div>
-                  </td>
-                </tr>
+                {pendingVehicles.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No hay vehículos pendientes de aprobación.</td>
+                  </tr>
+                ) : (
+                  pendingVehicles.map(v => {
+                    const formattedPrice = new Intl.NumberFormat("es-CO", {
+                      style: "currency",
+                      currency: "COP",
+                      maximumFractionDigits: 0,
+                    }).format(v.price || 0);
+
+                    const dateStr = v.createdAt ? new Date(v.createdAt).toLocaleDateString() : 'N/A';
+
+                    return (
+                      <tr key={v.id}>
+                        <td>
+                          <div className={styles.tdVehicle}>
+                            <div className={styles.miniImg}></div>
+                            <div>
+                              <strong>{v.brandName} {v.modelName} {v.version}</strong>
+                              <br/><span className={styles.textSmall}>{v.city}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td>{v.userName} {v.userLastName}</td>
+                        <td>{formattedPrice}</td>
+                        <td>{dateStr}</td>
+                        <td>
+                          <div className={styles.actions}>
+                            <form action={approveVehicle.bind(null, v.id)}>
+                              <button type="submit" className={styles.btnApprove}>Aprobar</button>
+                            </form>
+                            <form action={rejectVehicle.bind(null, v.id)}>
+                              <button type="submit" className={styles.btnReject}>Rechazar</button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
         </div>
-
       </main>
     </div>
   );
