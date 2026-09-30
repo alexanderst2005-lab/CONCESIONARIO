@@ -86,9 +86,37 @@ export default function PublicarPage() {
                   <label>Marca</label>
                   <select name="brandName" value={formData.brandName} onChange={handleInputChange}>
                     <option value="" disabled>Selecciona una marca</option>
-                    <option value="Mazda">Mazda</option>
-                    <option value="Toyota">Toyota</option>
+                    <option value="Audi">Audi</option>
+                    <option value="BMW">BMW</option>
+                    <option value="BYD">BYD</option>
+                    <option value="Changan">Changan</option>
+                    <option value="Chery">Chery</option>
                     <option value="Chevrolet">Chevrolet</option>
+                    <option value="Citroen">Citroen</option>
+                    <option value="Dodge">Dodge</option>
+                    <option value="Fiat">Fiat</option>
+                    <option value="Ford">Ford</option>
+                    <option value="Honda">Honda</option>
+                    <option value="Hyundai">Hyundai</option>
+                    <option value="JAC">JAC</option>
+                    <option value="Jeep">Jeep</option>
+                    <option value="Kia">Kia</option>
+                    <option value="Mazda">Mazda</option>
+                    <option value="Mercedes-Benz">Mercedes-Benz</option>
+                    <option value="MG">MG</option>
+                    <option value="MINI">MINI</option>
+                    <option value="Mitsubishi">Mitsubishi</option>
+                    <option value="Nissan">Nissan</option>
+                    <option value="Peugeot">Peugeot</option>
+                    <option value="Porsche">Porsche</option>
+                    <option value="RAM">RAM</option>
+                    <option value="Renault">Renault</option>
+                    <option value="Seat">Seat</option>
+                    <option value="Subaru">Subaru</option>
+                    <option value="Suzuki">Suzuki</option>
+                    <option value="Toyota">Toyota</option>
+                    <option value="Volkswagen">Volkswagen</option>
+                    <option value="Volvo">Volvo</option>
                   </select>
                 </div>
                 <div className={styles.inputGroup}>

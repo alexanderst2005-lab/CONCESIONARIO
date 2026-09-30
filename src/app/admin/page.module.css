@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding-top: 2rem;
+  padding-top: 3rem;
   padding-bottom: 5rem;
 }
 
@@ -10,15 +10,16 @@
   .adminContainer {
     flex-direction: row;
     align-items: flex-start;
+    gap: 4rem;
   }
 }
 
 .sidebar {
   width: 100%;
-  background-color: var(--primary-color);
-  border-radius: var(--border-radius-lg);
+  background-color: #080808;
+  border-radius: 4px;
   overflow: hidden;
-  color: var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 @media (min-width: 1024px) {
@@ -33,19 +34,22 @@
 
 .adminHeader {
   padding: 2rem 1.5rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 
 .logoAccent {
   font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--gold-accent);
+  font-weight: 500;
+  color: #ffffff;
+  font-family: var(--font-playfair);
 }
 
 .adminRole {
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--gold-accent);
+  margin-top: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .navMenu {
@@ -57,19 +61,22 @@
 .navItem {
   padding: 1rem 1.5rem;
   font-weight: 500;
-  color: #cbd5e1;
-  transition: all var(--transition-fast);
+  color: #888888;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  border-left: 2px solid transparent;
 }
 
 .navItem:hover {
-  background-color: rgba(255,255,255,0.05);
-  color: var(--text-light);
+  background-color: rgba(255,255,255,0.02);
+  color: #ffffff;
 }
 
 .navItem.active {
-  background-color: rgba(255,255,255,0.1);
-  color: var(--gold-accent);
-  border-left: 3px solid var(--gold-accent);
+  background-color: rgba(255,255,255,0.05);
+  color: #ffffff;
+  border-left-color: var(--gold-accent);
 }
 
 .mainContent {
@@ -78,71 +85,95 @@
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
 .header h1 {
-  font-size: 2rem;
-  color: var(--primary-color);
+  font-size: 2.5rem;
+  color: #ffffff;
+  font-family: var(--font-playfair);
+  font-weight: 400;
 }
 
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
-  margin-bottom: 3rem;
+  margin-bottom: 4rem;
 }
 
 @media (min-width: 768px) {
   .statsGrid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
 .statCard {
-  background-color: var(--surface-color);
-  padding: 1.5rem;
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e2e8f0;
+  background-color: #0A0A0A;
+  padding: 2rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.statCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background-color: var(--gold-accent);
+  opacity: 0.5;
 }
 
 .statCard h3 {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  font-size: 0.75rem;
+  color: #666666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
 }
 
 .statNumber {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary-color);
+  font-size: 3rem;
+  font-weight: 300;
+  color: #ffffff;
+  font-family: var(--font-playfair);
+  line-height: 1;
 }
 
 .tableSection {
-  background-color: var(--surface-color);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid #e2e8f0;
+  background-color: transparent;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
   overflow: hidden;
 }
 
 .tableHeader {
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background-color: #0A0A0A;
 }
 
 .tableHeader h2 {
   font-size: 1.25rem;
-  color: var(--primary-color);
+  color: #ffffff;
+  font-family: var(--font-playfair);
+  font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 .tableContainer {
   overflow-x: auto;
+  background-color: #050505;
 }
 
 .table {
@@ -152,18 +183,22 @@
 
 .table th {
   text-align: left;
-  padding: 1rem 1.5rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  background-color: #f8fafc;
-  font-weight: 600;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 1rem 2rem;
+  font-size: 0.75rem;
+  color: #666666;
+  background-color: #0A0A0A;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .table td {
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
   vertical-align: middle;
+  color: #cccccc;
+  font-size: 0.9rem;
 }
 
 .tdVehicle {
@@ -175,13 +210,18 @@
 .miniImg {
   width: 60px;
   height: 40px;
-  background-color: #cbd5e1;
-  border-radius: var(--border-radius-sm);
+  background-color: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 2px;
 }
 
 .textSmall {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  color: #888888;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+  display: block;
 }
 
 .actions {
@@ -189,20 +229,27 @@
   gap: 0.5rem;
 }
 
-.btnApprove {
-  background-color: #10b981;
-  color: white;
+.btnApprove, .btnReject {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
   padding: 0.5rem 1rem;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.btnReject {
-  background-color: #ef4444;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
+.btnApprove:hover {
+  border-color: var(--gold-accent);
+  color: var(--gold-accent);
+  background: rgba(245, 158, 11, 0.05);
+}
+
+.btnReject:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.05);
 }

@@ -24,9 +24,22 @@ export async function POST(req: Request) {
 
     // 1. Obtener los IDs relacionados basados en el texto (o usar IDs directamente si el form los envía)
     // Para simplificar la demo, asociaremos a la primera categoría por defecto
-    const cat = await db.query.categories.findFirst();
-    const brand = await db.query.brands.findFirst({ where: (b, { eq }) => eq(b.name, data.brandName || "Mazda")});
-    const model = await db.query.models.findFirst();
+    let cat = await db.query.categories.findFirst();
+    if (!cat) {
+       [cat] = await db.insert(categories).values({ name: "Autos", slug: "autos", isActive: true }).returning();
+    }
+
+    let brandNameInput = data.brandName || "Mazda";
+    let brand = await db.query.brands.findFirst({ where: (b, { eq }) => eq(b.name, brandNameInput)});
+    if (!brand) {
+       [brand] = await db.insert(brands).values({ name: brandNameInput, slug: brandNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), isActive: true }).returning();
+    }
+
+    let modelNameInput = data.modelName || "Generico";
+    let model = await db.query.models.findFirst({ where: (m, { eq }) => eq(m.name, modelNameInput)});
+    if (!model) {
+       [model] = await db.insert(models).values({ name: modelNameInput, slug: modelNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), brandId: brand.id, isActive: true }).returning();
+    }
 
     if (!cat || !brand || !model) {
       return NextResponse.json({ message: "Error en datos maestros (Marcas/Modelos)" }, { status: 400 });
