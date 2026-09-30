@@ -1,23 +1,28 @@
 .header {
-  background-color: var(--primary-color);
-  color: var(--text-light);
-  padding: 1rem 0;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-md);
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: rgba(5, 5, 5, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all var(--transition-normal);
 }
 
 .headerContainer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  height: 80px;
 }
 
 .logo a {
   font-size: 1.5rem;
   font-weight: 800;
-  letter-spacing: -0.5px;
+  color: var(--primary-color);
+  letter-spacing: -0.02em;
 }
 
 .logoAccent {
@@ -32,17 +37,19 @@
   .navDesktop {
     display: flex;
     gap: 2rem;
+    align-items: center;
   }
 }
 
 .navLink {
   font-weight: 500;
-  font-size: 0.95rem;
+  color: var(--text-main);
   transition: color var(--transition-fast);
+  font-size: 0.95rem;
 }
 
 .navLink:hover {
-  color: var(--gold-accent);
+  color: var(--primary-color);
 }
 
 .actions {
@@ -52,30 +59,38 @@
 }
 
 .loginLink {
-  font-weight: 600;
-  font-size: 0.95rem;
   display: none;
+  font-weight: 600;
+  color: var(--text-main);
+  transition: color var(--transition-fast);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .loginLink {
     display: block;
   }
 }
 
 .loginLink:hover {
-  text-decoration: underline;
+  color: var(--primary-color);
 }
 
 .mainContent {
-  min-height: calc(100vh - 140px); /* Adjust based on header and footer height */
+  min-height: calc(100vh - 80px); /* 80px is header height */
+  /* Remove top padding here so the hero can go under the transparent header */
 }
 
 .footer {
-  background-color: #050d1d; /* Even darker blue */
+  background-color: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 3rem 0;
   color: var(--text-muted);
-  padding: 2rem 0;
+}
+
+.footerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   text-align: center;
-  font-size: 0.875rem;
-  margin-top: 4rem;
+  font-size: 0.9rem;
 }

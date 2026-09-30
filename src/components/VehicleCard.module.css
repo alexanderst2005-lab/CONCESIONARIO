@@ -2,57 +2,85 @@
   background-color: var(--surface-color);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal);
-  border: 1px solid #e2e8f0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-hover);
-  border-color: #cbd5e1;
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.cardLink {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .imageContainer {
   position: relative;
   width: 100%;
-  height: 220px;
-  background-color: var(--surface-alt);
+  aspect-ratio: 16/10;
+  background-color: #1a1a1a;
+  overflow: hidden;
 }
 
-.placeholderImg {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: var(--text-muted);
-  font-size: 1.5rem;
-  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+.image {
+  object-fit: cover;
+  transition: transform 0.8s ease;
+}
+
+.card:hover .image {
+  transform: scale(1.05);
+}
+
+.badge {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  background-color: var(--gold-accent);
+  color: #000;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  z-index: 10;
+  letter-spacing: 0.05em;
 }
 
 .favoriteBtn {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: rgba(255, 255, 255, 0.9);
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: #fff;
+  cursor: pointer;
+  z-index: 10;
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
 }
 
 .favoriteBtn:hover {
-  color: #ef4444; /* Red color for favorite hover */
-  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ef4444; /* Heart turns red */
+  transform: scale(1.1);
+}
+
+.favoriteBtn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .content {
@@ -62,66 +90,78 @@
   flex-grow: 1;
 }
 
-.header {
-  margin-bottom: 1rem;
-}
-
-.title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--primary-color);
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 0.25rem;
 }
 
-.version {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.specs, .specs2 {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.specs2 {
-  margin-top: 0.25rem;
-}
-
-.dot {
-  margin: 0 0.5rem;
-  color: #cbd5e1;
-}
-
-.footer {
-  margin-top: auto;
-  padding-top: 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top: 1px solid #f1f5f9;
-}
-
-.price {
+.title {
   font-size: 1.25rem;
   font-weight: 800;
   color: var(--primary-color);
+  letter-spacing: -0.01em;
+}
+
+.year {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background-color: rgba(255,255,255,0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.version {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.specsRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  margin-top: auto;
+}
+
+.spec {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.dot {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.75rem;
+}
+
+.footerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 1.25rem;
+  margin-top: auto;
+}
+
+.price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold-accent);
 }
 
 .viewBtn {
-  background-color: var(--surface-alt);
+  font-size: 0.9rem;
+  font-weight: 700;
   color: var(--primary-color);
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 0.5rem 1rem;
-  border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
 }
 
-.viewBtn:hover {
-  background-color: var(--interaction-color);
-  color: var(--text-light);
+.card:hover .viewBtn {
+  color: var(--gold-accent);
+  transform: translateX(3px);
 }
