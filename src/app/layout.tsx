@@ -4,6 +4,7 @@ import "./globals.css";
 import styles from "./layout.module.css";
 import Link from "next/link";
 import Image from "next/image";
+import Header from "@/components/Header";
 import { getServerSession } from "next-auth/next";
 import { GET, POST } from "@/app/api/auth/[...nextauth]/route";
 
@@ -40,36 +41,7 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={`${manrope.className} ${playfair.variable} ${manrope.variable}`}>
-        <header className={styles.header}>
-          <div className={`container ${styles.headerContainer}`}>
-            <div className={styles.logo}>
-              <Link href="/">
-                <Image src="/logo.png" alt="Autos del Patrón Logo" width={150} height={50} style={{ objectFit: 'contain' }} />
-              </Link>
-            </div>
-            
-            <nav className={styles.navDesktop}>
-              <Link href="/" className={styles.navLink}>Inicio</Link>
-              <Link href="/vehiculos" className={styles.navLink}>Comprar vehículos</Link>
-              <Link href="/favoritos" className={styles.navLink}>Favoritos</Link>
-            </nav>
-
-            <div className={styles.actions}>
-              {session ? (
-                <Link href="/mi-cuenta" className={styles.loginLink}>
-                  Mi Cuenta
-                </Link>
-              ) : (
-                <Link href="/login" className={styles.loginLink}>
-                  Iniciar sesión
-                </Link>
-              )}
-              <Link href="/publicar" className="btn-primary">
-                Publicar vehículo
-              </Link>
-            </div>
-          </div>
-        </header>
+        <Header session={session} />
 
         <main className={styles.mainContent}>
           {children}
