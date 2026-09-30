@@ -73,7 +73,7 @@ export default function PublicarPage() {
         <form onSubmit={(e) => e.preventDefault()}>
           
           {/* PASO 1: Info Básica */}
-          {step === 1 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Información Básica</h2>
               <div className={styles.formGrid}>
@@ -128,10 +128,9 @@ export default function PublicarPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* PASO 2: Info Técnica */}
-          {step === 2 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Información Técnica</h2>
               <div className={styles.formGrid}>
@@ -163,10 +162,9 @@ export default function PublicarPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* PASO 3: Documentación y Precio */}
-          {step === 3 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Documentación y Precio</h2>
               <div className={styles.formGrid}>
@@ -184,10 +182,9 @@ export default function PublicarPage() {
                 </div>
               </div>
             </div>
-          )}
 
           {/* PASO 4: Fotografías */}
-          {step === 4 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Fotografías</h2>
               <p className={styles.helpText}>Sube al menos 3 fotos de buena calidad. La primera será la imagen principal.</p>
@@ -202,10 +199,9 @@ export default function PublicarPage() {
                 <button type="button" className="btn-secondary">Seleccionar archivos</button>
               </div>
             </div>
-          )}
 
           {/* PASO 5: Descripción */}
-          {step === 5 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Descripción Adicional</h2>
               <div className={styles.inputGroup}>
@@ -220,10 +216,9 @@ export default function PublicarPage() {
                 ></textarea>
               </div>
             </div>
-          )}
 
           {/* PASO 6: Vista Previa */}
-          {step === 6 && (
+          
             <div className={`animate-fade-in ${styles.stepContent}`}>
               <h2>Vista Previa y Confirmación</h2>
               <div className={styles.previewBox}>
@@ -234,7 +229,6 @@ export default function PublicarPage() {
                 <p style={{ marginTop: "1rem" }}><em>Tu vehículo entrará en estado PENDIENTE hasta que un administrador lo apruebe.</em></p>
               </div>
             </div>
-          )}
 
           {/* Controls */}
           <div className={styles.controls}>
