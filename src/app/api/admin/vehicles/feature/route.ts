@@ -3,9 +3,10 @@ import { db } from "@/db";
 import { vehicles as vehiclesTable, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 async function checkAdmin() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) return false;
   const user = await db.query.users.findFirst({ where: eq(users.email, session.user.email) });
   return user?.role === "ADMIN";

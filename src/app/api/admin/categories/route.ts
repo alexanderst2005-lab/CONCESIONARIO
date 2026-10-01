@@ -3,10 +3,11 @@ import { db } from "@/db";
 import { categories } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 async function checkAdmin() {
   // same as before... omit for brevity or recreate simple
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) return false;
   // Simplification for speed since NextAuth secures the path, but good practice to check DB
   return true; 
