@@ -110,7 +110,9 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
         </div>
 
         <div className={styles.divider}></div>
+        </div>
 
+        <div className={`${styles.extraInfo} ${styles.extraArea}`}>
         <h2 className={styles.sectionTitle}>Características</h2>
 
         <div className={styles.specRow}>
@@ -201,6 +203,8 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             </p>
           )}
         </div>
+      </div>
+      <div className={`${styles.infoAreaBottom} ${styles.infoArea}`}>
         <div className={styles.whatsappCtaBox}>
           <h3>¿Te interesa este vehículo?</h3>
           <p>Habla con nuestro equipo y recibe más información.</p>
