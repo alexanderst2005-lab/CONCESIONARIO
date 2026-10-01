@@ -41,48 +41,45 @@ export default function ForgotPasswordPage() {
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
-        <div className={styles.authHeader}>
-          <h1 className="serif-title">Recuperar Contraseña</h1>
-          <p>Te enviaremos un enlace seguro para restablecerla.</p>
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <h1 className={styles.title} style={{ fontSize: "1.8rem" }}>Recuperar Contraseña</h1>
+          <p className={styles.subtitle} style={{ marginBottom: "0" }}>Te enviaremos un enlace seguro para restablecerla.</p>
         </div>
 
         {success ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <CheckCircle2 size={64} color="#34A853" style={{ marginBottom: '1rem' }} />
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <CheckCircle2 size={56} color="#34A853" style={{ marginBottom: '1rem' }} />
             <h3 style={{ marginBottom: '1rem', color: '#fff' }}>¡Correo enviado!</h3>
             <p style={{ color: '#aaa', marginBottom: '2rem', lineHeight: 1.5 }}>
-              Si existe una cuenta asociada a <strong>{email}</strong>, hemos enviado las instrucciones para restablecer tu contraseña. Revisa tu bandeja de entrada o la carpeta de SPAM.
+              Si existe una cuenta asociada a <strong>{email}</strong>, hemos enviado las instrucciones para restablecer tu contraseña.
             </p>
-            <Link href="/login" className="btn-primary" style={{ display: 'inline-block', width: '100%' }}>
+            <Link href="/login" className="btn-primary" style={{ display: 'inline-block', width: '100%', padding: '1rem' }}>
               Volver a Iniciar Sesión
             </Link>
           </div>
         ) : (
-          <form className={styles.authForm} onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
-              <label htmlFor="email">Correo Electrónico</label>
-              <div className={styles.inputWrapper}>
-                <Mail className={styles.inputIcon} size={20} />
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email" 
-                  placeholder="ejemplo@correo.com" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-            </div>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            {error && <div style={{ color: "#ef4444", textAlign: "center", fontSize: "0.9rem" }}>{error}</div>}
 
-            {error && <div className={styles.errorMessage}>{error}</div>}
+            <div className={styles.inputGroup}>
+              <label htmlFor="email">Correo Electrónico</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                placeholder="ejemplo@correo.com" 
+                required 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
             <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={loading}>
               {loading ? "Enviando..." : "Enviar Enlace"}
             </button>
 
-            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-              <Link href="/login" style={{ color: '#cda434', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <Link href="/login" style={{ color: 'var(--gold-accent)', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                 <ArrowLeft size={16} />
                 Volver a Iniciar Sesión
               </Link>

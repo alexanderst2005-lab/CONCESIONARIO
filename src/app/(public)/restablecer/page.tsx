@@ -65,62 +65,56 @@ function ResetPasswordForm() {
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
-        <div className={styles.authHeader}>
-          <h1 className="serif-title">Nueva Contraseña</h1>
-          <p>Crea una nueva contraseña para tu cuenta.</p>
+        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+          <h1 className={styles.title} style={{ fontSize: "1.8rem" }}>Nueva Contraseña</h1>
+          <p className={styles.subtitle} style={{ marginBottom: "0" }}>Crea una nueva contraseña para tu cuenta.</p>
         </div>
 
         {success ? (
-          <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-            <CheckCircle2 size={64} color="#34A853" style={{ marginBottom: '1rem' }} />
+          <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+            <CheckCircle2 size={56} color="#34A853" style={{ marginBottom: '1rem' }} />
             <h3 style={{ marginBottom: '1rem', color: '#fff' }}>¡Contraseña actualizada!</h3>
             <p style={{ color: '#aaa', marginBottom: '2rem', lineHeight: 1.5 }}>
-              Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión con tus nuevas credenciales.
+              Tu contraseña ha sido restablecida exitosamente. Ya puedes iniciar sesión.
             </p>
-            <Link href="/login" className="btn-primary" style={{ display: 'inline-block', width: '100%' }}>
+            <Link href="/login" className="btn-primary" style={{ display: 'inline-block', width: '100%', padding: '1rem' }}>
               Iniciar Sesión
             </Link>
           </div>
         ) : (
-          <form className={styles.authForm} onSubmit={handleSubmit}>
-            <div className={styles.formGroup}>
+          <form className={styles.form} onSubmit={handleSubmit}>
+            {error && <div style={{ color: "#ef4444", textAlign: "center", fontSize: "0.9rem" }}>{error}</div>}
+
+            <div className={styles.inputGroup}>
               <label htmlFor="password">Nueva Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <Lock className={styles.inputIcon} size={20} />
-                <input 
-                  type="password" 
-                  id="password" 
-                  name="password" 
-                  placeholder="••••••••" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={!token}
-                />
-              </div>
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                placeholder="••••••••" 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={!token}
+              />
             </div>
 
-            <div className={styles.formGroup}>
+            <div className={styles.inputGroup}>
               <label htmlFor="confirmPassword">Confirmar Nueva Contraseña</label>
-              <div className={styles.inputWrapper}>
-                <Lock className={styles.inputIcon} size={20} />
-                <input 
-                  type="password" 
-                  id="confirmPassword" 
-                  name="confirmPassword" 
-                  placeholder="••••••••" 
-                  required 
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  disabled={!token}
-                />
-              </div>
+              <input 
+                type="password" 
+                id="confirmPassword" 
+                name="confirmPassword" 
+                placeholder="••••••••" 
+                required 
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={!token}
+              />
             </div>
-
-            {error && <div className={styles.errorMessage}>{error}</div>}
 
             {token && (
-              <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={loading}>
+              <button type="submit" className={`btn-primary ${styles.submitBtn}`} disabled={loading} style={{ marginTop: '1rem' }}>
                 {loading ? "Guardando..." : "Guardar Nueva Contraseña"}
               </button>
             )}
