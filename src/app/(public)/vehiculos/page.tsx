@@ -26,29 +26,36 @@ export default async function VehiculosPage({ searchParams }: { searchParams: { 
     conditions.push(ilike(categories.name, `%${categoria}%`));
   }
 
-  const vehiclesData = await db
-    .select({
-      id: vehicles.id,
-      slug: vehicles.slug,
-      version: vehicles.version,
-      year: vehicles.year,
-      mileage: vehicles.mileage,
-      price: vehicles.price,
-      city: vehicles.city,
-      fuelType: vehicles.fuelType,
-      transmission: vehicles.transmission,
-      brandName: brands.name,
-      modelName: models.name,
-      categoryName: categories.name,
-      isFeatured: vehicles.isFeatured,
-      isDealerVehicle: vehicles.isDealerVehicle,
-    })
-    .from(vehicles)
-    .leftJoin(brands, eq(vehicles.brandId, brands.id))
-    .leftJoin(models, eq(vehicles.modelId, models.id))
-    .leftJoin(categories, eq(vehicles.categoryId, categories.id))
-    .where(and(...conditions))
-    .orderBy(desc(vehicles.createdAt));
+  
+  const vehiclesRaw = await db.query.vehicles.findMany({
+    where: and(...conditions),
+    orderBy: [desc(vehicles.createdAt)],
+    with: {
+      brand: true,
+      model: true,
+      category: true,
+      images: true,
+    }
+  });
+
+  const vehiclesData = vehiclesRaw.map(v => ({
+    id: v.id,
+    slug: v.slug,
+    version: v.version,
+    year: v.year,
+    mileage: v.mileage,
+    price: v.price,
+    city: v.city,
+    fuelType: v.fuelType,
+    transmission: v.transmission,
+    brandName: v.brand?.name || "Desconocido",
+    modelName: v.model?.name || "Desconocido",
+    categoryName: v.category?.name || "Categoría",
+    isFeatured: v.isFeatured,
+    isDealerVehicle: v.isDealerVehicle,
+    image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80",
+  }));
+
 
   // Obtener filtros dinámicos (opcional para popular los selects)
   const allBrands = await db.select().from(brands).where(eq(brands.isActive, true));

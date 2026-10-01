@@ -9,19 +9,33 @@ import { eq, desc, asc, and } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2 } from "lucide-react";
 
 export default async function Home() {
-  const featuredVehicles = await db
-    .select()
-    .from(vehiclesTable)
-    .where(and(eq(vehiclesTable.status, "ACTIVO"), eq(vehiclesTable.isFeatured, true)))
-    .orderBy(desc(vehiclesTable.createdAt))
-    .limit(4);
+  
+  const featuredRaw = await db.query.vehicles.findMany({
+    where: and(eq(vehiclesTable.status, "ACTIVO"), eq(vehiclesTable.isFeatured, true)),
+    orderBy: [desc(vehiclesTable.createdAt)],
+    limit: 4,
+    with: { brand: true, model: true, images: true }
+  });
 
-  const recentVehicles = await db
-    .select()
-    .from(vehiclesTable)
-    .where(eq(vehiclesTable.status, "ACTIVO"))
-    .orderBy(desc(vehiclesTable.createdAt))
-    .limit(8);
+  const featuredVehicles = featuredRaw.map(v => ({
+    id: v.id, slug: v.slug, year: v.year, mileage: v.mileage, price: v.price, city: v.city, fuelType: v.fuelType, transmission: v.transmission,
+    brandName: v.brand?.name, modelName: v.model?.name, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
+    image: v.images && v.images.length > 0 ? v.images[0].url : undefined
+  }));
+
+  const recentRaw = await db.query.vehicles.findMany({
+    where: eq(vehiclesTable.status, "ACTIVO"),
+    orderBy: [desc(vehiclesTable.createdAt)],
+    limit: 8,
+    with: { brand: true, model: true, images: true }
+  });
+
+  const recentVehicles = recentRaw.map(v => ({
+    id: v.id, slug: v.slug, year: v.year, mileage: v.mileage, price: v.price, city: v.city, fuelType: v.fuelType, transmission: v.transmission,
+    brandName: v.brand?.name, modelName: v.model?.name, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
+    image: v.images && v.images.length > 0 ? v.images[0].url : undefined
+  }));
+
 
   // Obtener marcas activas desde la base de datos
   const activeBrands = await db
