@@ -27,6 +27,8 @@ export const brands = pgTable('brands', {
   id: serial('id').primaryKey(),
   name: text('name').notNull().unique(),
   slug: text('slug').notNull().unique(),
+  logoUrl: text('logo_url'),
+  sortOrder: integer('sort_order').default(0).notNull(),
   isActive: boolean('is_active').default(true).notNull(),
 });
 

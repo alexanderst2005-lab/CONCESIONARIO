@@ -47,6 +47,7 @@ export default async function AdminDashboardPage() {
         <nav className={styles.navMenu}>
           <a href="/admin" className={`${styles.navItem} ${styles.active}`}>Dashboard</a>
           <a href="#" className={styles.navItem}>Vehículos</a>
+          <a href="/admin/marcas" className={styles.navItem}>Marcas</a>
           <a href="#" className={styles.navItem}>Usuarios</a>
           <a href="#" className={styles.navItem}>Leads / Interesados</a>
           <a href="#" className={styles.navItem}>Configuración</a>

@@ -1,0 +1,170 @@
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+}
+
+.carouselWrapper:active {
+  cursor: grabbing;
+}
+
+/* Fade edge masks */
+.fadeLeft,
+.fadeRight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.fadeLeft {
+  left: 0;
+  background: linear-gradient(to right, #050505 0%, transparent 100%);
+}
+
+.fadeRight {
+  right: 0;
+  background: linear-gradient(to left, #050505 0%, transparent 100%);
+}
+
+/* Scrollable track container */
+.carouselTrack {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.carouselTrack::-webkit-scrollbar {
+  display: none;
+}
+
+/* Inner animated track */
+.track {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1rem 0;
+  width: max-content;
+  animation: scroll 30s linear infinite;
+}
+
+.track.paused {
+  animation-play-state: paused;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+/* Each brand item */
+.brandItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.75rem 2rem;
+  min-width: 140px;
+  background-color: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.brandItem:hover {
+  background-color: #111;
+  border-color: var(--gold-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.brandItem:hover .brandName {
+  color: var(--gold-accent);
+}
+
+.brandItem:hover .logoWrapper {
+  transform: scale(1.08);
+}
+
+/* Logo wrapper */
+.logoWrapper {
+  width: 80px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+  position: relative;
+}
+
+/* Placeholder when no logo */
+.logoPlaceholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a1a1a, #222);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logoPlaceholder span {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gold-accent);
+  font-family: var(--font-playfair), serif;
+}
+
+/* Brand name */
+.brandName {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #cccccc;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+}
+
+/* Empty state */
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  color: #666;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .brandItem {
+    min-width: 110px;
+    padding: 1.25rem 1.25rem;
+  }
+
+  .logoWrapper {
+    width: 60px;
+    height: 45px;
+  }
+
+  .brandName {
+    font-size: 0.65rem;
+  }
+
+  .fadeLeft,
+  .fadeRight {
+    width: 60px;
+  }
+}

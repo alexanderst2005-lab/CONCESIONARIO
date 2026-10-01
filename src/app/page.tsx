@@ -2,9 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
+import BrandCarousel from "@/components/BrandCarousel";
 import { db } from "@/db";
-import { vehicles as vehiclesTable } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
+import { eq, desc, asc } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2 } from "lucide-react";
 
 export default async function Home() {
@@ -16,9 +17,17 @@ export default async function Home() {
     .orderBy(desc(vehiclesTable.createdAt))
     .limit(4);
 
-  const brands = [
-    "Mazda", "Toyota", "Renault", "Chevrolet", "BMW", "Mercedes-Benz", "Audi", "Ford", "Nissan", "Volkswagen"
-  ];
+  // Obtener marcas activas desde la base de datos
+  const activeBrands = await db
+    .select()
+    .from(brandsTable)
+    .where(eq(brandsTable.isActive, true))
+    .orderBy(asc(brandsTable.sortOrder), asc(brandsTable.name));
+
+  // Fallback: si no hay marcas en DB, usar lista estática
+  const brandNames = activeBrands.length > 0
+    ? activeBrands.map(b => b.name)
+    : ["Mazda", "Toyota", "Renault", "Chevrolet", "BMW", "Mercedes-Benz", "Audi", "Ford", "Nissan", "Volkswagen"];
 
   return (
     <>
@@ -48,7 +57,7 @@ export default async function Home() {
                 <label><Car size={16} strokeWidth={1.5} /> Marca</label>
                 <select name="marca" defaultValue="">
                   <option value="" disabled>Cualquier Marca</option>
-                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                  {brandNames.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className={styles.searchDivider}></div>
@@ -93,20 +102,17 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* MARCAS */}
-      <section className={`container ${styles.section}`}>
-        <div className={styles.sectionHeader}>
-          <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra tu marca</h2>
-          <Link href="/vehiculos" className={styles.viewAllLink}>Ver todas las marcas</Link>
+      {/* MARCAS — CARRUSEL PREMIUM */}
+      <section style={{ padding: "6rem 0", backgroundColor: "#050505", borderTop: "1px solid #111" }}>
+        <div className="container" style={{ marginBottom: "2.5rem" }}>
+          <div className={styles.sectionHeader}>
+            <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra tu marca</h2>
+            <Link href="/vehiculos" className={styles.viewAllLink}>Ver todas las marcas →</Link>
+          </div>
         </div>
-        <div className={styles.brandsGrid}>
-          {brands.map(brand => (
-            <Link href={`/vehiculos?marca=${brand}`} key={brand} className={styles.brandCard}>
-              <span className={styles.brandName}>{brand}</span>
-            </Link>
-          ))}
-        </div>
+        <BrandCarousel brands={activeBrands} />
       </section>
+
 
       {/* NUEVOS INGRESOS */}
       <section className={styles.featuredSection} style={{ backgroundColor: "#080808", borderTop: "1px solid #111" }}>
