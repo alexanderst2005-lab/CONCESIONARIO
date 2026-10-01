@@ -67,6 +67,17 @@ export async function POST(req: Request) {
       plate: data.plate || "",
       description: data.description || "",
       
+      color: data.color || "",
+      soat: data.soat === "true",
+      tecnomecanica: data.tecnomecanica === "true",
+      ownersCount: parseInt(data.ownersCount) || 1,
+      prenda: data.prenda === "true",
+      accessories: data.accessories || "",
+      hasGas: data.hasGas === "true",
+      hasGps: data.hasGps === "true",
+      locationStatus: data.locationStatus || "Vitrina",
+      cityRegistered: data.cityRegistered || "",
+
       // Todo vehículo entra como PENDIENTE de aprobación por el Admin
       status: "PENDIENTE",
       isFeatured: false,

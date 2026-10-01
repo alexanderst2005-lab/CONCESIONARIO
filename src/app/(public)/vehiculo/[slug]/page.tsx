@@ -53,6 +53,11 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
     soat: vehicleRecord.soat,
     tecnomecanica: vehicleRecord.tecnomecanica,
     prenda: vehicleRecord.prenda,
+    accessories: vehicleRecord.accessories,
+    hasGas: vehicleRecord.hasGas,
+    hasGps: vehicleRecord.hasGps,
+    locationStatus: vehicleRecord.locationStatus,
+    cityRegistered: vehicleRecord.cityRegistered,
     status: vehicleRecord.status,
     sellerName: vehicleRecord.user ? `${vehicleRecord.user.name} ${vehicleRecord.user.lastName}` : "Vendedor Anónimo",
     images: vehicleRecord.images?.map(img => img.url) || [],
@@ -129,34 +134,12 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
 
         <div className={styles.specRow}>
           <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Marca:</span>
-            <span className={styles.specValue}>{vehicle.brandName}</span>
+            <span className={styles.specLabel}>Vehículo:</span>
+            <span className={styles.specValue}>{vehicle.brandName} {vehicle.modelName} {vehicle.version}</span>
           </div>
           <div className={styles.specColumn}>
             <span className={styles.specLabel}>Modelo:</span>
-            <span className={styles.specValue}>{vehicle.modelName}</span>
-          </div>
-        </div>
-
-        <div className={styles.specRow}>
-          <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Año:</span>
             <span className={styles.specValue}>{vehicle.year}</span>
-          </div>
-          <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Estado:</span>
-            <span className={styles.specValue}>usado</span>
-          </div>
-        </div>
-
-        <div className={styles.specRow}>
-          <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Tipo precio:</span>
-            <span className={styles.specValue}>Negociable</span>
-          </div>
-          <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Cilindraje:</span>
-            <span className={styles.specValue}>{vehicle.engineCapacity ? `${vehicle.engineCapacity} cc` : '-'}</span>
           </div>
         </div>
 
@@ -166,8 +149,8 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             <span className={styles.specValue}>{vehicle.mileage?.toLocaleString('es-CO')} km</span>
           </div>
           <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Combustible:</span>
-            <span className={styles.specValue}>{vehicle.fuelType || '-'}</span>
+            <span className={styles.specLabel}>Cilindraje:</span>
+            <span className={styles.specValue}>{vehicle.engineCapacity ? `${vehicle.engineCapacity} cc` : '-'}</span>
           </div>
         </div>
 
@@ -177,29 +160,77 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             <span className={styles.specValue}>{vehicle.transmission || '-'}</span>
           </div>
           <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Combustible:</span>
+            <span className={styles.specValue}>{vehicle.fuelType || '-'}</span>
+          </div>
+        </div>
+        
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Soat:</span>
+            <span className={styles.specValue}>{vehicle.soat ? 'Vigente' : 'No vigente'}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Tecnomecánica:</span>
+            <span className={styles.specValue}>{vehicle.tecnomecanica ? 'Vigente' : 'No vigente'}</span>
+          </div>
+        </div>
+        
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Dueños:</span>
+            <span className={styles.specValue}>{vehicle.ownersCount || '1'}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Prenda:</span>
+            <span className={styles.specValue}>{vehicle.prenda ? 'Sí' : 'No'}</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Accesorios:</span>
+            <span className={styles.specValue}>{vehicle.accessories || '-'}</span>
+          </div>
+        </div>
+        
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Placa:</span>
+            <span className={styles.specValue}>{vehicle.plate ? (vehicle.plate.length > 1 ? `*** *** ${vehicle.plate.charAt(vehicle.plate.length - 1)}` : vehicle.plate) : '-'}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Matriculado:</span>
+            <span className={styles.specValue}>{vehicle.cityRegistered || vehicle.city || '-'}</span>
+          </div>
+        </div>
+        
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
             <span className={styles.specLabel}>Color:</span>
-            <span className={styles.specValue}>{vehicle.color || 'Negro'}</span>
+            <span className={styles.specValue}>{vehicle.color || '-'}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Si tuvo gas:</span>
+            <span className={styles.specValue}>{vehicle.hasGas ? 'Sí' : 'No'}</span>
           </div>
         </div>
-
+        
         <div className={styles.specRow}>
           <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Último dígito de placa:</span>
-            <span className={styles.specValue}>{plateLastDigit}</span>
+            <span className={styles.specLabel}>Si tiene GPS:</span>
+            <span className={styles.specValue}>{vehicle.hasGps ? 'Sí' : 'No'}</span>
           </div>
           <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Blindaje:</span>
-            <span className={styles.specValue}>NO</span>
+            <span className={styles.specLabel}>Cita o Vitrina:</span>
+            <span className={styles.specValue}>{vehicle.locationStatus || '-'}</span>
           </div>
         </div>
-
+        
         <div className={styles.specRow}>
           <div className={styles.specColumn}>
-            <span className={styles.specLabel}>Peritaje:</span>
-            <span className={styles.specValue}>No</span>
-          </div>
-          <div className={styles.specColumn}>
-             {/* empty column to match grid */}
+            <span className={styles.specLabel}>Precio comercial:</span>
+            <span className={styles.specValue}>{formattedPrice} COP</span>
           </div>
         </div>
 

@@ -37,10 +37,15 @@ export default async function EditarVehiculoPage({ params }: { params: Promise<{
     plate: vehicleRecord.plate || "",
     description: vehicleRecord.description || "",
     color: vehicleRecord.color || "",
-    soat: vehicleRecord.soat || "",
-    tecnomecanica: vehicleRecord.tecnomecanica || "",
-    prenda: vehicleRecord.prenda || "No",
     ownersCount: vehicleRecord.ownersCount?.toString() || "1",
+    hasGas: vehicleRecord.hasGas ? "true" : "false",
+    hasGps: vehicleRecord.hasGps ? "true" : "false",
+    accessories: vehicleRecord.accessories || "",
+    locationStatus: vehicleRecord.locationStatus || "Vitrina",
+    cityRegistered: vehicleRecord.cityRegistered || "",
+    soat: vehicleRecord.soat ? "true" : "false",
+    tecnomecanica: vehicleRecord.tecnomecanica ? "true" : "false",
+    prenda: vehicleRecord.prenda ? "true" : "false",
     existingImages: vehicleRecord.images?.map(img => img.url) || []
   };
 

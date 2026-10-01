@@ -68,6 +68,11 @@ export const vehicles = pgTable('vehicles', {
   plate: text('plate'), // Oculto públicamente
   cityRegistered: text('city_registered'), // Matriculado en
   color: text('color'),
+
+    accessories: text('accessories'),
+    hasGas: boolean('has_gas').default(false),
+    hasGps: boolean('has_gps').default(false),
+    locationStatus: text('location_status').default('Cita'),
   
   price: integer('price').notNull(), // Precio comercial
   
