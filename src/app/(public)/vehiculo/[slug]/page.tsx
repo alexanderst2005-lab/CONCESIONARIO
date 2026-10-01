@@ -83,10 +83,12 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
 
       {/* GALERÍA DE IMÁGENES */}
       <div className={styles.mobileGallery}>
-        <Link href="/vehiculos" className={styles.backBtn}>
-          <ChevronLeft size={24} />
-        </Link>
-        <ImageGallery images={displayImages} />
+        <div className={styles.galleryFrame}>
+          <Link href="/vehiculos" className={styles.backBtn}>
+            <ChevronLeft size={24} />
+          </Link>
+          <ImageGallery images={displayImages} />
+        </div>
       </div>
 
       <div className={styles.topInfo}>
