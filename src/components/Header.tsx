@@ -78,31 +78,49 @@ export default function Header({ session }: { session: any }) {
             </Link>
           </div>
           
-          {session ? (
-            <div className={styles.accountDropdownWrapper} ref={dropdownRef}>
-              <button 
-                className={styles.loginLink} 
-                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-              >
-                MI CUENTA
-              </button>
+          {session ? (() => {
+            // Extract initials from session name
+            const nameParts = (session.user?.name || "U").trim().split(" ");
+            const initials = nameParts.length >= 2
+              ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
+              : nameParts[0].substring(0, 2).toUpperCase();
 
-              {accountDropdownOpen && (
-                <div className={styles.accountDropdown}>
-                  <Link href="/mi-cuenta?tab=historial" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Historial</Link>
-                  <Link href="/favoritos" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Favoritos</Link>
-                  <Link href="/mi-cuenta?tab=publicaciones" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Mis Publicaciones</Link>
-                  <Link href="/publicar" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Vender mi Vehículo</Link>
-                  <Link href="/mi-cuenta?tab=perfil" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Perfil</Link>
-                  
-                  <Link href="/api/auth/signout" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Cerrar Sesión</Link>
-                </div>
-              )}
-            </div>
-          ) : (
+            return (
+              <div className={styles.accountDropdownWrapper} ref={dropdownRef}>
+                <button
+                  className={styles.avatarBtn}
+                  onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                  aria-label="Mi cuenta"
+                  title={session.user?.name || "Mi cuenta"}
+                >
+                  {initials}
+                </button>
+
+                {accountDropdownOpen && (
+                  <div className={styles.accountDropdown}>
+                    {/* User info header */}
+                    <div className={styles.dropdownUserInfo}>
+                      <div className={styles.dropdownAvatar}>{initials}</div>
+                      <div>
+                        <p className={styles.dropdownUserName}>{session.user?.name}</p>
+                        <p className={styles.dropdownUserEmail}>{session.user?.email}</p>
+                      </div>
+                    </div>
+                    <div className={styles.dropdownDivider} />
+                    <Link href="/mi-cuenta?tab=historial" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Historial</Link>
+                    <Link href="/favoritos" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Favoritos</Link>
+                    <Link href="/mi-cuenta?tab=publicaciones" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Mis Publicaciones</Link>
+                    <Link href="/publicar" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Vender mi Vehículo</Link>
+                    <Link href="/mi-cuenta?tab=perfil" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Perfil</Link>
+                    <div className={styles.dropdownDivider} />
+                    <Link href="/api/auth/signout" className={`${styles.dropdownItem} ${styles.dropdownSignout}`} onClick={() => setAccountDropdownOpen(false)}>Cerrar Sesión</Link>
+                  </div>
+                )}
+              </div>
+            );
+          })() : (
             <Link href="/login" className={styles.loginLink} onClick={() => setMenuOpen(false)}>
-              LOGIN
+              Iniciar sesión
             </Link>
           )}
         </div>
