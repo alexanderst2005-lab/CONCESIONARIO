@@ -218,10 +218,6 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
       </div>
 
       </div>
-
-      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingWhatsapp}>
-        <MessageCircle size={32} />
-      </a>
     </div>
   );
 }

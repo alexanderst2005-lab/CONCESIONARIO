@@ -1,4 +1,6 @@
-.detailContainer {
+const fs = require('fs');
+
+const css = `.detailContainer {
   background-color: #000000;
   color: #ffffff;
   padding-bottom: 6rem;
@@ -294,3 +296,5 @@
     height: 24px;
   }
 }
+`;
+fs.writeFileSync('src/app/(public)/vehiculo/[slug]/page.module.css', css);
