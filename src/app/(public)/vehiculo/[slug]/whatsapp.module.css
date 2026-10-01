@@ -1,0 +1,49 @@
+.whatsappCtaBox {
+  background: linear-gradient(145deg, #111111 0%, #050505 100%);
+  border: 1px solid rgba(177, 155, 76, 0.5);
+  border-left: 4px solid #B19B4C;
+  border-radius: 8px;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(177, 155, 76, 0.1);
+}
+
+.whatsappCtaBox h3 {
+  font-size: 1.5rem;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.whatsappCtaBox p {
+  color: #aaaaaa;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.whatsappCtaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #25D366;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 1.1rem 2rem;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: 100%;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+}
+
+.whatsappCtaBtn:hover {
+  background-color: #20b558;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}

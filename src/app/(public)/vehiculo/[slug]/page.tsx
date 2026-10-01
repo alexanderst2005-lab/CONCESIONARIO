@@ -109,9 +109,6 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
 
         <div className={styles.skuRow}>
           <span className={styles.sku}>SKU: 0{vehicle.id}84{vehicle.id}</span>
-          <div className={styles.logoIcon}>
-            <User size={20} color="#fff" />
-          </div>
         </div>
 
         <div className={styles.divider}></div>
@@ -189,10 +186,8 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             <span className={styles.specLabel}>Peritaje:</span>
             <span className={styles.specValue}>No</span>
           </div>
-          <div className={styles.specColumn} style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
-             <div className={styles.logoIcon}>
-              <User size={20} color="#000" />
-            </div>
+          <div className={styles.specColumn}>
+             {/* empty column to match grid */}
           </div>
         </div>
 

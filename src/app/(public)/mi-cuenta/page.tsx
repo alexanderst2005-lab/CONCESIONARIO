@@ -12,7 +12,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import ProfileForm from "./ProfileForm";
 import HistoryTab from "./HistoryTab";
 
-export default async function MiCuentaPage({ searchParams }: { searchParams: { tab?: string } }) {
+export default async function MiCuentaPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     redirect("/login");
@@ -26,7 +26,8 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: { t
     redirect("/login");
   }
 
-  const tab = searchParams.tab || "publicaciones";
+  const params = await searchParams;
+  const tab = params.tab || "publicaciones";
 
   const initials = `${userRecord.name.charAt(0)}${userRecord.lastName.charAt(0)}`.toUpperCase();
   const fullName = `${userRecord.name} ${userRecord.lastName}`;
@@ -40,24 +41,29 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: { t
     mainContent = <HistoryTab />;
   } else {
     // Default: Publicaciones
-    const userVehicles = await db
-      .select({
-        id: vehiclesTable.id,
-        slug: vehiclesTable.slug,
-        brandName: brands.name,
-        modelName: models.name,
-        version: vehiclesTable.version,
-        year: vehiclesTable.year,
-        mileage: vehiclesTable.mileage,
-        city: vehiclesTable.city,
-        price: vehiclesTable.price,
-        status: vehiclesTable.status,
-      })
-      .from(vehiclesTable)
-      .leftJoin(brands, eq(vehiclesTable.brandId, brands.id))
-      .leftJoin(models, eq(vehiclesTable.modelId, models.id))
-      .where(eq(vehiclesTable.userId, userRecord.id))
-      .orderBy(desc(vehiclesTable.createdAt));
+    const userVehiclesRaw = await db.query.vehicles.findMany({
+      where: eq(vehiclesTable.userId, userRecord.id),
+      orderBy: [desc(vehiclesTable.createdAt)],
+      with: {
+        brand: true,
+        model: true,
+        images: true
+      }
+    });
+
+    const userVehicles = userVehiclesRaw.map(v => ({
+      id: v.id,
+      slug: v.slug,
+      brandName: v.brand?.name || "Desconocida",
+      modelName: v.model?.name || "Desconocido",
+      version: v.version,
+      year: v.year,
+      mileage: v.mileage,
+      city: v.city,
+      price: v.price,
+      status: v.status,
+      image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
+    }));
 
     const activeCount = userVehicles.filter((v) => v.status === "ACTIVO" || v.status === "approved").length;
     const pendingCount = userVehicles.filter((v) => v.status === "PENDIENTE").length;
@@ -108,7 +114,9 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: { t
 
               return (
                 <div key={v.id} className={styles.vehicleListItem}>
-                  <div className={styles.listImagePlaceholder}>AUTO</div>
+                  <div className={styles.listImageContainer} style={{ width: '120px', height: '80px', flexShrink: 0, borderRadius: '4px', overflow: 'hidden', backgroundColor: '#111' }}>
+                    <img src={v.image} alt={v.modelName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
                   <div className={styles.listInfo}>
                     <h4>{v.brandName || "Marca Desconocida"} {v.modelName || "Modelo Desconocido"} {v.version}</h4>
                     <p>{v.year} • {(v.mileage || 0).toLocaleString()} KM • {v.city}</p>
