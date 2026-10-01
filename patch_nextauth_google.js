@@ -1,4 +1,6 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+const fs = require('fs');
+
+const routeTsContent = `import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "@/db";
@@ -40,7 +42,7 @@ export const authOptions: NextAuthOptions = {
 
         return {
           id: user.id.toString(),
-          name: `${user.name} ${user.lastName}`,
+          name: \`\${user.name} \${user.lastName}\`,
           email: user.email,
           role: user.role,
           phone: user.phone,
@@ -62,8 +64,8 @@ export const authOptions: NextAuthOptions = {
           const randomPassword = Math.random().toString(36).slice(-10) + "A1!";
           const hashedPassword = await bcrypt.hash(randomPassword, 10);
           
-          let firstName = (profile as any)?.given_name || user.name?.split(' ')[0] || "Usuario";
-          let lastName = (profile as any)?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
+          let firstName = profile?.given_name || user.name?.split(' ')[0] || "Usuario";
+          let lastName = profile?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
 
           await db.insert(users).values({
             name: firstName,
@@ -87,7 +89,7 @@ export const authOptions: NextAuthOptions = {
           token.id = dbUser.id.toString();
           token.role = dbUser.role;
           token.phone = dbUser.phone;
-          token.name = `${dbUser.name} ${dbUser.lastName}`;
+          token.name = \`\${dbUser.name} \${dbUser.lastName}\`;
         }
       } else if (user) {
         // En caso de credenciales directas que ya traen el id y role (fallback)
@@ -122,15 +124,15 @@ async function customHandler(req: NextRequest, ctx: any) {
 
   const setCookieHeaders = response.headers.get("set-cookie");
   if (setCookieHeaders && setCookieHeaders.includes("next-auth.session-token")) {
-    const tokenMatch = setCookieHeaders.match(/next-auth\.session-token=([^;]+)/);
+    const tokenMatch = setCookieHeaders.match(/next-auth\\.session-token=([^;]+)/);
     if (tokenMatch) {
       try {
         const decoded = await decode({ token: tokenMatch[1], secret: process.env.NEXTAUTH_SECRET || "" });
         
         if (decoded && decoded.role !== "ADMIN") {
           let newSetCookie = setCookieHeaders
-            .replace(/Max-Age=[0-9]+;\s?/gi, '')
-            .replace(/Expires=[a-zA-Z]{3},\s[0-9]{2}\s[a-zA-Z]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT;\s?/gi, '');
+            .replace(/Max-Age=[0-9]+;\\s?/gi, '')
+            .replace(/Expires=[a-zA-Z]{3},\\s[0-9]{2}\\s[a-zA-Z]{3}\\s[0-9]{4}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}\\sGMT;\\s?/gi, '');
           
           const newRes = new NextResponse(response.body, response);
           newRes.headers.set("set-cookie", newSetCookie);
@@ -146,3 +148,7 @@ async function customHandler(req: NextRequest, ctx: any) {
 }
 
 export { customHandler as GET, customHandler as POST };
+`;
+
+fs.writeFileSync('src/app/api/auth/[...nextauth]/route.ts', routeTsContent, 'utf8');
+console.log('Patched route.ts successfully.');

@@ -6,6 +6,8 @@ import styles from "./layout.module.css";
 import Link from "next/link";
 import Image from "next/image";
 
+import RequirePhoneModal from "@/components/RequirePhoneModal";
+
 export default async function PublicLayout({
   children,
 }: {
@@ -21,6 +23,7 @@ export default async function PublicLayout({
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Header session={session} />
+      <RequirePhoneModal session={session} />
       <main className={styles.mainContent} style={{ flex: 1 }}>
         {children}
       </main>
