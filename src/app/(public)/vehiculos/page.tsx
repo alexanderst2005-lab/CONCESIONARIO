@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { vehicles, brands, models, categories } from "@/db/schema";
-import { eq, desc, and, ilike } from "drizzle-orm";
+import { eq, desc, and, ilike, inArray } from "drizzle-orm";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 import FilterPanel from "@/components/FilterPanel";
@@ -10,10 +10,26 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
   const { marca, categoria, modelo, ciudad } = await searchParams;
 
   let conditions: any[] = [eq(vehicles.status, "ACTIVO")];
-  if (marca) conditions.push(ilike(brands.name, `%${marca}%`));
-  if (modelo) conditions.push(ilike(models.name, `%${modelo}%`));
+  
+  if (marca) {
+    const matchingBrands = await db.select({ id: brands.id }).from(brands).where(ilike(brands.name, `%${marca}%`));
+    if (matchingBrands.length > 0) conditions.push(inArray(vehicles.brandId, matchingBrands.map(b => b.id)));
+    else conditions.push(eq(vehicles.brandId, -1));
+  }
+  
+  if (modelo) {
+    const matchingModels = await db.select({ id: models.id }).from(models).where(ilike(models.name, `%${modelo}%`));
+    if (matchingModels.length > 0) conditions.push(inArray(vehicles.modelId, matchingModels.map(m => m.id)));
+    else conditions.push(eq(vehicles.modelId, -1));
+  }
+  
+  if (categoria) {
+    const matchingCats = await db.select({ id: categories.id }).from(categories).where(ilike(categories.name, `%${categoria}%`));
+    if (matchingCats.length > 0) conditions.push(inArray(vehicles.categoryId, matchingCats.map(c => c.id)));
+    else conditions.push(eq(vehicles.categoryId, -1));
+  }
+
   if (ciudad) conditions.push(ilike(vehicles.city, `%${ciudad}%`));
-  if (categoria) conditions.push(ilike(categories.name, `%${categoria}%`));
 
   const vehiclesRaw = await db.query.vehicles.findMany({
     where: and(...conditions),
