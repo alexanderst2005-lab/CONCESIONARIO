@@ -187,3 +187,11 @@ export const featuresRelations = relations(features, ({ many }) => ({
 export const vehicleImagesRelations = relations(vehicleImages, ({ one }) => ({
   vehicle: one(vehicles, { fields: [vehicleImages.vehicleId], references: [vehicles.id] }),
 }));
+
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  email: text('email').notNull(),
+  token: text('token').notNull().unique(),
+  expiresAt: timestamp('expires_at').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
