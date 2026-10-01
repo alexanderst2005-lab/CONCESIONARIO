@@ -4,8 +4,8 @@ import { eq, desc, and, like, ilike } from "drizzle-orm";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 
-export default async function VehiculosPage({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
-  const { marca, categoria, modelo, ciudad } = searchParams;
+export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  const { marca, categoria, modelo, ciudad } = await searchParams;
 
   let conditions: any[] = [eq(vehicles.status, "ACTIVO")]; // O approved si se maneja así
 

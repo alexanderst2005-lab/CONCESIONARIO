@@ -17,7 +17,7 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
   }).format(vehicle.price || 0);
 
   // Usar imagen real si existe, o un placeholder premium
-  const displayImage = vehicle.imageUrl || "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop";
+  const displayImage = vehicle.image || vehicle.imageUrl || "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop";
 
   return (
     <div className={styles.card}>

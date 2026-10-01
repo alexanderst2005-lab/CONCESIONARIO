@@ -10,9 +10,10 @@ import ImageGallery from "./ImageGallery";
 
 export const dynamic = 'force-dynamic';
 
-export default async function VehiculoDetalle({ params }: { params: { slug: string } }) {
+export default async function VehiculoDetalle({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const vehicleRecord = await db.query.vehicles.findFirst({
-    where: eq(vehicles.slug, params.slug),
+    where: eq(vehicles.slug, slug),
     with: {
       brand: true,
       model: true,
