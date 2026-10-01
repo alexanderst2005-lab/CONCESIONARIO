@@ -107,6 +107,49 @@ export default async function Home() {
           ))}
         </div>
       </section>
+
+      {/* NUEVOS INGRESOS */}
+      <section className={styles.featuredSection} style={{ backgroundColor: "#080808", borderTop: "1px solid #111" }}>
+        <div className="container">
+          <div className={styles.sectionHeader}>
+            <h2 className={`${styles.sectionTitle} serif-title`}>Nuevos Ingresos</h2>
+            <Link href="/vehiculos" className={styles.viewAllLink}>Ver todo el inventario</Link>
+          </div>
+          <div className={styles.featuredGrid}>
+            {featuredVehicles.length > 0 ? (
+              featuredVehicles.map(v => (
+                <VehicleCard key={v.id} vehicle={v as any} />
+              ))
+            ) : (
+              <p style={{ color: 'var(--text-muted)' }}>No hay vehículos recientes por el momento.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* CATEGORÍAS */}
+      <section className="container" style={{ padding: "4rem 1rem" }}>
+        <div className={styles.sectionHeader}>
+          <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra por tipo</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+          {["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => (
+            <Link href={`/vehiculos?categoria=${cat}`} key={cat} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px" }}>
+              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
+              <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA PUBLICAR */}
+      <section style={{ backgroundColor: "#050505", borderTop: "1px solid var(--gold-accent)", padding: "5rem 1rem", textAlign: "center" }}>
+        <h2 className="serif-title" style={{ fontSize: "2.5rem", marginBottom: "1rem", color: "white" }}>¿TIENES UN VEHÍCULO PARA VENDER?</h2>
+        <p style={{ color: "#888", marginBottom: "2rem", maxWidth: "600px", margin: "0 auto 2rem auto" }}>Publícalo y permite que compradores interesados conozcan todos sus detalles.</p>
+        <Link href="/publicar" className="btn-primary" style={{ display: "inline-block", padding: "1rem 2.5rem", fontSize: "1.1rem" }}>
+          PUBLICAR VEHÍCULO
+        </Link>
+      </section>
     </>
   );
 }
