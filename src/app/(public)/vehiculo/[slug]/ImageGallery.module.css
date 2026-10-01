@@ -1,16 +1,13 @@
 .galleryContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
 .mainImageWrapper {
   position: relative;
   width: 100%;
-  aspect-ratio: 16/10;
-  background-color: #111;
-  border-radius: 8px;
-  overflow: hidden;
+  height: 100%;
 }
 
 .mainImage {
@@ -19,80 +16,55 @@
   object-fit: cover;
 }
 
-.navigationControls {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  pointer-events: none;
-}
-
 .navButton {
-  pointer-events: auto;
-  background-color: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
   color: white;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: 2.5rem;
+  font-weight: 200;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
-  backdrop-filter: blur(4px);
+  padding: 1rem;
+  z-index: 2;
+  opacity: 0.8;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .navButton:hover {
-  background-color: var(--gold-accent);
+  opacity: 1;
 }
 
-.thumbnailsContainer {
+.navPrev {
+  left: 0;
+}
+
+.navNext {
+  right: 0;
+}
+
+.dotsContainer {
+  position: absolute;
+  bottom: 15px;
+  left: 0;
+  right: 0;
   display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: #333 transparent;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
 }
 
-.thumbnailsContainer::-webkit-scrollbar {
-  height: 6px;
-}
-.thumbnailsContainer::-webkit-scrollbar-thumb {
-  background-color: #333;
-  border-radius: 3px;
-}
-
-.thumbnail {
-  width: 100px;
-  height: 65px;
-  flex-shrink: 0;
-  border-radius: 4px;
-  overflow: hidden;
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
-  border: 2px solid transparent;
-  transition: all 0.2s;
-  opacity: 0.6;
+  transition: all 0.2s ease;
 }
 
-.thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.activeThumbnail {
-  border-color: var(--gold-accent);
-  opacity: 1;
-}
-
-.thumbnail:hover {
-  opacity: 1;
+.dotActive {
+  background-color: white;
+  transform: scale(1.2);
 }

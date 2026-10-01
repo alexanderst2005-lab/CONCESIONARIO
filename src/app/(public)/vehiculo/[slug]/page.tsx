@@ -4,9 +4,9 @@ import { eq } from "drizzle-orm";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import HistoryTracker from "./HistoryTracker";
-import { Share2, MapPin, Calendar, Gauge, Cog, Droplets, User, Info, CheckCircle2, ChevronLeft, Heart, ShieldCheck } from "lucide-react";
+import { ChevronLeft, Eye, MessageCircle, User } from "lucide-react";
 import ImageGallery from "./ImageGallery";
+import HistoryTracker from "./HistoryTracker";
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +34,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
   }
 
   const vehicle = {
+    id: vehicleRecord.id,
     slug: vehicleRecord.slug,
     brandName: vehicleRecord.brand?.name || "Desconocida",
     modelName: vehicleRecord.model?.name || "Desconocido",
@@ -62,198 +63,154 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
     style: "currency",
     currency: "COP",
     maximumFractionDigits: 0,
-  }).format(vehicle.price);
+  }).format(vehicle.price || 0);
 
-  let config = await db.query.settings.findFirst();
-  if (!config) {
-    config = { 
-      id: 1,
-      whatsappNumber: "573000000000", 
-      defaultMessage: "Hola, estoy interesado en el [MARCA] [MODELO] [AÑO] (Precio: [PRECIO]) que vi publicado en la plataforma. Quisiera recibir más información. Enlace: [URL]" 
-    };
-  }
-
-  const vehicleUrl = `https://concesionario-cyan.vercel.app/vehiculo/${vehicle.slug}`;
-
-  let rawMessage = config.defaultMessage || "Hola, estoy interesado en el [MARCA] [MODELO] [AÑO]";
-  rawMessage = rawMessage.replace("[MARCA]", vehicle.brandName);
-  rawMessage = rawMessage.replace("[MODELO]", vehicle.modelName);
-  rawMessage = rawMessage.replace("[AÑO]", vehicle.year.toString());
-  rawMessage = rawMessage.replace("[PRECIO]", formattedPrice);
-  rawMessage = rawMessage.replace("[URL]", vehicleUrl);
-
-  const whatsappMessage = encodeURIComponent(rawMessage);
-  const whatsappLink = `https://wa.me/${config.whatsappNumber}?text=${whatsappMessage}`;
-
-  const fallbackImage = "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80";
+  const fallbackImage = "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop";
   const displayImages = vehicle.images.length > 0 ? vehicle.images : [fallbackImage];
 
+  const siteSettings = await db.query.settings.findFirst();
+  const rawPhone = siteSettings?.whatsappNumber || "573000000000";
+  const cleanPhone = rawPhone.replace(/\D/g, "");
+  const whatsappMsg = `Hola, estoy interesado en el ${vehicle.brandName} ${vehicle.modelName} ${vehicle.year} publicado por ${formattedPrice}.`;
+  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
+
+  // Formato para ocultar placa (solo mostrar último dígito)
+  const plateLastDigit = vehicle.plate ? vehicle.plate.slice(-1) : "-";
+
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.detailContainer}>
       <HistoryTracker vehicle={vehicle} />
-      
-      {/* HEADER BREADCRUMBS */}
-      <div className="container">
-        <div className={styles.breadcrumbs}>
-          <Link href="/vehiculos"><ChevronLeft size={16} /> Volver a vehículos</Link>
-          <span className={styles.separator}>/</span>
-          <Link href={`/vehiculos?marca=${vehicle.brandName}`}>{vehicle.brandName}</Link>
-          <span className={styles.separator}>/</span>
-          <span className={styles.current}>{vehicle.modelName}</span>
+
+      {/* GALERÍA DE IMÁGENES */}
+      <div className={styles.mobileGallery}>
+        <Link href="/vehiculos" className={styles.backBtn}>
+          <ChevronLeft size={24} />
+        </Link>
+        <ImageGallery images={displayImages} />
+      </div>
+
+      <div className={styles.topInfo}>
+        <div className={styles.statsRow}>
+          <span>{vehicle.year} - {vehicle.mileage?.toLocaleString('es-CO')} Km</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Eye size={16} /> 7.014
+          </span>
+        </div>
+
+        <h1 className={styles.title}>{vehicle.brandName} {vehicle.modelName} {vehicle.version} <br/> {vehicle.year}</h1>
+        
+        <div className={styles.seller}>
+          Publicado por: <span>{vehicle.sellerName}</span>
+        </div>
+
+        <div className={styles.price}>{formattedPrice} COP</div>
+
+        <div className={styles.skuRow}>
+          <span className={styles.sku}>SKU: 0{vehicle.id}84{vehicle.id}</span>
+          <div className={styles.logoIcon}>
+            <User size={20} color="#fff" />
+          </div>
+        </div>
+
+        <div className={styles.divider}></div>
+
+        <h2 className={styles.sectionTitle}>Características</h2>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Marca:</span>
+            <span className={styles.specValue}>{vehicle.brandName}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Modelo:</span>
+            <span className={styles.specValue}>{vehicle.modelName}</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Año:</span>
+            <span className={styles.specValue}>{vehicle.year}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Estado:</span>
+            <span className={styles.specValue}>usado</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Tipo precio:</span>
+            <span className={styles.specValue}>Negociable</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Cilindraje:</span>
+            <span className={styles.specValue}>{vehicle.engineCapacity ? `${vehicle.engineCapacity} cc` : '-'}</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Kilometraje:</span>
+            <span className={styles.specValue}>{vehicle.mileage?.toLocaleString('es-CO')} km</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Combustible:</span>
+            <span className={styles.specValue}>{vehicle.fuelType || '-'}</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Transmisión:</span>
+            <span className={styles.specValue}>{vehicle.transmission || '-'}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Color:</span>
+            <span className={styles.specValue}>{vehicle.color || 'Negro'}</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Último dígito de placa:</span>
+            <span className={styles.specValue}>{plateLastDigit}</span>
+          </div>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Blindaje:</span>
+            <span className={styles.specValue}>NO</span>
+          </div>
+        </div>
+
+        <div className={styles.specRow}>
+          <div className={styles.specColumn}>
+            <span className={styles.specLabel}>Peritaje:</span>
+            <span className={styles.specValue}>No</span>
+          </div>
+          <div className={styles.specColumn} style={{ alignItems: 'flex-end', justifyContent: 'center' }}>
+             <div className={styles.logoIcon}>
+              <User size={20} color="#000" />
+            </div>
+          </div>
+        </div>
+
+        <h2 className={styles.sectionTitle} style={{marginTop: '2rem'}}>Descripción</h2>
+
+        <div className={styles.descriptionBox}>
+          {vehicle.description ? (
+            <p>{vehicle.description}</p>
+          ) : (
+            <p>
+              {vehicle.mileage?.toLocaleString('es-CO')} km | Único dueño | Excelente estado {vehicle.brandName} {vehicle.modelName} modelo {vehicle.year}, muy bien cuidado.<br/><br/>
+              Vehículo en estado impecable. Equipamiento destacado: {vehicle.features.join(", ")}
+            </p>
+          )}
         </div>
       </div>
 
-      <div className={`container ${styles.gridContainer}`}>
-        {/* LEFT COLUMN - GALLERY & DETAILS */}
-        <div className={styles.leftColumn}>
-          
-          <div className={styles.galleryWrapper}>
-             <ImageGallery images={displayImages} />
-             
-             {vehicle.status !== 'ACTIVO' && (
-               <div className={styles.statusBadge}>
-                 Estado: {vehicle.status}
-               </div>
-             )}
-          </div>
-
-          <div className={styles.mainSpecsGrid}>
-            <div className={styles.specItem}>
-              <Calendar size={20} />
-              <div>
-                <p className={styles.specLabel}>Año</p>
-                <p className={styles.specValue}>{vehicle.year}</p>
-              </div>
-            </div>
-            <div className={styles.specItem}>
-              <Gauge size={20} />
-              <div>
-                <p className={styles.specLabel}>Kilometraje</p>
-                <p className={styles.specValue}>{vehicle.mileage.toLocaleString()} km</p>
-              </div>
-            </div>
-            <div className={styles.specItem}>
-              <Cog size={20} />
-              <div>
-                <p className={styles.specLabel}>Transmisión</p>
-                <p className={styles.specValue}>{vehicle.transmission}</p>
-              </div>
-            </div>
-            <div className={styles.specItem}>
-              <Droplets size={20} />
-              <div>
-                <p className={styles.specLabel}>Combustible</p>
-                <p className={styles.specValue}>{vehicle.fuelType}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Descripción</h2>
-            <div className={styles.descriptionBox}>
-              <p>{vehicle.description || "El vendedor no ha proporcionado una descripción adicional para este vehículo."}</p>
-            </div>
-          </div>
-
-          <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Equipamiento y Accesorios</h2>
-            {vehicle.features.length > 0 ? (
-              <div className={styles.featuresGrid}>
-                {vehicle.features.map((feature, idx) => (
-                  <div key={idx} className={styles.featureBadge}>
-                    <CheckCircle2 size={16} className={styles.goldIcon} />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className={styles.emptyText}>No se han especificado accesorios.</p>
-            )}
-          </div>
-
-          <div className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Información Adicional</h2>
-            <div className={styles.infoTable}>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Cilindraje</span>
-                <span className={styles.infoVal}>{vehicle.engineCapacity ? `${vehicle.engineCapacity} cc` : 'No especificado'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Color</span>
-                <span className={styles.infoVal}>{vehicle.color || 'No especificado'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>SOAT Vigente</span>
-                <span className={styles.infoVal}>{vehicle.soat ? 'Sí' : 'No / No especificado'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Tecnomecánica Vigente</span>
-                <span className={styles.infoVal}>{vehicle.tecnomecanica ? 'Sí' : 'No / No especificado'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Tiene Prenda</span>
-                <span className={styles.infoVal}>{vehicle.prenda ? 'Sí' : 'No'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Número de Dueños</span>
-                <span className={styles.infoVal}>{vehicle.ownersCount || 'No especificado'}</span>
-              </div>
-              <div className={styles.infoRow}>
-                <span className={styles.infoKey}>Placa terminada en</span>
-                <span className={styles.infoVal}>{vehicle.plate ? vehicle.plate.slice(-1) : 'No especificada'}</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        {/* RIGHT COLUMN - STICKY PRICE & CONTACT */}
-        <div className={styles.rightColumn}>
-          <div className={styles.stickyPanel}>
-            <div className={styles.brandTitle}>
-              <h1 className="serif-title">{vehicle.brandName} {vehicle.modelName}</h1>
-              <p className={styles.version}>{vehicle.version}</p>
-            </div>
-            
-            <div className={styles.priceContainer}>
-              <h2 className={styles.price}>{formattedPrice}</h2>
-            </div>
-
-            <div className={styles.locationBlock}>
-              <MapPin size={18} />
-              <span>Ubicado en <strong>{vehicle.city}</strong></span>
-            </div>
-
-            <div className={styles.actionButtons}>
-              <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className={`btn-primary ${styles.whatsappBtn}`}>
-                CONTACTAR POR WHATSAPP
-              </a>
-              <button className={styles.favoriteBtn}>
-                <Heart size={20} />
-                GUARDAR EN FAVORITOS
-              </button>
-            </div>
-
-            <div className={styles.sellerInfo}>
-              <div className={styles.sellerHeader}>
-                <User size={20} className={styles.sellerIcon} />
-                <div>
-                  <p className={styles.sellerLabel}>Publicado por</p>
-                  <p className={styles.sellerName}>{vehicle.sellerName}</p>
-                </div>
-              </div>
-              <div className={styles.safetyBox}>
-                <ShieldCheck size={18} className={styles.goldIcon} />
-                <span>Transacción segura a través de Autos del Patrón</span>
-              </div>
-            </div>
-            
-            <div className={styles.sku}>
-              <p>Código AP-{vehicleRecord.id.toString().padStart(5, "0")}</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingWhatsapp}>
+        <MessageCircle size={32} />
+      </a>
     </div>
   );
 }

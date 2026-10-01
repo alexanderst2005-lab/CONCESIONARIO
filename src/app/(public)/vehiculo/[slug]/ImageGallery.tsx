@@ -1,48 +1,55 @@
 "use client";
-import React, { useState } from 'react';
-import styles from './ImageGallery.module.css';
 
-export default function ImageGallery({ images }: { images: string[] }) {
+import React, { useState } from "react";
+import styles from "./ImageGallery.module.css";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+export default function ImageGallery({ images }: { images: any[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  // Extraemos URL (por si vienen del objeto DB o como string fallback)
+  const getUrl = (img: any) => (typeof img === 'string' ? img : img.url);
 
   if (!images || images.length === 0) return null;
 
   return (
     <div className={styles.galleryContainer}>
       <div className={styles.mainImageWrapper}>
-        <img src={images[currentIndex]} alt="Vehículo" className={styles.mainImage} />
+        <img 
+          src={getUrl(images[currentIndex])} 
+          alt="Vista del vehículo" 
+          className={styles.mainImage} 
+        />
         
         {images.length > 1 && (
-          <div className={styles.navigationControls}>
-            <button 
-              className={styles.navButton} 
-              onClick={() => setCurrentIndex(c => c === 0 ? images.length - 1 : c - 1)}
-            >
-              &#10094;
+          <>
+            <button className={`${styles.navButton} ${styles.navPrev}`} onClick={prevImage}>
+              <ChevronLeft size={48} strokeWidth={1} />
             </button>
-            <button 
-              className={styles.navButton} 
-              onClick={() => setCurrentIndex(c => c === images.length - 1 ? 0 : c + 1)}
-            >
-              &#10095;
+            <button className={`${styles.navButton} ${styles.navNext}`} onClick={nextImage}>
+              <ChevronRight size={48} strokeWidth={1} />
             </button>
-          </div>
+
+            <div className={styles.dotsContainer}>
+              {images.map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className={`${styles.dot} ${idx === currentIndex ? styles.dotActive : ''}`}
+                  onClick={() => setCurrentIndex(idx)}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
-      
-      {images.length > 1 && (
-        <div className={styles.thumbnailsContainer}>
-          {images.map((img, idx) => (
-            <div 
-              key={idx} 
-              className={`${styles.thumbnail} ${idx === currentIndex ? styles.activeThumbnail : ''}`}
-              onClick={() => setCurrentIndex(idx)}
-            >
-              <img src={img} alt={`Miniatura ${idx}`} />
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
