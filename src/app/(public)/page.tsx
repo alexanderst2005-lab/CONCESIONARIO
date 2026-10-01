@@ -3,6 +3,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 import BrandCarousel from "@/components/BrandCarousel";
+import VehicleCarousel from "@/components/VehicleCarousel";
 import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
 import { eq, desc, asc, and } from "drizzle-orm";
@@ -141,21 +142,20 @@ export default async function Home() {
       </section>
 
 
-      {/* NUEVOS INGRESOS */}
+      {/* NUESTRA VITRINA */}
       <section className={styles.featuredSection} style={{ backgroundColor: "#080808", borderTop: "1px solid #111" }}>
         <div className="container">
-          <div className={styles.sectionHeader}>
-            <h2 className={`${styles.sectionTitle} serif-title`}>Nuevos Ingresos</h2>
-            <Link href="/vehiculos" className={styles.viewAllLink}>Ver todo el inventario</Link>
+          <div className={styles.sectionHeader} style={{ flexDirection: "column", alignItems: "flex-start", gap: "0.5rem" }}>
+            <h2 className={`${styles.sectionTitle} serif-title`} style={{ marginBottom: 0, fontSize: "2.5rem", color: "#fff" }}>NUESTRA VITRINA</h2>
+            <p style={{ color: "#888", fontSize: "1rem", letterSpacing: "0.02em" }}>Descubre los vehículos disponibles en Autos del Patrón.</p>
           </div>
-          <div className={styles.featuredGrid}>
-            {recentVehicles.length > 0 ? (
-              recentVehicles.map(v => (
-                <VehicleCard key={v.id} vehicle={v as any} />
-              ))
-            ) : (
-              <p style={{ color: 'var(--text-muted)' }}>No hay vehículos recientes por el momento.</p>
-            )}
+          
+          <VehicleCarousel vehicles={recentVehicles as any[]} />
+          
+          <div style={{ textAlign: "center", marginTop: "2rem" }}>
+            <Link href="/vehiculos" className={styles.viewAllLink} style={{ display: "inline-block", padding: "0.75rem 2rem", border: "1px solid var(--gold-accent)", borderRadius: "30px", textTransform: "uppercase", fontSize: "0.85rem", letterSpacing: "0.05em" }}>
+              Ver todo el inventario
+            </Link>
           </div>
         </div>
       </section>
