@@ -25,8 +25,35 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
 
-  // Duplicate brands for infinite loop effect
-  const allBrands = [...brands, ...brands, ...brands];
+  // NO DUPLICATES - Just use the actual active brands
+  const displayBrands = brands;
+
+  useEffect(() => {
+    let animationFrameId: number;
+    let lastTime = performance.now();
+
+    const animate = (time: number) => {
+      const delta = time - lastTime;
+      lastTime = time;
+
+      if (trackRef.current && !isPaused && !isDragging) {
+        // Move slightly faster
+        trackRef.current.scrollLeft += (delta * 0.05);
+
+        // If we reached the end, snap back to the beginning fluidly
+        if (
+          trackRef.current.scrollLeft + trackRef.current.clientWidth >= 
+          trackRef.current.scrollWidth - 1 // -1 for subpixel rounding
+        ) {
+          trackRef.current.scrollLeft = 0;
+        }
+      }
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [isPaused, isDragging]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -81,10 +108,10 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
       >
-        <div className={`${styles.track} ${isPaused ? styles.paused : ""}`}>
-          {allBrands.map((brand, idx) => (
+        <div className={styles.track}>
+          {displayBrands.map((brand) => (
             <Link
-              key={`${brand.id}-${idx}`}
+              key={brand.id}
               href={`/vehiculos?marca=${brand.name}`}
               className={styles.brandItem}
               draggable={false}
@@ -100,9 +127,7 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
                     draggable={false}
                   />
                 ) : (
-                  <div className={styles.logoPlaceholder}>
-                    <span>{brand.name.charAt(0)}</span>
-                  </div>
+                  <span className={styles.brandNameFallback}>{brand.name}</span>
                 )}
               </div>
               <span className={styles.brandName}>{brand.name}</span>

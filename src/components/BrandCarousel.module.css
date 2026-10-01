@@ -48,21 +48,14 @@
   gap: 1.25rem;
   padding: 1rem 0;
   width: max-content;
-  animation: scroll 30s linear infinite;
+  
 }
 
 .track.paused {
   animation-play-state: paused;
 }
 
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-33.333%);
-  }
-}
+
 
 /* Each brand item */
 .brandItem {

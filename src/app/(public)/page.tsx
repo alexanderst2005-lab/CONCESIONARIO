@@ -59,27 +59,31 @@ export default async function Home() {
 
   return (
     <>
-      {/* HERO CINEMATOGRÁFICO */}
+      {/* HERO PREMIUM */}
       <section className={styles.heroSection}>
         <div className={styles.heroBackground}>
-          <Image 
-            src="/hero_bg.jpg" 
+          <img 
+            src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=1920&auto=format&fit=crop" 
             alt="Vehículos Premium" 
-            fill 
-            priority
             className={styles.heroImage}
           />
           <div className={styles.heroOverlay}></div>
         </div>
         
         <div className={`container ${styles.heroContainer} animate-fade-in`}>
-          <h1 className={`${styles.heroTitle} serif-title`}>ENCUENTRA TU PRÓXIMO<br/>VEHÍCULO</h1>
-          <p className={`${styles.heroSubtitle} subtitle-caps`}>
-            EXPLORA • DESCUBRE • CONTACTA
-          </p>
+          <div className={styles.heroContentBlock}>
+            <h1 className={`${styles.heroTitle} serif-title`}>TU PRÓXIMO VEHÍCULO<br/>ESTÁ AQUÍ.</h1>
+            <p className={styles.heroSubtitle}>
+              Compra, vende y descubre vehículos seleccionados en un solo lugar.
+            </p>
+            <div className={styles.heroActions}>
+              <a href="#buscador" className={styles.btnPrimaryGold}>BUSCAR VEHÍCULO</a>
+              <Link href="/vehiculos" className={styles.btnSecondaryOutline}>VER TODO EL INVENTARIO</Link>
+            </div>
+          </div>
 
           {/* Buscador Integrado Premium */}
-          <div className={styles.searchBoxWrapper}>
+          <div id="buscador" className={styles.searchBoxWrapper}>
             <form className={styles.searchBox} action="/vehiculos" method="GET">
               <div className={styles.searchField}>
                 <label><Car size={16} strokeWidth={1.5} /> Marca</label>
@@ -100,12 +104,12 @@ export default async function Home() {
               </div>
               <div className={styles.searchFieldBtn}>
                 <button type="submit" className={styles.searchBtn}>
-                  <Search size={18} strokeWidth={2} /> Buscar
+                  <Search size={16} strokeWidth={2} /> BUSCAR
                 </button>
               </div>
             </form>
             <div className={styles.advancedSearch}>
-              <Link href="/vehiculos">Ver filtros avanzados →</Link>
+              <Link href="/vehiculos">Ver filtros avanzados &rarr;</Link>
             </div>
           </div>
         </div>
