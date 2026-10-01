@@ -28,6 +28,15 @@ export default function AdminUsersPage() {
     fetchUsers();
   };
 
+  const deleteUser = async (id: number) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
+    
+    await fetch(`/api/admin/users?id=${id}`, {
+      method: "DELETE",
+    });
+    fetchUsers();
+  };
+
   return (
     <div>
       <h1 className="serif-title" style={{ fontSize: "2rem", color: "#fff", marginBottom: "2rem" }}>Usuarios Registrados</h1>
@@ -63,9 +72,14 @@ export default function AdminUsersPage() {
                     </td>
                     <td style={{ padding: "1rem", color: "#888", fontSize: "0.9rem" }}>{new Date(u.createdAt).toLocaleDateString()}</td>
                     <td style={{ padding: "1rem" }}>
-                      <button onClick={() => changeRole(u.id, u.role)} style={{ padding: "0.4rem 0.75rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
-                        Cambiar a {u.role === "ADMIN" ? "USER" : "ADMIN"}
-                      </button>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button onClick={() => changeRole(u.id, u.role)} style={{ padding: "0.4rem 0.75rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                          Cambiar a {u.role === "ADMIN" ? "USER" : "ADMIN"}
+                        </button>
+                        <button onClick={() => deleteUser(u.id)} style={{ padding: "0.4rem 0.75rem", background: "transparent", color: "#f87171", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                          Eliminar
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 import { db } from "@/db";
 import { users, vehicles as vehiclesTable, brands, models } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
-import { approveVehicle, rejectVehicle } from "./actions";
+import { approveVehicle, rejectVehicle, deleteUser } from "./actions";
 
 export default async function AdminDashboardPage() {
   // 1. Estadísticas Generales Reales
@@ -16,7 +16,7 @@ export default async function AdminDashboardPage() {
   const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
   const totalUsersCount = allUsers.length;
 
-  const recentUsers = allUsers.slice(0, 5);
+  const recentUsers = allUsers.filter(u => u.role !== 'ADMIN').slice(0, 5);
 
   // 2. Obtener Vehículos Pendientes
   const pendingVehicles = await db
@@ -147,6 +147,7 @@ export default async function AdminDashboardPage() {
                   <th>Email</th>
                   <th>Rol</th>
                   <th>Fecha Registro</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -171,6 +172,11 @@ export default async function AdminDashboardPage() {
                         </span>
                       </td>
                       <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                      <td>
+                        <form action={deleteUser.bind(null, u.id)}>
+                          <button type="submit" style={{ padding: "0.4rem 0.75rem", background: "transparent", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Eliminar</button>
+                        </form>
+                      </td>
                     </tr>
                   ))
                 )}

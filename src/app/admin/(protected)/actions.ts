@@ -17,3 +17,11 @@ export async function rejectVehicle(vehicleId: number) {
   revalidatePath("/admin");
   revalidatePath("/mi-cuenta");
 }
+
+import { users } from "@/db/schema";
+
+export async function deleteUser(userId: number) {
+  await db.delete(users).where(eq(users.id, userId));
+  revalidatePath("/admin");
+  revalidatePath("/admin/usuarios");
+}
