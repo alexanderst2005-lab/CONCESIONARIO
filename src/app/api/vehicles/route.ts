@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { vehicles, brands, models, categories } from "@/db/schema";
+import { vehicles, brands, models, categories, vehicleImages } from "@/db/schema";
 import { getServerSession } from "next-auth";
 import { eq } from "drizzle-orm";
 
@@ -73,7 +73,22 @@ export async function POST(req: Request) {
       isPromoted: false,
     }).returning();
 
-    return NextResponse.json({ message: "Vehículo publicado exitosamente", vehicleId: newVehicle.id }, { status: 201 });
+    
+    const newVehicleRecord = newVehicle;
+
+    // 3. Save images if any
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      const imageRecords = data.images.map((url: string, index: number) => ({
+        vehicleId: newVehicleRecord.id,
+        url: url,
+        isMain: index === 0,
+        order: index
+      }));
+      await db.insert(vehicleImages).values(imageRecords);
+    }
+
+    return NextResponse.json({ message: "Vehículo publicado exitosamente", vehicleId: newVehicleRecord.id }, { status: 201 });
+
 
   } catch (error) {
     console.error("Error publicando vehículo:", error);
