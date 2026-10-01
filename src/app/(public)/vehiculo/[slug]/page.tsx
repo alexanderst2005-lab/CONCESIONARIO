@@ -81,17 +81,18 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
     <div className={styles.detailContainer}>
       <HistoryTracker vehicle={vehicle} />
 
-      {/* GALERÍA DE IMÁGENES */}
-      <div className={styles.mobileGallery}>
-        <div className={styles.galleryFrame}>
-          <Link href="/vehiculos" className={styles.backBtn}>
-            <ChevronLeft size={24} />
-          </Link>
-          <ImageGallery images={displayImages} />
+      <div className={styles.desktopGrid}>
+        {/* GALERÍA DE IMÁGENES */}
+        <div className={styles.mobileGallery}>
+          <div className={styles.galleryFrame}>
+            <Link href="/vehiculos" className={styles.backBtn}>
+              <ChevronLeft size={24} />
+            </Link>
+            <ImageGallery images={displayImages} />
+          </div>
         </div>
-      </div>
 
-      <div className={styles.topInfo}>
+        <div className={styles.topInfo}>
         <div className={styles.statsRow}>
           <span>{vehicle.year} - {vehicle.mileage?.toLocaleString('es-CO')} Km</span>
         </div>
@@ -207,6 +208,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             <MessageCircle size={20} /> CONTACTAR POR WHATSAPP
           </a>
         </div>
+      </div>
       </div>
 
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingWhatsapp}>

@@ -9,8 +9,22 @@
 
 @media (min-width: 1024px) {
   .detailContainer {
-    max-width: 800px;
-    padding-top: 80px;
+    max-width: 1200px;
+    padding-top: 100px;
+  }
+}
+
+.desktopGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .desktopGrid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 3rem;
+    align-items: flex-start;
   }
 }
 
@@ -187,3 +201,5 @@
 .backBtn:hover {
   opacity: 1;
 }
+
+@media (min-width: 1024px) { .mobileGallery { padding: 0; background-color: transparent; } .topInfo { padding: 0; } }
