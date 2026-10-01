@@ -208,6 +208,13 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             </p>
           )}
         </div>
+        <div className={styles.whatsappCtaBox}>
+          <h3>¿Te interesa este vehículo?</h3>
+          <p>Habla con nuestro equipo y recibe más información.</p>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.whatsappCtaBtn}>
+            <MessageCircle size={20} /> CONTACTAR POR WHATSAPP
+          </a>
+        </div>
       </div>
 
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingWhatsapp}>

@@ -95,3 +95,73 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const session = await getServerSession();
+    let userId = 1; 
+    
+    if (session?.user?.email) {
+       const user = await db.query.users.findFirst({
+          where: (u, { eq }) => eq(u.email, session.user!.email!)
+       });
+       if (user) userId = user.id;
+    }
+
+    const data = await req.json();
+
+    if (!data.id) {
+      return NextResponse.json({ message: "Se requiere el ID del vehículo" }, { status: 400 });
+    }
+
+    let brandNameInput = data.brandName || "Mazda";
+    let brand = await db.query.brands.findFirst({ where: (b, { eq }) => eq(b.name, brandNameInput)});
+    if (!brand) {
+       [brand] = await db.insert(brands).values({ name: brandNameInput, slug: brandNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), isActive: true }).returning();
+    }
+
+    let modelNameInput = data.modelName || "Generico";
+    let model = await db.query.models.findFirst({ where: (m, { eq }) => eq(m.name, modelNameInput)});
+    if (!model) {
+       [model] = await db.insert(models).values({ name: modelNameInput, slug: modelNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), brandId: brand.id, isActive: true }).returning();
+    }
+
+    await db.update(vehicles).set({
+      brandId: brand.id,
+      modelId: model.id,
+      version: data.version || "Estándar",
+      year: parseInt(data.year) || 2024,
+      mileage: parseInt(data.mileage) || 0,
+      fuelType: data.fuelType || "Gasolina",
+      transmission: data.transmission || "Automática",
+      engineCapacity: parseInt(data.engineCapacity) || 0,
+      price: parseInt(data.price) || 0,
+      city: data.city || "Bogotá",
+      plate: data.plate || "",
+      description: data.description || "",
+      color: data.color || "",
+      soat: data.soat || "",
+      tecnomecanica: data.tecnomecanica || "",
+      prenda: data.prenda || "No",
+      ownersCount: parseInt(data.ownersCount) || 1,
+    }).where(eq(vehicles.id, data.id));
+
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      await db.delete(vehicleImages).where(eq(vehicleImages.vehicleId, data.id));
+      const imageRecords = data.images.map((url: string, index: number) => ({
+        vehicleId: data.id,
+        url: url,
+        isMain: index === 0,
+        order: index
+      }));
+      await db.insert(vehicleImages).values(imageRecords);
+    }
+
+    return NextResponse.json({ message: "Vehículo actualizado exitosamente" }, { status: 200 });
+
+  } catch (error) {
+    console.error("Error actualizando vehículo:", error);
+    return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
+  }
+}
+

@@ -123,6 +123,7 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: { t
                   </div>
                   <div className={styles.listActions}>
                     <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER</Link>
+                    <Link href={`/editar-vehiculo/${v.slug}`} className={styles.actionBtn} style={{backgroundColor: '#333'}}>EDITAR</Link>
                   </div>
                 </div>
               );
