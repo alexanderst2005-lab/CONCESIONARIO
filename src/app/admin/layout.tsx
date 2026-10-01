@@ -1,5 +1,6 @@
 import React from "react";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { users } from "@/db/schema";
@@ -8,7 +9,7 @@ import AdminSidebar from "./AdminSidebar";
 import styles from "./layout.module.css";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   
   if (!session?.user?.email) {
     redirect("/login");

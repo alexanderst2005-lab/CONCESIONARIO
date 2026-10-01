@@ -33,7 +33,8 @@ export default async function RootLayout({
   let session = null;
   try {
     // Attempt to get session (might fail silently on build time if env is not configured)
-    session = await getServerSession();
+    const { authOptions } = await import("@/app/api/auth/[...nextauth]/route");
+    session = await getServerSession(authOptions);
   } catch (e) {
     console.error(e);
   }
