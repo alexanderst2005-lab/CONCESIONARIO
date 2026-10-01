@@ -83,7 +83,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
 
       <div className={styles.desktopGrid}>
         {/* GALERÍA DE IMÁGENES */}
-        <div className={styles.mobileGallery}>
+        <div className={`${styles.mobileGallery} ${styles.galleryArea}`}>
           <div className={styles.galleryFrame}>
             <Link href="/vehiculos" className={styles.backBtn}>
               <ChevronLeft size={24} />
@@ -92,6 +92,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
           </div>
         </div>
 
+        <div className={styles.infoArea}>
         <div className={styles.topInfo}>
         <div className={styles.statsRow}>
           <span>{vehicle.year} - {vehicle.mileage?.toLocaleString('es-CO')} Km</span>
@@ -110,6 +111,14 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
         </div>
 
         <div className={styles.divider}></div>
+          <div className={styles.whatsappCtaBox}>
+            <h3>¿Te interesa este vehículo?</h3>
+            <p>Habla con nuestro equipo y recibe más información.</p>
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.whatsappCtaBtn}>
+              <MessageCircle size={20} /> CONTACTAR POR WHATSAPP
+            </a>
+          </div>
+        </div>
         </div>
 
         <div className={`${styles.extraInfo} ${styles.extraArea}`}>
@@ -204,15 +213,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
           )}
         </div>
       </div>
-      <div className={`${styles.infoAreaBottom} ${styles.infoArea}`}>
-        <div className={styles.whatsappCtaBox}>
-          <h3>¿Te interesa este vehículo?</h3>
-          <p>Habla con nuestro equipo y recibe más información.</p>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.whatsappCtaBtn}>
-            <MessageCircle size={20} /> CONTACTAR POR WHATSAPP
-          </a>
-        </div>
-      </div>
+
       </div>
 
       <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className={styles.floatingWhatsapp}>
