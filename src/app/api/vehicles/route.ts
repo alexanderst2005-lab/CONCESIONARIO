@@ -23,11 +23,10 @@ export async function POST(req: Request) {
 
     const data = await req.json();
 
-    // 1. Obtener los IDs relacionados basados en el texto (o usar IDs directamente si el form los envía)
-    // Para simplificar la demo, asociaremos a la primera categoría por defecto
-    let cat = await db.query.categories.findFirst();
+    let categoryNameInput = data.categoryName || "Automóviles";
+    let cat = await db.query.categories.findFirst({ where: (c, { eq }) => eq(c.name, categoryNameInput)});
     if (!cat) {
-       [cat] = await db.insert(categories).values({ name: "Autos", slug: "autos", isActive: true }).returning();
+       [cat] = await db.insert(categories).values({ name: categoryNameInput, slug: categoryNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), isActive: true }).returning();
     }
 
     let brandNameInput = data.brandName || "Mazda";
@@ -115,6 +114,12 @@ export async function PUT(req: Request) {
       return NextResponse.json({ message: "Se requiere el ID del vehículo" }, { status: 400 });
     }
 
+    let categoryNameInput = data.categoryName || "Automóviles";
+    let cat = await db.query.categories.findFirst({ where: (c, { eq }) => eq(c.name, categoryNameInput)});
+    if (!cat) {
+       [cat] = await db.insert(categories).values({ name: categoryNameInput, slug: categoryNameInput.toLowerCase().replace(/[^a-z0-9]+/g, '-'), isActive: true }).returning();
+    }
+
     let brandNameInput = data.brandName || "Mazda";
     let brand = await db.query.brands.findFirst({ where: (b, { eq }) => eq(b.name, brandNameInput)});
     if (!brand) {
@@ -128,6 +133,7 @@ export async function PUT(req: Request) {
     }
 
     await db.update(vehicles).set({
+      categoryId: cat.id,
       brandId: brand.id,
       modelId: model.id,
       version: data.version || "Estándar",

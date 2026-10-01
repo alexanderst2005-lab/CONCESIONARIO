@@ -15,6 +15,7 @@ export default function PublicarPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
+    categoryName: "",
     brandName: "",
     modelName: "",
     version: "",
@@ -127,6 +128,17 @@ export default function PublicarPage() {
           <div className={styles.sectionBlock}>
             <h2>Información Básica</h2>
             <div className={styles.formGrid}>
+              <div className={styles.inputGroup}>
+                <label>Tipo de Vehículo</label>
+                <select name="categoryName" value={formData.categoryName} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona un tipo</option>
+                  <option value="Automóviles">Automóviles</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Camionetas">Camionetas</option>
+                  <option value="Motos">Motos</option>
+                  <option value="Comerciales">Comerciales</option>
+                </select>
+              </div>
               <div className={styles.inputGroup}>
                 <label>Marca</label>
                 <select name="brandName" value={formData.brandName} onChange={handleInputChange} required>
