@@ -1,0 +1,1 @@
+const fs = require('fs'); let c = fs.readFileSync('src/app/publicar/page.tsx', 'utf8'); c = c.replace(/const \[step, setStep\].*;/g, ''); c = c.replace(/const totalSteps = 6;/g, ''); c = c.replace(/const nextStep =.*;/g, ''); c = c.replace(/const prevStep =.*;/g, ''); fs.writeFileSync('src/app/publicar/page.tsx', c, 'utf8');
