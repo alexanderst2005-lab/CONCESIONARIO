@@ -7,6 +7,8 @@ import styles from "./page.module.css";
 export default function PublicarPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     brandName: "",
@@ -26,6 +28,21 @@ export default function PublicarPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      if (images.length + selectedFiles.length > 15) {
+        alert("Máximo 15 imágenes permitidas.");
+        return;
+      }
+      setImages((prev) => [...prev, ...selectedFiles]);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -161,17 +178,42 @@ export default function PublicarPage() {
             <h2>Fotografías</h2>
             <p className={styles.helpText}>Agrega una o más fotos (mínimo 5 en el orden que desees que se muestren en la plataforma)</p>
             
-            <div className={styles.uploadArea}>
+            <div className={styles.uploadArea} onClick={() => fileInputRef.current?.click()}>
+              <input 
+                type="file" 
+                multiple 
+                accept="image/*" 
+                ref={fileInputRef} 
+                onChange={handleImageChange} 
+                style={{ display: "none" }} 
+              />
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
-              <p>Arrastra aquí las imágenes que quieres cargar. Máximo 15.</p>
+              <p>Arrastra aquí las imágenes que quieres cargar o haz clic. Máximo 15.</p>
               <button type="button" className="btn-secondary" style={{ backgroundColor: "var(--gold-accent)", borderColor: "var(--gold-accent)", color: "#000", marginTop: "10px", fontWeight: "600" }}>
                 Seleccionarlas
               </button>
             </div>
+            
+            {images.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "10px", marginTop: "20px" }}>
+                {images.map((file, index) => (
+                  <div key={index} style={{ position: "relative", width: "100%", height: "100px", borderRadius: "8px", overflow: "hidden", border: "1px solid #333" }}>
+                    <img src={URL.createObjectURL(file)} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <button 
+                      type="button" 
+                      onClick={(e) => { e.stopPropagation(); removeImage(index); }} 
+                      style={{ position: "absolute", top: "4px", right: "4px", background: "rgba(0,0,0,0.7)", color: "white", border: "none", borderRadius: "50%", width: "24px", height: "24px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className={styles.sectionBlock}>
