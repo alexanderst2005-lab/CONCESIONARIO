@@ -178,3 +178,7 @@ export const vehicleFeaturesRelations = relations(vehicleFeatures, ({ one }) => 
 export const featuresRelations = relations(features, ({ many }) => ({
   vehicles: many(vehicleFeatures),
 }));
+
+export const vehicleImagesRelations = relations(vehicleImages, ({ one }) => ({
+  vehicle: one(vehicles, { fields: [vehicleImages.vehicleId], references: [vehicles.id] }),
+}));
