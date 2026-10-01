@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LayoutDashboard, Car, Tags, Users, MessageSquare, ListTree } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { Menu, X, LayoutDashboard, Car, Tags, Users, MessageSquare, ListTree, Settings } from "lucide-react";
 import styles from "./AdminSidebar.module.css";
 
 export default function AdminSidebar() {
@@ -49,6 +50,15 @@ export default function AdminSidebar() {
             </Link>
           ))}
         </nav>
+        <div style={{ marginTop: "auto", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1rem" }}>
+          <button 
+            onClick={() => signOut({ callbackUrl: '/admin/login' })} 
+            className={styles.navItem}
+            style={{ width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", color: "#f87171" }}
+          >
+            <Settings size={20} /> Cerrar Sesión
+          </button>
+        </div>
       </aside>
     </>
   );
