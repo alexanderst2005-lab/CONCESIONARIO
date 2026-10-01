@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Menu, X, Car, Heart, User, Clock, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
 import styles from "./DashboardSidebar.module.css";
 
 export default function DashboardSidebar({ initials, fullName, userRole }: { initials: string, fullName: string, userRole: string }) {
@@ -40,9 +41,13 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
         </nav>
 
         <div className={styles.navBottom}>
-          <Link href="/api/auth/signout" className={styles.logoutBtn}>
+          <button 
+            className={styles.logoutBtn} 
+            onClick={() => signOut({ callbackUrl: '/' })}
+            style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+          >
             <LogOut size={18} /> Cerrar Sesión
-          </Link>
+          </button>
         </div>
       </aside>
     </>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, Crown } from "lucide-react";
+import { signOut } from "next-auth/react";
 import styles from "./Header.module.css";
 
 export default function Header({ session }: { session: any }) {
@@ -113,7 +114,16 @@ export default function Header({ session }: { session: any }) {
                     <Link href="/publicar" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Vender mi Vehículo</Link>
                     <Link href="/mi-cuenta?tab=perfil" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Perfil</Link>
                     <div className={styles.dropdownDivider} />
-                    <Link href="/api/auth/signout" className={`${styles.dropdownItem} ${styles.dropdownSignout}`} onClick={() => setAccountDropdownOpen(false)}>Cerrar Sesión</Link>
+                    <button 
+                      className={`${styles.dropdownItem} ${styles.dropdownSignout}`} 
+                      onClick={() => {
+                        setAccountDropdownOpen(false);
+                        signOut({ callbackUrl: '/' });
+                      }}
+                      style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      Cerrar Sesión
+                    </button>
                   </div>
                 )}
               </div>
