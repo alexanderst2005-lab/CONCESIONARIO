@@ -82,7 +82,11 @@ export default function AdminVehiclesPage() {
                     <td style={{ padding: "1rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                         <div style={{ width: "60px", height: "40px", backgroundColor: "#111", borderRadius: "4px", overflow: "hidden", flexShrink: 0, position: "relative" }}>
-                          {/* Asumimos logo o imagen principal, por ahora cuadro gris */}
+                          {v.images && v.images.length > 0 ? (
+                            <img src={v.images[0].url} alt="vehiculo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", backgroundColor: "#222" }} />
+                          )}
                         </div>
                         <div>
                           <p style={{ color: "#fff", fontWeight: 600, margin: 0 }}>{v.brandName} {v.modelName} {v.version}</p>

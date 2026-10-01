@@ -16,27 +16,32 @@ export async function GET() {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const allVehicles = await db
-      .select({
-        id: vehiclesTable.id,
-        slug: vehiclesTable.slug,
-        brandName: brands.name,
-        modelName: models.name,
-        version: vehiclesTable.version,
-        year: vehiclesTable.year,
-        city: vehiclesTable.city,
-        price: vehiclesTable.price,
-        status: vehiclesTable.status,
-        isFeatured: vehiclesTable.isFeatured,
-        createdAt: vehiclesTable.createdAt,
-        userName: users.name,
-        userLastName: users.lastName,
-      })
-      .from(vehiclesTable)
-      .leftJoin(brands, eq(vehiclesTable.brandId, brands.id))
-      .leftJoin(models, eq(vehiclesTable.modelId, models.id))
-      .leftJoin(users, eq(vehiclesTable.userId, users.id))
-      .orderBy(desc(vehiclesTable.createdAt));
+    const allVehiclesRaw = await db.query.vehicles.findMany({
+      orderBy: [desc(vehiclesTable.createdAt)],
+      with: {
+        brand: true,
+        model: true,
+        user: true,
+        images: true
+      }
+    });
+
+    const allVehicles = allVehiclesRaw.map(v => ({
+      id: v.id,
+      slug: v.slug,
+      brandName: v.brand?.name,
+      modelName: v.model?.name,
+      version: v.version,
+      year: v.year,
+      city: v.city,
+      price: v.price,
+      status: v.status,
+      isFeatured: v.isFeatured,
+      createdAt: v.createdAt,
+      userName: v.user?.name,
+      userLastName: v.user?.lastName,
+      images: v.images
+    }));
 
     return NextResponse.json(allVehicles);
   } catch (error) {
