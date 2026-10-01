@@ -7,7 +7,7 @@ import VehicleCarousel from "@/components/VehicleCarousel";
 import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
 import { eq, desc, asc, and } from "drizzle-orm";
-import { Search, MapPin, Car, Settings2 } from "lucide-react";
+import { Search, MapPin, Car, Settings2, CarFront, Truck, Bike } from "lucide-react";
 
 export default async function Home() {
   
@@ -180,25 +180,41 @@ export default async function Home() {
       </section>
 
       {/* CATEGORÍAS */}
-      <section className="container" style={{ padding: "4rem 1rem" }}>
+      <section className="container" style={{ padding: "4rem 1rem", overflow: "hidden" }}>
         <div className={styles.sectionHeader}>
           <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra por tipo</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
+        <div className={styles.categoryCarousel}>
           {activeCategories.length > 0 ? (
-            activeCategories.map(cat => (
-              <Link href={`/vehiculos?categoria=${cat.name}`} key={cat.id} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px", transition: "transform 0.3s" }} className={styles.hoverGold}>
-                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
-                <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat.name.toUpperCase()}</span>
-              </Link>
-            ))
+            activeCategories.map(cat => {
+              const nameUpper = cat.name.toUpperCase();
+              let Icon = Car;
+              if (nameUpper.includes('MOTO')) Icon = Bike;
+              else if (nameUpper.includes('CAMIONETA') || nameUpper.includes('SUV')) Icon = CarFront;
+              else if (nameUpper.includes('CAMION') || nameUpper.includes('COMERCIAL')) Icon = Truck;
+
+              return (
+                <Link href={`/vehiculos?categoria=${cat.name}`} key={cat.id} className={styles.categoryCard}>
+                  <Icon size={40} strokeWidth={1.5} className={styles.categoryCardIcon} />
+                  <span className={styles.categoryCardName}>{cat.name}</span>
+                </Link>
+              );
+            })
           ) : (
-            ["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => (
-              <Link href={`/vehiculos?categoria=${cat}`} key={cat} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px" }}>
-                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
-                <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat}</span>
-              </Link>
-            ))
+            ["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => {
+              const nameUpper = cat.toUpperCase();
+              let Icon = Car;
+              if (nameUpper.includes('MOTO')) Icon = Bike;
+              else if (nameUpper.includes('CAMIONETA') || nameUpper.includes('SUV')) Icon = CarFront;
+              else if (nameUpper.includes('CAMION') || nameUpper.includes('COMERCIAL')) Icon = Truck;
+
+              return (
+                <Link href={`/vehiculos?categoria=${cat}`} key={cat} className={styles.categoryCard}>
+                  <Icon size={40} strokeWidth={1.5} className={styles.categoryCardIcon} />
+                  <span className={styles.categoryCardName}>{cat}</span>
+                </Link>
+              );
+            })
           )}
         </div>
       </section>

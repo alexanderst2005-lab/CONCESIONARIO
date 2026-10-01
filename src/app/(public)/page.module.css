@@ -453,3 +453,92 @@
   border-color: #fff;
   background-color: rgba(255,255,255,0.1);
 }
+
+/* Category Carousel */
+.categoryCarousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1.5rem;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  margin-top: 2rem;
+  padding-left: 1rem; /* Better edge spacing on mobile */
+  padding-right: 1rem;
+  scrollbar-width: none; /* Firefox */
+}
+
+.categoryCarousel::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+.categoryCard {
+  flex: 0 0 calc(65vw - 1rem); /* Show 1 full and part of next on mobile (approx 1.5 cards) */
+  max-width: 240px;
+  min-width: 160px;
+  scroll-snap-align: center;
+  position: relative;
+  height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #0A0A0A;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.categoryCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%);
+  pointer-events: none;
+}
+
+.categoryCard:hover {
+  border-color: var(--gold-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+  background-color: #111111;
+}
+
+.categoryCardIcon {
+  color: var(--gold-accent);
+  transition: transform 0.3s ease;
+  opacity: 0.9;
+}
+
+.categoryCard:hover .categoryCardIcon {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.categoryCardName {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  font-weight: 600;
+  letter-spacing: 1px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+@media (min-width: 768px) {
+  .categoryCarousel {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .categoryCard {
+    flex: 1 1 160px; /* Take up available space but not too wide */
+    max-width: 220px;
+  }
+}
