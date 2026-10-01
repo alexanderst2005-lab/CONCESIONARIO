@@ -11,6 +11,7 @@ import Image from "next/image";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import ProfileForm from "./ProfileForm";
 import HistoryTab from "./HistoryTab";
+import DeleteVehicleBtn from "./DeleteVehicleBtn";
 
 export default async function MiCuentaPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getServerSession(authOptions);
@@ -132,6 +133,7 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
                   <div className={styles.listActions}>
                     <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER</Link>
                     <Link href={`/editar-vehiculo/${v.slug}`} className={styles.actionBtn} style={{backgroundColor: '#333'}}>EDITAR</Link>
+                    <DeleteVehicleBtn id={v.id} />
                   </div>
                 </div>
               );
