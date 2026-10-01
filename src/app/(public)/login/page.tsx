@@ -30,7 +30,8 @@ export default function LoginPage() {
       setError("Correo o contraseña incorrectos");
       setLoading(false);
     } else {
-      router.push("/mi-cuenta");
+      router.push("/");
+      router.refresh();
     }
   };
 
