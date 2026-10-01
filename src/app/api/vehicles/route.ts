@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { vehicles, brands, models, categories, vehicleImages } from "@/db/schema";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     
     // Por ahora, para evitar que la app falle si NextAuth no está configurado del todo,
     // usamos un ID temporal si no hay sesión. En prod, se rechaza si no hay usuario.
@@ -98,7 +99,7 @@ export async function POST(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     let userId = 1; 
     
     if (session?.user?.email) {
