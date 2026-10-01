@@ -3,13 +3,13 @@ import { vehicles, brands, models, categories } from "@/db/schema";
 import { eq, desc, and, ilike } from "drizzle-orm";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
-import { SlidersHorizontal, MapPin, Tag, Car, Search, X } from "lucide-react";
+import FilterPanel from "@/components/FilterPanel";
+import { Car } from "lucide-react";
 
 export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const { marca, categoria, modelo, ciudad } = await searchParams;
 
   let conditions: any[] = [eq(vehicles.status, "ACTIVO")];
-
   if (marca) conditions.push(ilike(brands.name, `%${marca}%`));
   if (modelo) conditions.push(ilike(models.name, `%${modelo}%`));
   if (ciudad) conditions.push(ilike(vehicles.city, `%${ciudad}%`));
@@ -39,101 +39,23 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
     image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80",
   }));
 
-  const allBrands = await db.select().from(brands).where(eq(brands.isActive, true));
-  const allCats = await db.select().from(categories).where(eq(categories.isActive, true));
-
-  const hasActiveFilters = !!(marca || categoria || modelo || ciudad);
+  const allBrands = await db.select({ id: brands.id, name: brands.name }).from(brands).where(eq(brands.isActive, true));
+  const allCats = await db.select({ id: categories.id, name: categories.name }).from(categories).where(eq(categories.isActive, true));
 
   return (
     <div className={`container ${styles.catalogContainer}`}>
 
-      {/* ────────────────── SIDEBAR FILTERS ────────────────── */}
-      <aside className={styles.sidebar}>
-        <form className={styles.filterBox} method="GET" action="/vehiculos">
-          
-          <div className={styles.filterHeader}>
-            <div className={styles.filterHeaderLeft}>
-              <SlidersHorizontal size={18} strokeWidth={1.5} />
-              <h2 className={styles.filterTitle}>Filtros</h2>
-            </div>
-            {hasActiveFilters && (
-              <a href="/vehiculos" className={styles.clearFiltersLink}>
-                <X size={14} /> Limpiar
-              </a>
-            )}
-          </div>
+      {/* ─── Collapsible Filter Panel ─── */}
+      <FilterPanel
+        allBrands={allBrands}
+        allCats={allCats}
+        currentMarca={marca}
+        currentCategoria={categoria}
+        currentModelo={modelo}
+        currentCiudad={ciudad}
+      />
 
-          <div className={styles.filterDivider} />
-
-          {/* Active filter pills */}
-          {hasActiveFilters && (
-            <div className={styles.activePills}>
-              {marca && <span className={styles.pill}>{marca}</span>}
-              {categoria && <span className={styles.pill}>{categoria}</span>}
-              {modelo && <span className={styles.pill}>{modelo}</span>}
-              {ciudad && <span className={styles.pill}><MapPin size={11} /> {ciudad}</span>}
-            </div>
-          )}
-
-          <div className={styles.filterGrid}>
-            {/* Ciudad */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <MapPin size={13} strokeWidth={2} /> Ubicación
-              </label>
-              <input
-                type="text"
-                name="ciudad"
-                defaultValue={ciudad || ""}
-                placeholder="Ej: Bogotá"
-                className={styles.filterInput}
-              />
-            </div>
-
-            {/* Marca */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <Car size={13} strokeWidth={2} /> Marca
-              </label>
-              <select name="marca" defaultValue={marca || ""} className={styles.filterSelect}>
-                <option value="">Todas</option>
-                {allBrands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
-              </select>
-            </div>
-
-            {/* Categoría */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <Tag size={13} strokeWidth={2} /> Categoría
-              </label>
-              <select name="categoria" defaultValue={categoria || ""} className={styles.filterSelect}>
-                <option value="">Todas</option>
-                {allCats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-              </select>
-            </div>
-
-            {/* Modelo */}
-            <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>
-                <Search size={13} strokeWidth={2} /> Modelo
-              </label>
-              <input
-                type="text"
-                name="modelo"
-                defaultValue={modelo || ""}
-                placeholder="Ej: CX-5"
-                className={styles.filterInput}
-              />
-            </div>
-          </div>
-
-          <button type="submit" className={styles.applyBtn}>
-            Aplicar Filtros
-          </button>
-        </form>
-      </aside>
-
-      {/* ────────────────── RESULTS ────────────────── */}
+      {/* ─── Results ─── */}
       <main className={styles.gridArea}>
         <div className={styles.catalogHeader}>
           <div>
@@ -141,7 +63,8 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
               {marca ? `Vehículos ${marca}` : categoria ? `Tipo ${categoria}` : "Catálogo"}
             </h1>
             <p className={styles.resultsCount}>
-              <span className={styles.resultsNumber}>{vehiclesData.length}</span> vehículo{vehiclesData.length !== 1 ? "s" : ""} encontrado{vehiclesData.length !== 1 ? "s" : ""}
+              <span className={styles.resultsNumber}>{vehiclesData.length}</span>
+              {" "}vehículo{vehiclesData.length !== 1 ? "s" : ""} encontrado{vehiclesData.length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>

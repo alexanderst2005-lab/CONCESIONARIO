@@ -1,0 +1,230 @@
+.sidebar {
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 100px;
+  }
+}
+
+/* ─── Filter Box ─── */
+.filterBox {
+  background-color: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ─── Toggle Header (always visible) ─── */
+.filterToggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: background 0.2s;
+  gap: 0.75rem;
+}
+
+.filterToggle:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.filterToggleLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #B19B4C;
+}
+
+.filterTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.activeCount {
+  background: #B19B4C;
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: 800;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filterToggleRight {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #555;
+}
+
+.clearBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #666;
+  text-decoration: none;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.clearBtn:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* ─── Active pills ─── */
+.activePills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.6rem 1.25rem;
+  background: rgba(177, 155, 76, 0.05);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  background: rgba(177, 155, 76, 0.12);
+  border: 1px solid rgba(177, 155, 76, 0.35);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  color: #B19B4C;
+  font-weight: 600;
+}
+
+/* ─── Collapsible body ─── */
+.filterBody {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+  opacity: 0;
+  border-top: 0px solid transparent;
+}
+
+.filterBodyOpen {
+  max-height: 600px;
+  opacity: 1;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ─── Filter grid inside body ─── */
+.filterGrid {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  gap: 1rem;
+}
+
+@media (max-width: 1023px) {
+  .filterGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.filterLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.filterInput,
+.filterSelect {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  background: #050505;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.filterSelect {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  padding-right: 2.25rem;
+}
+
+.filterInput::placeholder {
+  color: #444;
+}
+
+.filterInput:focus,
+.filterSelect:focus {
+  border-color: #B19B4C;
+  box-shadow: 0 0 0 2px rgba(177, 155, 76, 0.15);
+}
+
+.filterSelect option {
+  background-color: #111;
+  color: #fff;
+}
+
+/* ─── Apply button ─── */
+.applyBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.9rem;
+  background: #B19B4C;
+  color: #000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.applyBtn:hover {
+  background: #c9b158;
+}

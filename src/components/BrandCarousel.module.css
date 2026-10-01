@@ -2,12 +2,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  cursor: grab;
   user-select: none;
-}
-
-.carouselWrapper:active {
-  cursor: grabbing;
 }
 
 /* Fade edge masks */
@@ -31,31 +26,28 @@
   background: linear-gradient(to left, #050505 0%, transparent 100%);
 }
 
-/* Scrollable track container */
-.carouselTrack {
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.carouselTrack::-webkit-scrollbar {
-  display: none;
-}
-
-/* Inner animated track */
+/* 
+  The track uses CSS animation for infinite smooth scroll.
+  We duplicate items 4x so the track is wide enough.
+  The animation moves exactly 25% (1/4 of 4x) = seamless loop.
+*/
 .track {
   display: flex;
   gap: 1.25rem;
   padding: 1rem 0;
   width: max-content;
-  
+  animation: scrollLeft 28s linear infinite;
+  will-change: transform;
 }
 
-.track.paused {
-  animation-play-state: paused;
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-25%);
+  }
 }
-
-
 
 /* Each brand item */
 .brandItem {
@@ -70,7 +62,7 @@
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   flex-shrink: 0;
 }
 
