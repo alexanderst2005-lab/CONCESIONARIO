@@ -8,14 +8,16 @@ import { eq, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import Image from "next/image";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import ProfileForm from "./ProfileForm";
+import HistoryTab from "./HistoryTab";
 
-export default async function MiCuentaPage() {
-  const session = await getServerSession();
+export default async function MiCuentaPage({ searchParams }: { searchParams: { tab?: string } }) {
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     redirect("/login");
   }
 
-  // 1. Obtener datos reales del usuario
   const userRecord = await db.query.users.findFirst({
     where: eq(users.email, session.user.email),
   });
@@ -24,44 +26,49 @@ export default async function MiCuentaPage() {
     redirect("/login");
   }
 
+  const tab = searchParams.tab || "publicaciones";
+
   const initials = `${userRecord.name.charAt(0)}${userRecord.lastName.charAt(0)}`.toUpperCase();
   const fullName = `${userRecord.name} ${userRecord.lastName}`;
   const userRole = userRecord.role === "ADMIN" ? "Administrador" : "Vendedor Regular";
 
-  // 2. Obtener vehículos de este usuario exclusivamente
-  const userVehicles = await db
-    .select({
-      id: vehiclesTable.id,
-      slug: vehiclesTable.slug,
-      brandName: brands.name,
-      modelName: models.name,
-      version: vehiclesTable.version,
-      year: vehiclesTable.year,
-      mileage: vehiclesTable.mileage,
-      city: vehiclesTable.city,
-      price: vehiclesTable.price,
-      status: vehiclesTable.status,
-    })
-    .from(vehiclesTable)
-    .leftJoin(brands, eq(vehiclesTable.brandId, brands.id))
-    .leftJoin(models, eq(vehiclesTable.modelId, models.id))
-    .where(eq(vehiclesTable.userId, userRecord.id))
-    .orderBy(desc(vehiclesTable.createdAt));
+  let mainContent;
 
-  // 3. Calcular estadísticas reales
-  const activeCount = userVehicles.filter((v) => v.status === "ACTIVO" || v.status === "approved").length;
-  const pendingCount = userVehicles.filter((v) => v.status === "PENDIENTE").length;
-  const soldCount = userVehicles.filter((v) => v.status === "VENDIDO").length;
+  if (tab === "perfil") {
+    mainContent = <ProfileForm user={userRecord} />;
+  } else if (tab === "historial") {
+    mainContent = <HistoryTab />;
+  } else {
+    // Default: Publicaciones
+    const userVehicles = await db
+      .select({
+        id: vehiclesTable.id,
+        slug: vehiclesTable.slug,
+        brandName: brands.name,
+        modelName: models.name,
+        version: vehiclesTable.version,
+        year: vehiclesTable.year,
+        mileage: vehiclesTable.mileage,
+        city: vehiclesTable.city,
+        price: vehiclesTable.price,
+        status: vehiclesTable.status,
+      })
+      .from(vehiclesTable)
+      .leftJoin(brands, eq(vehiclesTable.brandId, brands.id))
+      .leftJoin(models, eq(vehiclesTable.modelId, models.id))
+      .where(eq(vehiclesTable.userId, userRecord.id))
+      .orderBy(desc(vehiclesTable.createdAt));
 
-  return (
-    <div className={`container ${styles.dashboardContainer}`}>
-      <DashboardSidebar initials={initials} fullName={fullName} userRole={userRole} />
+    const activeCount = userVehicles.filter((v) => v.status === "ACTIVO" || v.status === "approved").length;
+    const pendingCount = userVehicles.filter((v) => v.status === "PENDIENTE").length;
+    const soldCount = userVehicles.filter((v) => v.status === "VENDIDO").length;
 
-      <main className={styles.mainContent}>
+    mainContent = (
+      <>
         <div className={styles.header}>
           <div className={styles.headerTitleWrapper}>
-            <h1 className="serif-title">Mis vehículos</h1>
-            <p>Administra y consulta tus publicaciones.</p>
+            <h1 className="serif-title">Mis publicaciones</h1>
+            <p>Administra y consulta tus vehículos en venta.</p>
           </div>
           <Link href="/publicar" className="btn-primary">
             PUBLICAR VEHÍCULO
@@ -116,14 +123,21 @@ export default async function MiCuentaPage() {
                   </div>
                   <div className={styles.listActions}>
                     <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER</Link>
-                    {isActive && <button className={styles.actionBtn}>PAUSAR</button>}
-                    {isActive && <button className={styles.actionBtn}>VENDIDO</button>}
                   </div>
                 </div>
               );
             })
           )}
         </div>
+      </>
+    );
+  }
+
+  return (
+    <div className={`container ${styles.dashboardContainer}`}>
+      <DashboardSidebar initials={initials} fullName={fullName} userRole={userRole} />
+      <main className={styles.mainContent}>
+        {mainContent}
       </main>
     </div>
   );

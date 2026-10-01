@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import styles from "./page.module.css";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import HistoryTracker from "./HistoryTracker";
 
 export default async function VehiculoDetalle({ params }: { params: { slug: string } }) {
   // En un caso real, obtendríamos un solo vehículo basado en el slug:
@@ -58,7 +59,7 @@ export default async function VehiculoDetalle({ params }: { params: { slug: stri
 
   return (
     <div className={`container ${styles.detailContainer}`}>
-      
+      <HistoryTracker vehicle={vehicle} />
       {/* Breadcrumbs */}
       <div className={styles.breadcrumbs}>
         <Link href="/vehiculos">Vehículos</Link> <span>/</span>

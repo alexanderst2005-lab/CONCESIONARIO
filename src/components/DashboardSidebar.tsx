@@ -1,18 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Menu, X, Car, Heart, User, Settings, LogOut } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { Menu, X, Car, Heart, User, Clock, LogOut } from "lucide-react";
 import styles from "./DashboardSidebar.module.css";
 
 export default function DashboardSidebar({ initials, fullName, userRole }: { initials: string, fullName: string, userRole: string }) {
   const [isOpen, setIsOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "publicaciones";
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <>
-      {/* Botón para abrir en móvil */}
       <div className={styles.mobileToggle}>
         <button onClick={toggleSidebar} className={styles.hamburger}>
           <Menu size={24} />
@@ -20,7 +22,6 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
         </button>
       </div>
 
-      {/* Overlay para cerrar en móvil */}
       {isOpen && <div className={styles.overlay} onClick={toggleSidebar}></div>}
 
       <aside className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
@@ -39,22 +40,22 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
         </div>
         
         <nav className={styles.navMenu}>
-          <Link href="/mi-cuenta" className={`${styles.navItem} ${styles.active}`} onClick={() => setIsOpen(false)}>
-            <Car size={18} /> Mis Vehículos
+          <Link href="/mi-cuenta?tab=historial" className={`${styles.navItem} ${currentTab === 'historial' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+            <Clock size={18} /> Historial
           </Link>
           <Link href="/favoritos" className={styles.navItem} onClick={() => setIsOpen(false)}>
             <Heart size={18} /> Favoritos
           </Link>
-          <Link href="#" className={styles.navItem} onClick={() => setIsOpen(false)}>
-            <User size={18} /> Mi Perfil
+          <Link href="/mi-cuenta?tab=publicaciones" className={`${styles.navItem} ${currentTab === 'publicaciones' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+            <Car size={18} /> Mis Publicaciones
           </Link>
-          <Link href="#" className={styles.navItem} onClick={() => setIsOpen(false)}>
-            <Settings size={18} /> Configuración
+          <Link href="/mi-cuenta?tab=perfil" className={`${styles.navItem} ${currentTab === 'perfil' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+            <User size={18} /> Mi Perfil
           </Link>
         </nav>
 
-        <div className={styles.logoutWrapper}>
-          <Link href="/api/auth/signout" className={`${styles.navItem} ${styles.logout}`} onClick={() => setIsOpen(false)}>
+        <div className={styles.navBottom}>
+          <Link href="/api/auth/signout" className={styles.logoutBtn}>
             <LogOut size={18} /> Cerrar Sesión
           </Link>
         </div>
