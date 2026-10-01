@@ -158,6 +158,23 @@ export default function PublicarPage() {
           </div>
 
           <div className={styles.sectionBlock}>
+            <h2>Fotografías</h2>
+            <p className={styles.helpText}>Agrega una o más fotos (mínimo 5 en el orden que desees que se muestren en la plataforma)</p>
+            
+            <div className={styles.uploadArea}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <p>Arrastra aquí las imágenes que quieres cargar. Máximo 15.</p>
+              <button type="button" className="btn-secondary" style={{ backgroundColor: "var(--gold-accent)", borderColor: "var(--gold-accent)", color: "#000", marginTop: "10px", fontWeight: "600" }}>
+                Seleccionarlas
+              </button>
+            </div>
+          </div>
+
+          <div className={styles.sectionBlock}>
             <h2>Descripción Adicional</h2>
             <div className={styles.inputGroup}>
               <label>Detalles del vehículo</label>
