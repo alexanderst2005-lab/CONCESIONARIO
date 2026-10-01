@@ -5,17 +5,23 @@ import VehicleCard from "@/components/VehicleCard";
 import BrandCarousel from "@/components/BrandCarousel";
 import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
-import { eq, desc, asc } from "drizzle-orm";
+import { eq, desc, asc, and } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2 } from "lucide-react";
 
 export default async function Home() {
-  // Obtener vehículos reales de la base de datos
   const featuredVehicles = await db
     .select()
     .from(vehiclesTable)
-    .where(eq(vehiclesTable.status, "approved"))
+    .where(and(eq(vehiclesTable.status, "ACTIVO"), eq(vehiclesTable.isFeatured, true)))
     .orderBy(desc(vehiclesTable.createdAt))
     .limit(4);
+
+  const recentVehicles = await db
+    .select()
+    .from(vehiclesTable)
+    .where(eq(vehiclesTable.status, "ACTIVO"))
+    .orderBy(desc(vehiclesTable.createdAt))
+    .limit(8);
 
   // Obtener marcas activas desde la base de datos
   const activeBrands = await db
@@ -23,6 +29,13 @@ export default async function Home() {
     .from(brandsTable)
     .where(eq(brandsTable.isActive, true))
     .orderBy(asc(brandsTable.sortOrder), asc(brandsTable.name));
+
+  const { categories: categoriesTable } = await import("@/db/schema");
+  const activeCategories = await db
+    .select()
+    .from(categoriesTable)
+    .where(eq(categoriesTable.isActive, true))
+    .orderBy(asc(categoriesTable.name));
 
   // Fallback: si no hay marcas en DB, usar lista estática
   const brandNames = activeBrands.length > 0
@@ -122,8 +135,8 @@ export default async function Home() {
             <Link href="/vehiculos" className={styles.viewAllLink}>Ver todo el inventario</Link>
           </div>
           <div className={styles.featuredGrid}>
-            {featuredVehicles.length > 0 ? (
-              featuredVehicles.map(v => (
+            {recentVehicles.length > 0 ? (
+              recentVehicles.map(v => (
                 <VehicleCard key={v.id} vehicle={v as any} />
               ))
             ) : (
@@ -139,12 +152,21 @@ export default async function Home() {
           <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra por tipo</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.5rem" }}>
-          {["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => (
-            <Link href={`/vehiculos?categoria=${cat}`} key={cat} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px" }}>
-              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
-              <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat}</span>
-            </Link>
-          ))}
+          {activeCategories.length > 0 ? (
+            activeCategories.map(cat => (
+              <Link href={`/vehiculos?categoria=${cat.name}`} key={cat.id} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px", transition: "transform 0.3s" }} className={styles.hoverGold}>
+                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
+                <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat.name.toUpperCase()}</span>
+              </Link>
+            ))
+          ) : (
+            ["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => (
+              <Link href={`/vehiculos?categoria=${cat}`} key={cat} style={{ position: "relative", height: "150px", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#111", border: "1px solid #222", overflow: "hidden", textDecoration: "none", borderRadius: "8px" }}>
+                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }}></div>
+                <span style={{ position: "relative", zIndex: 1, color: "white", fontWeight: 700, letterSpacing: "1px" }}>{cat}</span>
+              </Link>
+            ))
+          )}
         </div>
       </section>
 

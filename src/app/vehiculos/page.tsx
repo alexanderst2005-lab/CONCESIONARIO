@@ -1,11 +1,31 @@
 import { db } from "@/db";
-import { vehicles, brands, models } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { vehicles, brands, models, categories } from "@/db/schema";
+import { eq, desc, and, like, ilike } from "drizzle-orm";
 import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 
-export default async function VehiculosPage() {
-  // Simulación de búsqueda real en BD
+export default async function VehiculosPage({ searchParams }: { searchParams: { [key: string]: string | undefined } }) {
+  const { marca, categoria, modelo, ciudad } = searchParams;
+
+  let conditions: any[] = [eq(vehicles.status, "ACTIVO")]; // O approved si se maneja así
+
+  // Si envían marca, filtramos (usando ilike para ignorar mayúsculas/minúsculas)
+  if (marca) {
+    conditions.push(ilike(brands.name, `%${marca}%`));
+  }
+  
+  if (modelo) {
+    conditions.push(ilike(models.name, `%${modelo}%`));
+  }
+  
+  if (ciudad) {
+    conditions.push(ilike(vehicles.city, `%${ciudad}%`));
+  }
+
+  if (categoria) {
+    conditions.push(ilike(categories.name, `%${categoria}%`));
+  }
+
   const vehiclesData = await db
     .select({
       id: vehicles.id,
@@ -19,81 +39,84 @@ export default async function VehiculosPage() {
       transmission: vehicles.transmission,
       brandName: brands.name,
       modelName: models.name,
+      categoryName: categories.name,
+      isFeatured: vehicles.isFeatured,
+      isDealerVehicle: vehicles.isDealerVehicle,
     })
     .from(vehicles)
     .leftJoin(brands, eq(vehicles.brandId, brands.id))
     .leftJoin(models, eq(vehicles.modelId, models.id))
+    .leftJoin(categories, eq(vehicles.categoryId, categories.id))
+    .where(and(...conditions))
     .orderBy(desc(vehicles.createdAt));
+
+  // Obtener filtros dinámicos (opcional para popular los selects)
+  const allBrands = await db.select().from(brands).where(eq(brands.isActive, true));
+  const allCats = await db.select().from(categories).where(eq(categories.isActive, true));
 
   return (
     <div className={`container ${styles.catalogContainer}`}>
       {/* Sidebar de Filtros */}
       <aside className={styles.sidebar}>
-        <div className={styles.filterBox}>
+        <form className={styles.filterBox} method="GET" action="/vehiculos">
           <h2 className={styles.filterTitle}>Filtros</h2>
           
           <div className={styles.filterGroup}>
             <label>Ubicación</label>
-            <select><option>Todas las ciudades</option><option>Bogotá</option><option>Medellín</option><option>Cali</option></select>
+            <input type="text" name="ciudad" defaultValue={ciudad || ""} placeholder="Ej: Bogotá" style={{ width: '100%', padding: '0.75rem', background: '#050505', border: '1px solid #222', borderRadius: '4px', color: '#fff' }} />
           </div>
 
           <div className={styles.filterGroup}>
             <label>Categoría</label>
-            <select><option>Todas</option><option>Carros y camionetas</option><option>Motos</option></select>
+            <select name="categoria" defaultValue={categoria || ""}>
+              <option value="">Todas</option>
+              {allCats.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
+            </select>
           </div>
 
           <div className={styles.filterGroup}>
             <label>Marca</label>
-            <select><option>Todas</option><option>Mazda</option><option>Toyota</option><option>Chevrolet</option></select>
-          </div>
-
-          <div className={styles.filterGroup}>
-            <label>Precio</label>
-            <div className={styles.priceInputs}>
-              <input type="number" placeholder="Mínimo" />
-              <span>-</span>
-              <input type="number" placeholder="Máximo" />
-            </div>
-          </div>
-
-          <div className={styles.filterGroup}>
-            <label>Año</label>
-            <div className={styles.priceInputs}>
-              <input type="number" placeholder="Desde" />
-              <span>-</span>
-              <input type="number" placeholder="Hasta" />
-            </div>
-          </div>
-
-          <button className={`btn-primary ${styles.applyBtn}`}>Aplicar Filtros</button>
-        </div>
-      </aside>
-
-      {/* Resultados */}
-      <main className={styles.results}>
-        <div className={styles.resultsHeader}>
-          <h1>Vehículos Disponibles</h1>
-          <div className={styles.sorter}>
-            <label>Ordenar por:</label>
-            <select>
-              <option>Más recientes</option>
-              <option>Menor precio</option>
-              <option>Mayor precio</option>
-              <option>Menor kilometraje</option>
+            <select name="marca" defaultValue={marca || ""}>
+              <option value="">Todas</option>
+              {allBrands.map(b => <option key={b.id} value={b.name}>{b.name}</option>)}
             </select>
           </div>
+
+          <div className={styles.filterGroup}>
+            <label>Modelo</label>
+            <input type="text" name="modelo" defaultValue={modelo || ""} placeholder="Ej: CX-5" style={{ width: '100%', padding: '0.75rem', background: '#050505', border: '1px solid #222', borderRadius: '4px', color: '#fff' }} />
+          </div>
+
+          <button type="submit" className="btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
+            Aplicar Filtros
+          </button>
+          
+          {(marca || categoria || modelo || ciudad) && (
+            <a href="/vehiculos" className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem', textAlign: 'center', display: 'block' }}>
+              Limpiar Filtros
+            </a>
+          )}
+        </form>
+      </aside>
+
+      {/* Grid de Vehículos */}
+      <main className={styles.gridArea}>
+        <div className={styles.catalogHeader}>
+          <h1 className="serif-title">
+            {marca ? `Vehículos ${marca}` : categoria ? `Vehículos tipo ${categoria}` : "Catálogo de Vehículos"}
+          </h1>
+          <p className={styles.resultsCount}>{vehiclesData.length} resultados</p>
         </div>
 
         {vehiclesData.length === 0 ? (
-          <div className={styles.emptyState}>
-            <h2>No encontramos vehículos con estos filtros.</h2>
-            <p>Intenta ajustar tu búsqueda o limpiar los filtros.</p>
-            <button className="btn-secondary">Limpiar filtros</button>
+          <div style={{ padding: '4rem', textAlign: 'center', background: '#080808', borderRadius: '8px', border: '1px solid #111' }}>
+            <h3 style={{ color: '#fff', marginBottom: '1rem' }}>No encontramos vehículos</h3>
+            <p style={{ color: '#888' }}>Intenta ajustar los filtros de búsqueda.</p>
           </div>
         ) : (
           <div className={styles.grid}>
-            {vehiclesData.map((v) => (
-              <VehicleCard key={v.id} vehicle={v} />
+            {vehiclesData.map(v => (
+              <VehicleCard key={v.id} vehicle={v as any} />
             ))}
           </div>
         )}

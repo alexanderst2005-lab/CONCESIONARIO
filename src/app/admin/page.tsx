@@ -10,9 +10,13 @@ export default async function AdminDashboardPage() {
   const allVehicles = await db.select().from(vehiclesTable);
   const totalVehiclesCount = allVehicles.length;
   const pendingCount = allVehicles.filter(v => v.status === "PENDIENTE").length;
+  const activeCount = allVehicles.filter(v => v.status === "ACTIVO" || v.status === "approved").length;
+  const soldCount = allVehicles.filter(v => v.status === "VENDIDO").length;
   
-  const allUsers = await db.select().from(users);
+  const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
   const totalUsersCount = allUsers.length;
+
+  const recentUsers = allUsers.slice(0, 5);
 
   // 2. Obtener Vehículos Pendientes
   const pendingVehicles = await db
@@ -36,50 +40,40 @@ export default async function AdminDashboardPage() {
     .orderBy(desc(vehiclesTable.createdAt));
 
   return (
-    <div className={`container ${styles.adminContainer}`}>
-      {/* Barra Lateral Admin */}
-      <aside className={styles.sidebar}>
-        <div className={styles.adminHeader}>
-          <div className={styles.logoAccent}>Panel Admin</div>
-          <p className={styles.adminRole}>Super Administrador</p>
-        </div>
-        
-        <nav className={styles.navMenu}>
-          <a href="/admin" className={`${styles.navItem} ${styles.active}`}>Dashboard</a>
-          <a href="#" className={styles.navItem}>Vehículos</a>
-          <a href="/admin/marcas" className={styles.navItem}>Marcas</a>
-          <a href="#" className={styles.navItem}>Usuarios</a>
-          <a href="#" className={styles.navItem}>Leads / Interesados</a>
-          <a href="#" className={styles.navItem}>Configuración</a>
-        </nav>
-      </aside>
+    <>
+      <div className={styles.header}>
+        <h1 className="serif-title">Dashboard</h1>
+      </div>
 
-      {/* Contenido Principal Admin */}
-      <main className={styles.mainContent}>
-        <div className={styles.header}>
-          <h1>Visión General</h1>
+      {/* KPIs */}
+      <div className={styles.statsGrid}>
+        <div className={styles.statCard}>
+          <h3>Total Vehículos</h3>
+          <p className={styles.statNumber}>{totalVehiclesCount}</p>
         </div>
-
-        {/* KPIs */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <h3>Total Vehículos</h3>
-            <p className={styles.statNumber}>{totalVehiclesCount}</p>
-          </div>
-          <div className={styles.statCard}>
-            <h3>Pendientes de Aprobación</h3>
-            <p className={styles.statNumber}>{pendingCount}</p>
-          </div>
-          <div className={styles.statCard}>
-            <h3>Usuarios Registrados</h3>
-            <p className={styles.statNumber}>{totalUsersCount}</p>
-          </div>
+        <div className={styles.statCard}>
+          <h3>Pendientes</h3>
+          <p className={styles.statNumber} style={{ color: "var(--gold-accent)" }}>{pendingCount}</p>
         </div>
+        <div className={styles.statCard}>
+          <h3>Activos / Aprobados</h3>
+          <p className={styles.statNumber} style={{ color: "#4ade80" }}>{activeCount}</p>
+        </div>
+        <div className={styles.statCard}>
+          <h3>Vendidos</h3>
+          <p className={styles.statNumber}>{soldCount}</p>
+        </div>
+        <div className={styles.statCard}>
+          <h3>Usuarios Registrados</h3>
+          <p className={styles.statNumber}>{totalUsersCount}</p>
+        </div>
+      </div>
 
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "2rem", marginTop: "3rem" }}>
         {/* Tabla de Vehículos Pendientes */}
         <div className={styles.tableSection}>
           <div className={styles.tableHeader}>
-            <h2>Vehículos Pendientes de Aprobación</h2>
+            <h2 className="serif-title">Aprobaciones Pendientes</h2>
           </div>
           
           <div className={styles.tableContainer}>
@@ -96,7 +90,7 @@ export default async function AdminDashboardPage() {
               <tbody>
                 {pendingVehicles.length === 0 ? (
                   <tr>
-                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>No hay vehículos pendientes de aprobación.</td>
+                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>No hay publicaciones pendientes de aprobación.</td>
                   </tr>
                 ) : (
                   pendingVehicles.map(v => {
@@ -112,15 +106,14 @@ export default async function AdminDashboardPage() {
                       <tr key={v.id}>
                         <td>
                           <div className={styles.tdVehicle}>
-                            <div className={styles.miniImg}></div>
                             <div>
-                              <strong>{v.brandName} {v.modelName} {v.version}</strong>
+                              <strong style={{ color: '#fff' }}>{v.brandName} {v.modelName} {v.version}</strong>
                               <br/><span className={styles.textSmall}>{v.city}</span>
                             </div>
                           </div>
                         </td>
                         <td>{v.userName} {v.userLastName}</td>
-                        <td>{formattedPrice}</td>
+                        <td style={{ color: 'var(--gold-accent)' }}>{formattedPrice}</td>
                         <td>{dateStr}</td>
                         <td>
                           <div className={styles.actions}>
@@ -140,7 +133,52 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Usuarios Recientes */}
+        <div className={styles.tableSection}>
+          <div className={styles.tableHeader}>
+            <h2 className="serif-title">Usuarios Recientes</h2>
+          </div>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Rol</th>
+                  <th>Fecha Registro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>No hay usuarios recientes.</td>
+                  </tr>
+                ) : (
+                  recentUsers.map(u => (
+                    <tr key={u.id}>
+                      <td style={{ color: '#fff' }}>{u.name} {u.lastName}</td>
+                      <td>{u.email}</td>
+                      <td>
+                        <span style={{ 
+                          padding: '0.25rem 0.5rem', 
+                          borderRadius: '4px', 
+                          fontSize: '0.75rem', 
+                          backgroundColor: u.role === 'ADMIN' ? 'rgba(245,198,11,0.2)' : '#111',
+                          color: u.role === 'ADMIN' ? 'var(--gold-accent)' : '#aaa'
+                        }}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

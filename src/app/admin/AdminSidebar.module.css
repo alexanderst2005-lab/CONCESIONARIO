@@ -1,0 +1,133 @@
+.mobileToggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #111;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .mobileToggle {
+    display: none;
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0,0,0,0.7);
+  z-index: 99;
+}
+
+@media (min-width: 1024px) {
+  .overlay {
+    display: none;
+  }
+}
+
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: -280px;
+  height: 100vh;
+  background-color: #050505;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 2rem 1.5rem;
+  z-index: 100;
+  transition: transform 0.3s ease;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  transform: translateX(280px);
+}
+
+@media (min-width: 1024px) {
+  .sidebar {
+    position: sticky;
+    top: 100px;
+    left: 0;
+    height: auto;
+    background-color: transparent;
+    border-right: none;
+    padding: 0;
+    transform: none;
+    z-index: 1;
+    overflow-y: visible;
+  }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+@media (min-width: 1024px) {
+  .closeBtn {
+    display: none;
+  }
+}
+
+.adminHeader {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logoAccent {
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
+  color: var(--gold-accent);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.adminRole {
+  font-size: 0.8rem;
+  color: #888888;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  color: #aaaaaa;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.active {
+  background-color: #111111;
+  color: #ffffff;
+  font-weight: 600;
+  border-left: 3px solid var(--gold-accent);
+}
