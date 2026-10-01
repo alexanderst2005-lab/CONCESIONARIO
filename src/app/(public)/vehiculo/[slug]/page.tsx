@@ -8,6 +8,8 @@ import HistoryTracker from "./HistoryTracker";
 import { Share2, MapPin, Calendar, Gauge, Cog, Droplets, User, Info, CheckCircle2, ChevronLeft, Heart, ShieldCheck } from "lucide-react";
 import ImageGallery from "./ImageGallery";
 
+export const dynamic = 'force-dynamic';
+
 export default async function VehiculoDetalle({ params }: { params: { slug: string } }) {
   const vehicleRecord = await db.query.vehicles.findFirst({
     where: eq(vehicles.slug, params.slug),
