@@ -6,6 +6,7 @@ import Image from "next/image";
 export default function AdminVehiclesPage() {
   const [vehicles, setVehicles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedVehicle, setSelectedVehicle] = useState<any>(null);
 
   const fetchVehicles = async () => {
     setLoading(true);
@@ -95,7 +96,15 @@ export default function AdminVehiclesPage() {
                       </div>
                     </td>
                     <td style={{ padding: "1rem", color: "#ccc" }}>
-                      {v.userName} {v.userLastName}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", alignItems: "flex-start" }}>
+                        <span>{v.userName} {v.userLastName}</span>
+                        <button 
+                          onClick={() => setSelectedVehicle(v)} 
+                          style={{ padding: "0.25rem 0.5rem", background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", borderRadius: "4px", fontSize: "0.75rem", cursor: "pointer" }}
+                        >
+                          Ver Vendedor
+                        </button>
+                      </div>
                     </td>
                     <td style={{ padding: "1rem", color: "var(--gold-accent)", fontWeight: 600 }}>
                       ${v.price?.toLocaleString('es-CO')}
@@ -145,6 +154,40 @@ export default function AdminVehiclesPage() {
           </table>
         </div>
       </div>
+      
+      {/* VENDEDOR MODAL */}
+      {selectedVehicle && (
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
+          <div style={{ backgroundColor: "#111", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px", border: "1px solid var(--gold-accent)" }}>
+            <h2 style={{ color: "#fff", marginBottom: "1.5rem" }}>PROPIETARIO / VENDEDOR</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", color: "#ccc" }}>
+              <p><strong>Vehículo:</strong> {selectedVehicle.brandName} {selectedVehicle.modelName} {selectedVehicle.version} ({selectedVehicle.year})</p>
+              <p><strong>Publicado el:</strong> {new Date(selectedVehicle.createdAt).toLocaleDateString('es-CO')}</p>
+              <hr style={{ borderColor: "#333", margin: "0.5rem 0" }} />
+              <p><strong>Nombre:</strong> {selectedVehicle.userName} {selectedVehicle.userLastName}</p>
+              <p><strong>Correo:</strong> {selectedVehicle.userEmail}</p>
+              <p><strong>Tel./WhatsApp:</strong> {selectedVehicle.userPhone || "No registrado"}</p>
+            </div>
+            <div style={{ marginTop: "2rem", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+              <button onClick={() => setSelectedVehicle(null)} style={{ padding: "0.75rem 1.5rem", background: "transparent", color: "#fff", border: "1px solid #555", borderRadius: "8px", cursor: "pointer", fontWeight: 600 }}>Cerrar</button>
+              
+              {selectedVehicle.userPhone && (
+                <a 
+                  href={`https://wa.me/${selectedVehicle.userPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${selectedVehicle.userName}, soy del equipo de Autos del Patrón. Tenemos un interesado en tu ${selectedVehicle.brandName} ${selectedVehicle.modelName} ${selectedVehicle.year} publicado en nuestra plataforma. Queremos comunicarnos contigo para darte seguimiento.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.75rem 1.5rem", background: "#25D366", color: "#fff", textDecoration: "none", borderRadius: "8px", fontWeight: 600 }}
+                >
+                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.005-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                  </svg>
+                  Contactar Vendedor
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

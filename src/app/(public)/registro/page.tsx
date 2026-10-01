@@ -60,6 +60,11 @@ export default function RegisterPage() {
           </div>
 
           <div className={styles.inputGroup}>
+            <label htmlFor="phone">Teléfono / WhatsApp</label>
+            <input type="tel" id="phone" name="phone" placeholder="300 123 4567" required />
+          </div>
+
+          <div className={styles.inputGroup}>
             <label htmlFor="password">Contraseña</label>
             <input type="password" id="password" name="password" placeholder="••••••••" required />
           </div>

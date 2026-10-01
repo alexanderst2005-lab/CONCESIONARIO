@@ -40,6 +40,8 @@ export async function GET() {
       createdAt: v.createdAt,
       userName: v.user?.name,
       userLastName: v.user?.lastName,
+      userPhone: v.user?.phone,
+      userEmail: v.user?.email,
       images: v.images
     }));
 
