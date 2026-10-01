@@ -126,13 +126,21 @@
 
 .specRow {
   display: flex;
-  justify-content: space-between;
-  padding: 0.75rem 0;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem 0;
   border-bottom: 1px solid #222222;
 }
 
 .specRow:last-child {
   border-bottom: none;
+}
+
+@media (min-width: 768px) {
+  .specRow {
+    flex-direction: row;
+    gap: 0;
+  }
 }
 
 .specColumn {
@@ -220,4 +228,51 @@
   .mobileGallery { padding: 0; background-color: transparent; }
   .topInfo { padding: 0; }
   .extraInfo { padding: 2rem 0; }
+}
+
+.whatsappCtaBox {
+  margin: 3rem 0;
+  padding: 2.5rem 1.5rem;
+  background-color: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.whatsappCtaBox h3 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-serif), serif;
+}
+
+.whatsappCtaBox p {
+  color: #aaaaaa;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.whatsappCtaBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: #25D366;
+  color: #ffffff !important;
+  padding: 1rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 600;
+  font-size: 1.05rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.whatsappCtaBtn:hover {
+  background-color: #20BA56;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
 }
