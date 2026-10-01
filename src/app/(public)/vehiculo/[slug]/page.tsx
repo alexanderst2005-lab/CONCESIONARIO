@@ -94,9 +94,6 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
       <div className={styles.topInfo}>
         <div className={styles.statsRow}>
           <span>{vehicle.year} - {vehicle.mileage?.toLocaleString('es-CO')} Km</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <Eye size={16} /> 7.014
-          </span>
         </div>
 
         <h1 className={styles.title}>{vehicle.brandName} {vehicle.modelName} {vehicle.version} <br/> {vehicle.year}</h1>
