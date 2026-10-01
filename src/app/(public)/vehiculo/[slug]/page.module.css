@@ -42,6 +42,10 @@
   padding: 1.5rem 1.5rem 0 1.5rem;
 }
 
+.extraInfo {
+  padding: 1.5rem 1.5rem;
+}
+
 .statsRow {
   display: flex;
   justify-content: space-between;
@@ -212,4 +216,8 @@
   opacity: 1;
 }
 
-@media (min-width: 1024px) { .mobileGallery { padding: 0; background-color: transparent; } .topInfo { padding: 0; } }
+@media (min-width: 1024px) {
+  .mobileGallery { padding: 0; background-color: transparent; }
+  .topInfo { padding: 0; }
+  .extraInfo { padding: 2rem 0; }
+}
