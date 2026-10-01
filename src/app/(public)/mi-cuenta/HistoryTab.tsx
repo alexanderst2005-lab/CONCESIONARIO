@@ -34,21 +34,31 @@ export default function HistoryTab() {
             No tienes historial de vehículos visitados aún.
           </p>
         ) : (
-          history.map((v, i) => (
-            <div key={i} className={styles.vehicleListItem}>
-              <div className={styles.listImagePlaceholder}>AUTO</div>
-              <div className={styles.listInfo}>
-                <h4>{v.brandName} {v.modelName}</h4>
-                <p>{v.year} • {v.city}</p>
+          history.map((v, i) => {
+            const formattedPrice = new Intl.NumberFormat("es-CO", {
+              style: "currency",
+              currency: "COP",
+              maximumFractionDigits: 0,
+            }).format(v.price || 0);
+
+            return (
+              <div key={i} className={styles.vehicleListItem}>
+                <div className={styles.listImageContainer} style={{ width: '120px', height: '80px', flexShrink: 0, borderRadius: '4px', overflow: 'hidden', backgroundColor: '#111' }}>
+                  <img src={v.image || "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"} alt={v.modelName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+                <div className={styles.listInfo}>
+                  <h4>{v.brandName} {v.modelName}</h4>
+                  <p>{v.year} • {v.city}</p>
+                </div>
+                <div className={styles.listPrice}>
+                  <p>{formattedPrice}</p>
+                </div>
+                <div className={styles.listActions}>
+                  <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER DE NUEVO</Link>
+                </div>
               </div>
-              <div className={styles.listPrice}>
-                <p>Ver precio en detalle</p>
-              </div>
-              <div className={styles.listActions}>
-                <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER DE NUEVO</Link>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </>

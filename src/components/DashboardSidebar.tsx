@@ -15,22 +15,7 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
 
   return (
     <>
-      <div className={styles.mobileToggle}>
-        <button onClick={toggleSidebar} className={styles.hamburger}>
-          <Menu size={24} />
-          <span>Menú de usuario</span>
-        </button>
-      </div>
-
-      {isOpen && <div className={styles.overlay} onClick={toggleSidebar}></div>}
-
-      <aside className={`${styles.sidebar} ${isOpen ? styles.open : ""}`}>
-        <div className={styles.sidebarHeader}>
-          <button className={styles.closeBtn} onClick={toggleSidebar}>
-            <X size={24} />
-          </button>
-        </div>
-
+      <aside className={styles.sidebar}>
         <div className={styles.userInfo}>
           <div className={styles.avatar}>{initials}</div>
           <div className={styles.userDetails}>
@@ -40,16 +25,16 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
         </div>
         
         <nav className={styles.navMenu}>
-          <Link href="/mi-cuenta?tab=historial" className={`${styles.navItem} ${currentTab === 'historial' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+          <Link href="/mi-cuenta?tab=historial" className={`${styles.navItem} ${currentTab === 'historial' ? styles.active : ''}`}>
             <Clock size={18} /> Historial
           </Link>
-          <Link href="/favoritos" className={styles.navItem} onClick={() => setIsOpen(false)}>
+          <Link href="/favoritos" className={styles.navItem}>
             <Heart size={18} /> Favoritos
           </Link>
-          <Link href="/mi-cuenta?tab=publicaciones" className={`${styles.navItem} ${currentTab === 'publicaciones' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+          <Link href="/mi-cuenta?tab=publicaciones" className={`${styles.navItem} ${currentTab === 'publicaciones' ? styles.active : ''}`}>
             <Car size={18} /> Mis Publicaciones
           </Link>
-          <Link href="/mi-cuenta?tab=perfil" className={`${styles.navItem} ${currentTab === 'perfil' ? styles.active : ''}`} onClick={() => setIsOpen(false)}>
+          <Link href="/mi-cuenta?tab=perfil" className={`${styles.navItem} ${currentTab === 'perfil' ? styles.active : ''}`}>
             <User size={18} /> Mi Perfil
           </Link>
         </nav>

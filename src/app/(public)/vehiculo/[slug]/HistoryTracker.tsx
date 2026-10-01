@@ -15,10 +15,12 @@ export default function HistoryTracker({ vehicle }: { vehicle: any }) {
       // Add to beginning
       history.unshift({
         slug: vehicle.slug,
-        brandName: vehicle.marca,
-        modelName: vehicle.modelo,
-        year: vehicle.ano,
-        city: vehicle.ubicacion,
+        brandName: vehicle.brandName || "Desconocida",
+        modelName: vehicle.modelName || "Desconocido",
+        year: vehicle.year || "-",
+        city: vehicle.city || "-",
+        price: vehicle.price || 0,
+        image: vehicle.images && vehicle.images.length > 0 ? vehicle.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
       });
       
       // Keep only last 10

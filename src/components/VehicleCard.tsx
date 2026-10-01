@@ -21,27 +21,31 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
 
   return (
     <div className={styles.card}>
+      <button 
+        className={`${styles.favoriteBtn} ${isFavorite ? styles.favoriteBtnActive : ''}`} 
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsFavorite(!isFavorite);
+        }}
+        style={{ zIndex: 10 }}
+      >
+        <Heart 
+          size={20} 
+          strokeWidth={isFavorite ? 0 : 1.5} 
+          fill={isFavorite ? "var(--gold-accent)" : "none"} 
+          color={isFavorite ? "var(--gold-accent)" : "currentColor"}
+          className={isFavorite ? styles.heartBeat : ""}
+        />
+      </button>
+
       <Link href={`/vehiculo/${vehicle.slug}`} className={styles.cardLink}>
         
         <div className={styles.imageContainer}>
           {vehicle.isFeatured && (
             <div className={styles.badge}>Destacado</div>
           )}
-          <button 
-            className={`${styles.favoriteBtn} ${isFavorite ? styles.favoriteBtnActive : ''}`} 
-            onClick={(e) => {
-              e.preventDefault();
-              setIsFavorite(!isFavorite);
-            }}
-          >
-            <Heart 
-              size={20} 
-              strokeWidth={isFavorite ? 0 : 1.5} 
-              fill={isFavorite ? "var(--gold-accent)" : "none"} 
-              color={isFavorite ? "var(--gold-accent)" : "currentColor"}
-              className={isFavorite ? styles.heartBeat : ""}
-            />
-          </button>
+
           
           <Image 
             src={displayImage} 

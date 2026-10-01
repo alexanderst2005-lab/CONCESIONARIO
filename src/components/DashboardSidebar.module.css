@@ -24,22 +24,7 @@
 
 /* Sidebar General */
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
-  background-color: #080808;
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
-  z-index: 1010;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-.sidebar.open {
-  transform: translateX(0);
+  display: none;
 }
 
 .overlay {
@@ -160,10 +145,12 @@
   }
 
   .sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 280px;
     position: sticky;
     top: 100px;
     height: calc(100vh - 120px);
-    transform: none;
     background-color: transparent;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 1;
