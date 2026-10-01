@@ -118,7 +118,7 @@ export default function Header({ session }: { session: any }) {
                       className={`${styles.dropdownItem} ${styles.dropdownSignout}`} 
                       onClick={() => {
                         setAccountDropdownOpen(false);
-                        signOut({ callbackUrl: '/' });
+                        signOut({ callbackUrl: '/login' });
                       }}
                       style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer' }}
                     >

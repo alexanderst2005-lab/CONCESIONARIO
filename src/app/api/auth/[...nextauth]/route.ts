@@ -4,6 +4,8 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import { decode } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -65,6 +67,39 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authOptions);
+const nextAuthHandler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
+async function customHandler(req: NextRequest, ctx: any) {
+  // Call the original handler
+  const response = await nextAuthHandler(req, ctx);
+
+  // Intercept cookies to make non-admin sessions purely session cookies (expire on browser close)
+  const setCookieHeaders = response.headers.get("set-cookie");
+  if (setCookieHeaders && setCookieHeaders.includes("next-auth.session-token")) {
+    const tokenMatch = setCookieHeaders.match(/next-auth\.session-token=([^;]+)/);
+    if (tokenMatch) {
+      try {
+        const decoded = await decode({ token: tokenMatch[1], secret: process.env.NEXTAUTH_SECRET! });
+        
+        // If the user is NOT an Admin, strip Expires and Max-Age from the cookie
+        if (decoded && decoded.role !== "ADMIN") {
+          // split cookies correctly handling commas inside dates (Expires=Wed, 21 Oct 2015 07:28:00 GMT)
+          // a simple replace on the whole header is easier for Expires and Max-Age
+          let newSetCookie = setCookieHeaders
+            .replace(/Max-Age=[0-9]+;\s?/gi, '')
+            .replace(/Expires=[a-zA-Z]{3},\s[0-9]{2}\s[a-zA-Z]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT;\s?/gi, '');
+          
+          const newRes = new NextResponse(response.body, response);
+          newRes.headers.set("set-cookie", newSetCookie);
+          return newRes;
+        }
+      } catch (e) {
+        console.error("Error decoding token for session cookie modification:", e);
+      }
+    }
+  }
+
+  return response;
+}
+
+export { customHandler as GET, customHandler as POST };
