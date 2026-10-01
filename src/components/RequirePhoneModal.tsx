@@ -1,15 +1,19 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function RequirePhoneModal({ session }: { session: any }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  if (!session?.user || session.user.role === "ADMIN" || session.user.phone) {
+  const protectedRoutes = ['/mi-cuenta', '/publicar', '/editar-vehiculo'];
+  const isProtectedRoute = protectedRoutes.some(route => pathname?.startsWith(route));
+
+  if (!session?.user || session.user.role === "ADMIN" || session.user.phone || !isProtectedRoute) {
     return null;
   }
 
