@@ -40,10 +40,14 @@ export default function AdminUsersPage() {
   const deleteUser = async (id: number) => {
     confirmAction("¿Estás seguro de que deseas eliminar este usuario? Será borrado inmediatamente.", async () => {
       try {
-        await fetch(`/api/admin/users?id=${id}`, {
+        const res = await fetch(`/api/admin/users?id=${id}`, {
           method: "DELETE",
         });
-        toast("Usuario eliminado correctamente", "success");
+        if (res.ok) {
+          toast("Usuario eliminado correctamente", "success");
+        } else {
+          toast("No se pudo eliminar al usuario", "error");
+        }
         fetchUsers();
       } catch (error) {
         toast("Error al eliminar el usuario", "error");

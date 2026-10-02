@@ -34,3 +34,19 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: "Error" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    
+    if (!id) return NextResponse.json({ message: "Bad request" }, { status: 400 });
+    
+    await db.delete(users).where(eq(users.id, Number(id)));
+    
+    return NextResponse.json({ success: true, message: "User deleted" });
+  } catch (error) {
+    return NextResponse.json({ message: "Error deleting user" }, { status: 500 });
+  }
+}
