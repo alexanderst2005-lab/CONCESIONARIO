@@ -10,6 +10,8 @@ import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
 import { eq, desc, asc, and, inArray } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2, CarFront, Truck, Bike } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   
   const featuredRaw = await db.query.vehicles.findMany({
