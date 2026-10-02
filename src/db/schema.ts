@@ -20,6 +20,7 @@ export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   name: text('name').notNull().unique(),
   slug: text('slug').notNull().unique(),
+  subtypes: text('subtypes').default('[]').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
 });
 

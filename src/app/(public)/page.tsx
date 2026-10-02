@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 import BrandCarousel from "@/components/BrandCarousel";
 import VehicleCarousel from "@/components/VehicleCarousel";
+import CategoryFilterSelector from "@/components/CategoryFilterSelector";
 import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
 import { eq, desc, asc, and, inArray } from "drizzle-orm";
@@ -185,37 +186,7 @@ export default async function Home() {
           <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra por tipo</h2>
         </div>
         <div className={styles.categoryCarousel}>
-          {activeCategories.length > 0 ? (
-            activeCategories.map(cat => {
-              const nameUpper = cat.name.toUpperCase();
-              let Icon = Car;
-              if (nameUpper.includes('MOTO')) Icon = Bike;
-              else if (nameUpper.includes('CAMIONETA') || nameUpper.includes('SUV')) Icon = CarFront;
-              else if (nameUpper.includes('CAMION') || nameUpper.includes('COMERCIAL')) Icon = Truck;
-
-              return (
-                <Link href={`/vehiculos?categoria=${cat.name}`} key={cat.id} className={styles.categoryCard}>
-                  <Icon size={40} strokeWidth={1.5} className={styles.categoryCardIcon} />
-                  <span className={styles.categoryCardName}>{cat.name}</span>
-                </Link>
-              );
-            })
-          ) : (
-            ["AUTOMÓVILES", "SUV", "CAMIONETAS", "MOTOS", "COMERCIALES"].map(cat => {
-              const nameUpper = cat.toUpperCase();
-              let Icon = Car;
-              if (nameUpper.includes('MOTO')) Icon = Bike;
-              else if (nameUpper.includes('CAMIONETA') || nameUpper.includes('SUV')) Icon = CarFront;
-              else if (nameUpper.includes('CAMION') || nameUpper.includes('COMERCIAL')) Icon = Truck;
-
-              return (
-                <Link href={`/vehiculos?categoria=${cat}`} key={cat} className={styles.categoryCard}>
-                  <Icon size={40} strokeWidth={1.5} className={styles.categoryCardIcon} />
-                  <span className={styles.categoryCardName}>{cat}</span>
-                </Link>
-              );
-            })
-          )}
+          <CategoryFilterSelector categories={activeCategories} brands={activeBrands} />
         </div>
       </section>
 

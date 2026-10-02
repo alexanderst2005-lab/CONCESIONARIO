@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", isActive: true });
+  const [form, setForm] = useState({ name: "", isActive: true, subtypes: "" });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const fetchCategories = async () => {
@@ -20,20 +20,28 @@ export default function AdminCategoriesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Parse subtypes string to JSON array
+    const subtypesArray = form.subtypes 
+      ? form.subtypes.split(',').map(s => s.trim()).filter(s => s) 
+      : [];
+
+    const payload = { ...form, subtypes: JSON.stringify(subtypesArray) };
+
     if (editingId) {
       await fetch("/api/admin/categories", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: editingId, ...form }),
+        body: JSON.stringify({ id: editingId, ...payload }),
       });
     } else {
       await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
     }
-    setForm({ name: "", isActive: true });
+    setForm({ name: "", isActive: true, subtypes: "" });
     setEditingId(null);
     fetchCategories();
   };
@@ -53,16 +61,20 @@ export default function AdminCategoriesPage() {
     <div>
       <h1 className="serif-title" style={{ fontSize: "2rem", color: "#fff", marginBottom: "2rem" }}>Tipos de Vehículo</h1>
 
-      <form onSubmit={handleSubmit} style={{ background: "#080808", padding: "1.5rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: "2rem", display: "flex", gap: "1rem", alignItems: "flex-end" }}>
-        <div style={{ flex: 1 }}>
+      <form onSubmit={handleSubmit} style={{ background: "#080808", padding: "1.5rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: "2rem", display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+        <div style={{ flex: 1, minWidth: "200px" }}>
           <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>NOMBRE DEL TIPO</label>
-          <input type="text" style={inputStyle} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Ej: SUV" />
+          <input type="text" style={inputStyle} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Ej: Camiones" />
+        </div>
+        <div style={{ flex: 2, minWidth: "300px" }}>
+          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>SUBTIPOS (Separados por coma)</label>
+          <input type="text" style={inputStyle} value={form.subtypes || ""} onChange={e => setForm(p => ({ ...p, subtypes: e.target.value }))} placeholder="Ej: Furgón, Estacas, Volqueta" />
         </div>
         <button type="submit" style={{ padding: "0.8rem 2rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "6px", cursor: "pointer" }}>
           {editingId ? "Actualizar" : "Agregar Tipo"}
         </button>
         {editingId && (
-          <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true }); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
+          <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true, subtypes: "" }); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
             Cancelar
           </button>
         )}
@@ -71,18 +83,28 @@ export default function AdminCategoriesPage() {
       <div style={{ background: "#080808", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", padding: "1.5rem" }}>
         {loading ? <p style={{ color: "#888" }}>Cargando...</p> : categories.length === 0 ? <p style={{ color: "#888" }}>No hay tipos registrados.</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {categories.map(cat => (
+            {categories.map(cat => {
+              const subtypesStr = (() => {
+                try {
+                  const arr = JSON.parse(cat.subtypes);
+                  return Array.isArray(arr) ? arr.join(', ') : "";
+                } catch(e) { return cat.subtypes || ""; }
+              })();
+              
+              return (
               <div key={cat.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px", background: "#050505" }}>
                 <div>
                   <h3 style={{ color: "#fff", margin: 0 }}>{cat.name}</h3>
+                  <p style={{ margin: "0.25rem 0", color: "#888", fontSize: "0.85rem" }}>{subtypesStr ? `Subtipos: ${subtypesStr}` : "Sin subtipos"}</p>
                   <span style={{ fontSize: "0.8rem", color: cat.isActive ? "#4ade80" : "#f87171" }}>{cat.isActive ? "Activo" : "Inactivo"}</span>
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button onClick={() => { setEditingId(cat.id); setForm({ name: cat.name, isActive: cat.isActive }); }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
+                  <button onClick={() => { setEditingId(cat.id); setForm({ name: cat.name, isActive: cat.isActive, subtypes: subtypesStr }); }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
                   {cat.isActive && <button onClick={() => handleDeactivate(cat.id)} style={{ padding: "0.5rem 1rem", background: "rgba(248,113,113,0.1)", color: "#f87171", border: "none", borderRadius: "4px", cursor: "pointer" }}>Desactivar</button>}
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
