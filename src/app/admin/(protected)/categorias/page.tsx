@@ -201,7 +201,6 @@ export default function AdminCategoriesPage() {
               placeholder="Ej: Chevrolet, Mazda, Ford" 
             />
           </div>
-        </div>
       </form>
 
       <div style={{ background: "#080808", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", padding: "1.5rem" }}>
