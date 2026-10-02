@@ -2,6 +2,8 @@
   position: relative;
   width: 100%;
   margin: 2rem 0;
+  padding: 0 44px;
+  box-sizing: border-box;
 }
 
 .carouselContainer {
@@ -62,15 +64,25 @@
 }
 
 .arrowLeft {
-  left: -22px;
+  left: 0;
 }
 
 .arrowRight {
-  right: -22px;
+  right: 0;
 }
 
 @media (max-width: 1024px) {
+  .carouselWrapper {
+    padding: 0;
+  }
   .arrow {
-    display: none;
+    width: 36px;
+    height: 36px;
+  }
+  .arrowLeft {
+    left: -10px;
+  }
+  .arrowRight {
+    right: -10px;
   }
 }
