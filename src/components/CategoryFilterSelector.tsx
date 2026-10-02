@@ -165,7 +165,7 @@ export default function CategoryFilterSelector({
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
             <button
               onClick={handleSearch}
-              style={{ width: "100%", padding: "0.8rem 2.5rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "30px", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "0.9rem" }}
+              style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem 2.5rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "30px", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "0.9rem" }}
             >
               Buscar Vehículos
             </button>
