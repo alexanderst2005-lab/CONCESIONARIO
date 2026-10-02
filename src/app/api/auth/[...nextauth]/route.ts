@@ -50,32 +50,37 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
-        if (!user.email) return false;
-        
-        const existingUser = await db.query.users.findFirst({
-          where: eq(users.email, user.email)
-        });
-
-        if (!existingUser) {
-          // Generate a random password since they use Google
-          const randomPassword = Math.random().toString(36).slice(-10) + "A1!";
-          const hashedPassword = await bcrypt.hash(randomPassword, 10);
+      try {
+        if (account?.provider === "google") {
+          if (!user.email) return false;
           
-          let firstName = (profile as any)?.given_name || user.name?.split(' ')[0] || "Usuario";
-          let lastName = (profile as any)?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
-
-          await db.insert(users).values({
-            name: firstName,
-            lastName: lastName,
-            email: user.email,
-            password: hashedPassword,
-            role: 'USER',
+          const existingUser = await db.query.users.findFirst({
+            where: eq(users.email, user.email)
           });
+
+          if (!existingUser) {
+            // Generate a random password since they use Google
+            const randomPassword = Math.random().toString(36).slice(-10) + "A1!";
+            const hashedPassword = await bcrypt.hash(randomPassword, 10);
+            
+            let firstName = (profile as any)?.given_name || user.name?.split(' ')[0] || "Usuario";
+            let lastName = (profile as any)?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
+
+            await db.insert(users).values({
+              name: firstName,
+              lastName: lastName,
+              email: user.email,
+              password: hashedPassword,
+              role: 'USER',
+            });
+          }
+          return true;
         }
         return true;
+      } catch (error) {
+        console.error("Error in signIn callback:", error);
+        return false;
       }
-      return true;
     },
     async jwt({ token, user, account }) {
       // Si el usuario acaba de iniciar sesión con Google o Credenciales
