@@ -25,7 +25,7 @@ export default function Header({ session }: { session: any }) {
   }, []);
 
   const isHome = pathname === "/";
-  const isTransparent = isHome && !isScrolled && !menuOpen;
+  const isTransparent = isHome && !menuOpen;
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);

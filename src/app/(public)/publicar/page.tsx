@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import styles from "./page.module.css";
 
 const CLOUDINARY_CLOUD_NAME = "ofcfneae";
@@ -9,6 +10,8 @@ const CLOUDINARY_UPLOAD_PRESET = "autos_preset";
 
 export default function PublicarPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -132,8 +135,13 @@ export default function PublicarPage() {
       });
 
       if (res.ok) {
-        alert("Vehículo publicado exitosamente. Quedará en estado PENDIENTE hasta su aprobación.");
-        router.push("/mi-cuenta");
+        if (isAdmin) {
+          alert("Vehículo publicado exitosamente y ya está ACTIVO.");
+          router.push("/admin/vehiculos");
+        } else {
+          alert("Vehículo publicado exitosamente. Quedará en estado PENDIENTE hasta su aprobación.");
+          router.push("/mi-cuenta");
+        }
       } else {
         const errorData = await res.json();
         alert(`Error al publicar: ${errorData.message}`);
