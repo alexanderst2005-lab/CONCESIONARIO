@@ -71,8 +71,8 @@ export default function Header({ session }: { session: any }) {
             <Image 
               src="/logo_transparent.png" 
               alt="Autos del Patrón Logo" 
-              width={140} 
-              height={45} 
+              width={200} 
+              height={65} 
               style={{ objectFit: 'contain' }} 
               priority
             />
