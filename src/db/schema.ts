@@ -22,6 +22,7 @@ export const categories = pgTable('categories', {
   slug: text('slug').notNull().unique(),
   subtypes: text('subtypes').default('[]').notNull(),
   brandsList: text('brands_list').default('[]').notNull(),
+  imageUrl: text('image_url'),
   isActive: boolean('is_active').default(true).notNull(),
 });
 

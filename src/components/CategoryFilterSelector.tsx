@@ -62,17 +62,25 @@ export default function CategoryFilterSelector({
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "2rem",
+                padding: "1.5rem",
                 background: isSelected ? "var(--gold-accent)" : "#111",
                 color: isSelected ? "#000" : "#fff",
                 border: isSelected ? "1px solid var(--gold-accent)" : "1px solid rgba(255,255,255,0.05)",
                 borderRadius: "12px",
                 minWidth: "160px",
                 cursor: "pointer",
-                transition: "all 0.3s ease"
+                transition: "all 0.3s ease",
+                position: "relative",
+                overflow: "hidden"
               }}
             >
-              <Icon size={40} strokeWidth={1.5} style={{ marginBottom: "1rem", color: isSelected ? "#000" : "var(--gold-accent)" }} />
+              {cat.imageUrl ? (
+                <div style={{ width: "80px", height: "60px", marginBottom: "1rem", borderRadius: "8px", overflow: "hidden", border: isSelected ? "1px solid rgba(0,0,0,0.1)" : "none" }}>
+                  <img src={cat.imageUrl} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+              ) : (
+                <Icon size={40} strokeWidth={1.5} style={{ marginBottom: "1rem", color: isSelected ? "#000" : "var(--gold-accent)" }} />
+              )}
               <span style={{ fontSize: "1rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {cat.name}
               </span>

@@ -25,10 +25,10 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    const { name, isActive, subtypes, brandsList } = await request.json();
+    const { name, isActive, subtypes, brandsList, imageUrl } = await request.json();
     if (!name) return NextResponse.json({ message: "Bad request" }, { status: 400 });
     const slug = name.toLowerCase().replace(/\s+/g, "-");
-    const [newItem] = await db.insert(categories).values({ name, slug, isActive: isActive ?? true, subtypes: subtypes || "[]", brandsList: brandsList || "[]" }).returning();
+    const [newItem] = await db.insert(categories).values({ name, slug, isActive: isActive ?? true, subtypes: subtypes || "[]", brandsList: brandsList || "[]", imageUrl: imageUrl || null }).returning();
     return NextResponse.json(newItem);
   } catch (error) {
     return NextResponse.json({ message: "Error" }, { status: 500 });
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    const { id, name, isActive, subtypes, brandsList } = await request.json();
+    const { id, name, isActive, subtypes, brandsList, imageUrl } = await request.json();
     if (!id) return NextResponse.json({ message: "Bad request" }, { status: 400 });
     
     const updates: any = {};
@@ -49,6 +49,7 @@ export async function PATCH(request: NextRequest) {
     if (isActive !== undefined) updates.isActive = isActive;
     if (subtypes !== undefined) updates.subtypes = subtypes;
     if (brandsList !== undefined) updates.brandsList = brandsList;
+    if (imageUrl !== undefined) updates.imageUrl = imageUrl;
 
     const [updated] = await db.update(categories).set(updates).where(eq(categories.id, id)).returning();
     return NextResponse.json(updated);
