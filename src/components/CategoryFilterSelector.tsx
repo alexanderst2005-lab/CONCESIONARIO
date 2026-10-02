@@ -140,15 +140,23 @@ export default function CategoryFilterSelector({
               
               // Filter brands based on category's brandsList if available
               if (selectedCat.brandsList) {
+                let parsedBrands: string[] = [];
                 try {
-                  const parsedBrands = JSON.parse(selectedCat.brandsList);
-                  if (Array.isArray(parsedBrands) && parsedBrands.length > 0) {
-                    const lowercaseParsed = parsedBrands.map((b: string) => b.toLowerCase().trim());
-                    allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+                  const parsed = JSON.parse(selectedCat.brandsList);
+                  if (Array.isArray(parsed)) {
+                    parsedBrands = parsed;
                   }
                 } catch(e) {
-                  // Ignore parse error, default to all
+                  // Fallback for old comma-separated strings
+                  if (typeof selectedCat.brandsList === 'string' && selectedCat.brandsList.trim() !== '') {
+                    parsedBrands = selectedCat.brandsList.split(',').map((s: string) => s.trim());
+                  }
                 }
+                
+                // Si la categoría tiene la propiedad brandsList definida (incluso si está vacía []),
+                // strictly filter the brands. If the admin intentionally selected 0 brands, it shows 0 brands.
+                const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
+                allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
               }
 
               return (

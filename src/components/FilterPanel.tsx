@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SlidersHorizontal, ChevronDown, ChevronUp, MapPin, Tag, Car, Search, X } from "lucide-react";
 import styles from "./FilterPanel.module.css";
+import { useRouter } from "next/navigation";
 
 interface FilterPanelProps {
   allBrands: { id: number; name: string }[];
-  allCats: { id: number; name: string }[];
+  allCats: { id: number; name: string; brandsList?: string }[];
   currentMarca?: string;
   currentCategoria?: string;
   currentModelo?: string;
@@ -21,10 +22,58 @@ export default function FilterPanel({
   currentModelo,
   currentCiudad,
 }: FilterPanelProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+
+  const [selectedCat, setSelectedCat] = useState(currentCategoria || "");
+  const [selectedBrand, setSelectedBrand] = useState(currentMarca || "");
+  const [selectedModel, setSelectedModel] = useState(currentModelo || "");
+  const [selectedCity, setSelectedCity] = useState(currentCiudad || "");
+
+  const [filteredBrands, setFilteredBrands] = useState(allBrands);
+
+  useEffect(() => {
+    if (selectedCat) {
+      const catObj = allCats.find(c => c.name === selectedCat);
+      if (catObj && catObj.brandsList) {
+        let parsedBrands: string[] = [];
+        try {
+          const parsed = JSON.parse(catObj.brandsList);
+          if (Array.isArray(parsed)) parsedBrands = parsed;
+        } catch(e) {
+          if (typeof catObj.brandsList === 'string' && catObj.brandsList.trim() !== '') {
+            parsedBrands = catObj.brandsList.split(',').map(s => s.trim());
+          }
+        }
+        
+        const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
+        setFilteredBrands(allBrands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim())));
+        
+        // If current selected brand is not in the new filtered list, reset it
+        if (selectedBrand && !lowercaseParsed.includes(selectedBrand.toLowerCase().trim())) {
+          setSelectedBrand("");
+        }
+      } else {
+        setFilteredBrands(allBrands);
+      }
+    } else {
+      setFilteredBrands(allBrands);
+    }
+  }, [selectedCat, allBrands, allCats]); // Only run when category changes
 
   const hasActiveFilters = !!(currentMarca || currentCategoria || currentModelo || currentCiudad);
   const activeCount = [currentMarca, currentCategoria, currentModelo, currentCiudad].filter(Boolean).length;
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (selectedCity) params.set("ciudad", selectedCity);
+    if (selectedBrand) params.set("marca", selectedBrand);
+    if (selectedCat) params.set("categoria", selectedCat);
+    if (selectedModel) params.set("modelo", selectedModel);
+    
+    router.push(`/vehiculos?${params.toString()}`);
+  };
 
   return (
     <aside className={styles.sidebar}>
@@ -68,20 +117,24 @@ export default function FilterPanel({
 
         {/* ─── Collapsible body ─── */}
         <div className={`${styles.filterBody} ${isOpen ? styles.filterBodyOpen : ""}`}>
-          <form method="GET" action="/vehiculos">
+          <form onSubmit={handleSubmit}>
             <div className={styles.filterGrid}>
-              {/* Ciudad */}
+              
+              {/* Categoría */}
               <div className={styles.filterGroup}>
                 <label className={styles.filterLabel}>
-                  <MapPin size={12} strokeWidth={2} /> Ubicación
+                  <Tag size={12} strokeWidth={2} /> Categoría
                 </label>
-                <input
-                  type="text"
-                  name="ciudad"
-                  defaultValue={currentCiudad || ""}
-                  placeholder="Ej: Bogotá"
-                  className={styles.filterInput}
-                />
+                <select 
+                  value={selectedCat} 
+                  onChange={(e) => setSelectedCat(e.target.value)} 
+                  className={styles.filterSelect}
+                >
+                  <option value="">Todas</option>
+                  {allCats.map(c => (
+                    <option key={c.id} value={c.name}>{c.name}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Marca */}
@@ -89,23 +142,14 @@ export default function FilterPanel({
                 <label className={styles.filterLabel}>
                   <Car size={12} strokeWidth={2} /> Marca
                 </label>
-                <select name="marca" defaultValue={currentMarca || ""} className={styles.filterSelect}>
+                <select 
+                  value={selectedBrand} 
+                  onChange={(e) => setSelectedBrand(e.target.value)} 
+                  className={styles.filterSelect}
+                >
                   <option value="">Todas</option>
-                  {allBrands.map(b => (
+                  {filteredBrands.map(b => (
                     <option key={b.id} value={b.name}>{b.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Categoría */}
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>
-                  <Tag size={12} strokeWidth={2} /> Categoría
-                </label>
-                <select name="categoria" defaultValue={currentCategoria || ""} className={styles.filterSelect}>
-                  <option value="">Todas</option>
-                  {allCats.map(c => (
-                    <option key={c.id} value={c.name}>{c.name}</option>
                   ))}
                 </select>
               </div>
@@ -117,12 +161,27 @@ export default function FilterPanel({
                 </label>
                 <input
                   type="text"
-                  name="modelo"
-                  defaultValue={currentModelo || ""}
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
                   placeholder="Ej: CX-5"
                   className={styles.filterInput}
                 />
               </div>
+
+              {/* Ciudad */}
+              <div className={styles.filterGroup}>
+                <label className={styles.filterLabel}>
+                  <MapPin size={12} strokeWidth={2} /> Ubicación
+                </label>
+                <input
+                  type="text"
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  placeholder="Ej: Bogotá"
+                  className={styles.filterInput}
+                />
+              </div>
+
             </div>
 
             <button type="submit" className={styles.applyBtn}>

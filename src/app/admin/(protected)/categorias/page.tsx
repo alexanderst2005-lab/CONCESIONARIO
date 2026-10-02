@@ -4,8 +4,13 @@ import React, { useState, useEffect } from "react";
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<any[]>([]);
+  const [globalBrands, setGlobalBrands] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ name: "", isActive: true, subtypes: "", brandsList: "" });
+  
+  // Use array of brand names for form
+  const [form, setForm] = useState<{ name: string, isActive: boolean, subtypes: string, selectedBrands: string[] }>({ 
+    name: "", isActive: true, subtypes: "", selectedBrands: [] 
+  });
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const fetchCategories = async () => {
@@ -16,25 +21,32 @@ export default function AdminCategoriesPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCategories(); }, []);
+  const fetchBrands = async () => {
+    const res = await fetch("/api/brands");
+    if (res.ok) {
+      const data = await res.json();
+      setGlobalBrands(data);
+    }
+  };
+
+  useEffect(() => { 
+    fetchCategories(); 
+    fetchBrands();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Parse subtypes string to JSON array
     const subtypesArray = form.subtypes 
       ? form.subtypes.split(',').map(s => s.trim()).filter(s => s) 
       : [];
       
-    // Parse brandsList string to JSON array
-    const brandsArray = form.brandsList 
-      ? form.brandsList.split(',').map(s => s.trim()).filter(s => s) 
-      : [];
-
+    // Save selectedBrands array as JSON string
     const payload = { 
-      ...form, 
+      name: form.name,
+      isActive: form.isActive,
       subtypes: JSON.stringify(subtypesArray),
-      brandsList: JSON.stringify(brandsArray)
+      brandsList: JSON.stringify(form.selectedBrands)
     };
 
     if (editingId) {
@@ -50,7 +62,7 @@ export default function AdminCategoriesPage() {
         body: JSON.stringify(payload),
       });
     }
-    setForm({ name: "", isActive: true, subtypes: "", brandsList: "" });
+    setForm({ name: "", isActive: true, subtypes: "", selectedBrands: [] });
     setEditingId(null);
     fetchCategories();
   };
@@ -59,6 +71,17 @@ export default function AdminCategoriesPage() {
     if (!confirm("¿Desactivar esta categoría?")) return;
     await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
     fetchCategories();
+  };
+
+  const toggleBrand = (brandName: string) => {
+    setForm(p => {
+      const isSelected = p.selectedBrands.includes(brandName);
+      if (isSelected) {
+        return { ...p, selectedBrands: p.selectedBrands.filter(b => b !== brandName) };
+      } else {
+        return { ...p, selectedBrands: [...p.selectedBrands, brandName] };
+      }
+    });
   };
 
   const inputStyle: React.CSSProperties = {
@@ -70,28 +93,47 @@ export default function AdminCategoriesPage() {
     <div>
       <h1 className="serif-title" style={{ fontSize: "2rem", color: "#fff", marginBottom: "2rem" }}>Tipos de Vehículo</h1>
 
-      <form onSubmit={handleSubmit} style={{ background: "#080808", padding: "1.5rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: "2rem", display: "flex", gap: "1rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div style={{ flex: "1 1 200px" }}>
-          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>NOMBRE DEL TIPO</label>
-          <input type="text" style={inputStyle} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Ej: Camiones" />
-        </div>
-        <div style={{ flex: "1 1 200px" }}>
-          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>SUBTIPOS (Separados por coma)</label>
-          <input type="text" style={inputStyle} value={form.subtypes || ""} onChange={e => setForm(p => ({ ...p, subtypes: e.target.value }))} placeholder="Ej: Furgón, Estacas" />
-        </div>
-        <div style={{ flex: "1 1 200px" }}>
-          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>MARCAS (Separadas por coma)</label>
-          <input type="text" style={inputStyle} value={form.brandsList || ""} onChange={e => setForm(p => ({ ...p, brandsList: e.target.value }))} placeholder="Ej: Foton, JAC, Hino" />
-        </div>
-        <div style={{ flex: "1 1 100%", display: "flex", gap: "1rem", marginTop: "1rem" }}>
-          <button type="submit" style={{ padding: "0.8rem 2rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "6px", cursor: "pointer" }}>
-            {editingId ? "Actualizar" : "Agregar Tipo"}
-          </button>
-          {editingId && (
-            <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true, subtypes: "", brandsList: "" }); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
-              Cancelar
+      <form onSubmit={handleSubmit} style={{ background: "#080808", padding: "1.5rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: "2rem", display: "flex", gap: "1.5rem", alignItems: "flex-start", flexWrap: "wrap" }}>
+        
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div>
+            <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>NOMBRE DEL TIPO</label>
+            <input type="text" style={inputStyle} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required placeholder="Ej: Camiones" />
+          </div>
+          <div>
+            <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>SUBTIPOS (Separados por coma)</label>
+            <input type="text" style={inputStyle} value={form.subtypes} onChange={e => setForm(p => ({ ...p, subtypes: e.target.value }))} placeholder="Ej: Furgón, Estacas" />
+          </div>
+          
+          <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+            <button type="submit" style={{ padding: "0.8rem 2rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+              {editingId ? "Actualizar" : "Agregar Tipo"}
             </button>
-          )}
+            {editingId && (
+              <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true, subtypes: "", selectedBrands: [] }); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
+                Cancelar
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div style={{ flex: "1 1 300px" }}>
+          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>MARCAS DISPONIBLES PARA ESTE TIPO</label>
+          <div style={{ maxHeight: "250px", overflowY: "auto", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", background: "#050505", padding: "0.5rem" }}>
+            {globalBrands.length === 0 ? <p style={{ padding: "0.5rem", color: "#666", fontSize: "0.85rem", margin: 0 }}>No hay marcas globales registradas.</p> : (
+              globalBrands.map(brand => (
+                <label key={brand.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer" }}>
+                  <input 
+                    type="checkbox" 
+                    checked={form.selectedBrands.includes(brand.name)} 
+                    onChange={() => toggleBrand(brand.name)}
+                    style={{ accentColor: "var(--gold-accent)" }}
+                  />
+                  <span style={{ color: "#fff", fontSize: "0.9rem" }}>{brand.name}</span>
+                </label>
+              ))
+            )}
+          </div>
         </div>
       </form>
 
@@ -106,23 +148,28 @@ export default function AdminCategoriesPage() {
                 } catch(e) { return cat.subtypes || ""; }
               })();
               
-              const brandsStr = (() => {
-                try {
-                  const arr = JSON.parse(cat.brandsList);
-                  return Array.isArray(arr) ? arr.join(', ') : "";
-                } catch(e) { return cat.brandsList || ""; }
-              })();
+              let brandsArr: string[] = [];
+              try {
+                const arr = JSON.parse(cat.brandsList);
+                if (Array.isArray(arr)) brandsArr = arr;
+              } catch(e) {
+                 if (cat.brandsList) brandsArr = cat.brandsList.split(',').map((s:string) => s.trim());
+              }
+              const brandsStr = brandsArr.join(', ');
               
               return (
               <div key={cat.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "6px", background: "#050505" }}>
                 <div>
                   <h3 style={{ color: "#fff", margin: 0 }}>{cat.name}</h3>
                   <p style={{ margin: "0.25rem 0", color: "#888", fontSize: "0.85rem" }}>{subtypesStr ? `Subtipos: ${subtypesStr}` : "Sin subtipos"}</p>
-                  <p style={{ margin: "0", color: "#888", fontSize: "0.85rem" }}>{brandsStr ? `Marcas: ${brandsStr}` : "Sin marcas específicas"}</p>
+                  <p style={{ margin: "0", color: "#888", fontSize: "0.85rem" }}>{brandsStr ? `Marcas vinculadas: ${brandsStr}` : "Sin marcas vinculadas"}</p>
                   <span style={{ fontSize: "0.8rem", color: cat.isActive ? "#4ade80" : "#f87171" }}>{cat.isActive ? "Activo" : "Inactivo"}</span>
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem" }}>
-                  <button onClick={() => { setEditingId(cat.id); setForm({ name: cat.name, isActive: cat.isActive, subtypes: subtypesStr, brandsList: brandsStr }); }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
+                  <button onClick={() => { 
+                    setEditingId(cat.id); 
+                    setForm({ name: cat.name, isActive: cat.isActive, subtypes: subtypesStr, selectedBrands: brandsArr }); 
+                  }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
                   {cat.isActive && <button onClick={() => handleDeactivate(cat.id)} style={{ padding: "0.5rem 1rem", background: "rgba(248,113,113,0.1)", color: "#f87171", border: "none", borderRadius: "4px", cursor: "pointer" }}>Desactivar</button>}
                 </div>
               </div>
@@ -134,3 +181,4 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
+

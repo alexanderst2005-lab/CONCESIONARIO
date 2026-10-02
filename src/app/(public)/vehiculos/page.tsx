@@ -57,7 +57,7 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
   }));
 
   const allBrands = await db.select({ id: brands.id, name: brands.name }).from(brands).where(eq(brands.isActive, true));
-  const allCats = await db.select({ id: categories.id, name: categories.name }).from(categories).where(eq(categories.isActive, true));
+  const allCats = await db.select({ id: categories.id, name: categories.name, brandsList: categories.brandsList }).from(categories).where(eq(categories.isActive, true));
 
   return (
     <div className={`container ${styles.catalogContainer}`}>
