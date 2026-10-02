@@ -65,7 +65,7 @@ export default function CategoryFilterSelector({
             >
               {cat.imageUrl ? (
                 <div className={styles.categoryImage} style={{ border: isSelected ? "1px solid rgba(0,0,0,0.1)" : "none" }}>
-                  <img src={cat.imageUrl} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img src={cat.imageUrl} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "contain", padding: "4px" }} />
                 </div>
               ) : (
                 <Icon className={styles.categoryIcon} strokeWidth={1.5} style={{ color: isSelected ? "#000" : "var(--gold-accent)" }} />

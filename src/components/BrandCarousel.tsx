@@ -56,9 +56,9 @@ export default function BrandCarousel({ brands }: BrandCarouselProps) {
                 <Image
                   src={brand.logoUrl}
                   alt={brand.name}
-                  width={80}
-                  height={55}
-                  style={{ objectFit: "contain", width: "100%", height: "100%" }}
+                  width={70}
+                  height={70}
+                  style={{ objectFit: "contain", width: "100%", height: "100%", padding: "4px" }}
                   draggable={false}
                 />
               ) : (
