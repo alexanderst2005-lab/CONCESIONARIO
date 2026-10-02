@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, Crown } from "lucide-react";
@@ -11,6 +12,20 @@ export default function Header({ session }: { session: any }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    handleScroll(); // init
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isHome = pathname === "/";
+  const isTransparent = isHome && !isScrolled && !menuOpen;
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -42,7 +57,7 @@ export default function Header({ session }: { session: any }) {
   }, [menuOpen]);
 
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${isTransparent ? styles.headerTransparent : ""}`}>
       <div className={`container ${styles.headerContainer}`}>
         
         {/* Hamburguesa (Solo Móvil) */}
