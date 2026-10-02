@@ -87,15 +87,18 @@ export default function CategoryFilterSelector({
           background: "#111",
           border: "1px solid rgba(255,255,255,0.1)",
           borderRadius: "12px",
-          padding: "2rem",
+          padding: "1.5rem",
           display: "flex",
           flexDirection: "column",
-          gap: "1.5rem",
-          animation: "fadeIn 0.3s ease"
+          gap: "1rem",
+          animation: "fadeIn 0.3s ease",
+          boxSizing: "border-box",
+          width: "100%",
+          maxWidth: "100%"
         }}>
           <h3 style={{ margin: 0, color: "#fff", fontSize: "1.2rem", fontWeight: 600 }}>Filtrar {selectedCat.name}</h3>
           
-          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
             
             {/* Si tiene subtipos, mostrar selector */}
             {(() => {
@@ -113,12 +116,12 @@ export default function CategoryFilterSelector({
 
               if (subtypesArr.length > 0) {
                 return (
-                  <div style={{ flex: "1 1 200px" }}>
+                  <div style={{ flex: "1 1 100%", minWidth: "150px" }}>
                     <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Subtipo</label>
                     <select
                       value={selectedSubtype}
                       onChange={e => setSelectedSubtype(e.target.value)}
-                      style={{ width: "100%", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
+                      style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
                     >
                       <option value="">Cualquiera</option>
                       {subtypesArr.map(st => (
@@ -132,25 +135,44 @@ export default function CategoryFilterSelector({
             })()}
 
             {/* Selector de marca general */}
-            <div style={{ flex: "1 1 200px" }}>
-              <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Marca</label>
-              <select
-                value={selectedBrand}
-                onChange={e => setSelectedBrand(e.target.value)}
-                style={{ width: "100%", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
-              >
-                <option value="">Todas las marcas</option>
-                {brands.map(b => (
-                  <option key={b.id} value={b.name}>{b.name}</option>
-                ))}
-              </select>
-            </div>
+            {(() => {
+              let allowedBrands = brands;
+              
+              // Filter brands based on category's brandsList if available
+              if (selectedCat.brandsList) {
+                try {
+                  const parsedBrands = JSON.parse(selectedCat.brandsList);
+                  if (Array.isArray(parsedBrands) && parsedBrands.length > 0) {
+                    const lowercaseParsed = parsedBrands.map((b: string) => b.toLowerCase().trim());
+                    allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+                  }
+                } catch(e) {
+                  // Ignore parse error, default to all
+                }
+              }
+
+              return (
+                <div style={{ flex: "1 1 100%", minWidth: "150px" }}>
+                  <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Marca</label>
+                  <select
+                    value={selectedBrand}
+                    onChange={e => setSelectedBrand(e.target.value)}
+                    style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
+                  >
+                    <option value="">Todas las marcas</option>
+                    {allowedBrands.map(b => (
+                      <option key={b.id} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })()}
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
             <button
               onClick={handleSearch}
-              style={{ padding: "0.8rem 2.5rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "30px", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "0.9rem" }}
+              style={{ width: "100%", padding: "0.8rem 2.5rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "30px", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "0.9rem" }}
             >
               Buscar Vehículos
             </button>
