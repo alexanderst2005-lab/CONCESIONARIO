@@ -73,7 +73,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "Bad request" }, { status: 400 });
 
-    await db.delete(vehiclesTable).where(eq(vehiclesTable.id, parseInt(id)));
+    await db.update(vehiclesTable).set({ status: 'ELIMINADO' }).where(eq(vehiclesTable.id, parseInt(id)));
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json({ message: "Error" }, { status: 500 });

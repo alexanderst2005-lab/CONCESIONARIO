@@ -9,7 +9,7 @@ import { Car } from "lucide-react";
 export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const { marca, categoria, modelo, ciudad } = await searchParams;
 
-  let conditions: any[] = [eq(vehicles.status, "ACTIVO")];
+  let conditions: any[] = [inArray(vehicles.status, ["ACTIVO", "VENDIDO"])];
   
   if (marca) {
     const matchingBrands = await db.select({ id: brands.id }).from(brands).where(ilike(brands.name, `%${marca}%`));
@@ -50,6 +50,7 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
     brandName: v.brand?.name || "Desconocido",
     modelName: v.model?.name || "Desconocido",
     categoryName: v.category?.name || "Categoría",
+    status: v.status,
     isFeatured: v.isFeatured,
     isDealerVehicle: v.isDealerVehicle,
     image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80",

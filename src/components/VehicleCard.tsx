@@ -42,11 +42,12 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
       <Link href={`/vehiculo/${vehicle.slug}`} className={styles.cardLink}>
         
         <div className={styles.imageContainer}>
-          {vehicle.isFeatured && (
+          {vehicle.status === "VENDIDO" && (
+            <div className={styles.badge} style={{ backgroundColor: "#ef4444", color: "#fff" }}>VENDIDO</div>
+          )}
+          {vehicle.isFeatured && vehicle.status !== "VENDIDO" && (
             <div className={styles.badge}>Destacado</div>
           )}
-
-          
           <Image 
             src={displayImage} 
             alt={`${vehicle.brandName} ${vehicle.modelName}`} 

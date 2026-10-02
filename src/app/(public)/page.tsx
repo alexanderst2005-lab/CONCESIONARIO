@@ -6,13 +6,13 @@ import BrandCarousel from "@/components/BrandCarousel";
 import VehicleCarousel from "@/components/VehicleCarousel";
 import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
-import { eq, desc, asc, and } from "drizzle-orm";
+import { eq, desc, asc, and, inArray } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2, CarFront, Truck, Bike } from "lucide-react";
 
 export default async function Home() {
   
   const featuredRaw = await db.query.vehicles.findMany({
-    where: and(eq(vehiclesTable.status, "ACTIVO"), eq(vehiclesTable.isFeatured, true)),
+    where: and(inArray(vehiclesTable.status, ["ACTIVO", "VENDIDO"]), eq(vehiclesTable.isFeatured, true)),
     orderBy: [desc(vehiclesTable.createdAt)],
     limit: 4,
     with: { brand: true, model: true, images: true }
@@ -20,12 +20,12 @@ export default async function Home() {
 
   const featuredVehicles = featuredRaw.map(v => ({
     id: v.id, slug: v.slug, year: v.year, mileage: v.mileage, price: v.price, city: v.city, fuelType: v.fuelType, transmission: v.transmission,
-    brandName: v.brand?.name, modelName: v.model?.name, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
+    brandName: v.brand?.name, modelName: v.model?.name, status: v.status, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
     image: v.images && v.images.length > 0 ? v.images[0].url : undefined
   }));
 
   const recentRaw = await db.query.vehicles.findMany({
-    where: eq(vehiclesTable.status, "ACTIVO"),
+    where: inArray(vehiclesTable.status, ["ACTIVO", "VENDIDO"]),
     orderBy: [desc(vehiclesTable.createdAt)],
     limit: 8,
     with: { brand: true, model: true, images: true }
@@ -33,7 +33,7 @@ export default async function Home() {
 
   const recentVehicles = recentRaw.map(v => ({
     id: v.id, slug: v.slug, year: v.year, mileage: v.mileage, price: v.price, city: v.city, fuelType: v.fuelType, transmission: v.transmission,
-    brandName: v.brand?.name, modelName: v.model?.name, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
+    brandName: v.brand?.name, modelName: v.model?.name, status: v.status, isFeatured: v.isFeatured, isDealerVehicle: v.isDealerVehicle,
     image: v.images && v.images.length > 0 ? v.images[0].url : undefined
   }));
 

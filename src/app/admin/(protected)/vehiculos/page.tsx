@@ -145,10 +145,14 @@ export default function AdminVehiclesPage() {
                             </button>
                           </>
                         )}
-                        {(v.status === "PAUSADO" || v.status === "RECHAZADO") && (
-                          <button onClick={() => changeStatus(v.id, "ACTIVO")} style={{ padding: "0.4rem 0.75rem", background: "rgba(245,198,11,0.1)", color: "var(--gold-accent)", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>Reactivar</button>
+                        {(v.status === "PAUSADO" || v.status === "RECHAZADO" || v.status === "VENDIDO" || v.status === "ELIMINADO") && (
+                          <button onClick={() => changeStatus(v.id, "ACTIVO")} style={{ padding: "0.4rem 0.75rem", background: "rgba(245,198,11,0.1)", color: "var(--gold-accent)", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>Marcar Activo</button>
                         )}
-                        <button onClick={() => deleteVehicle(v.id)} style={{ padding: "0.4rem 0.75rem", background: "transparent", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Eliminar</button>
+                        <a href={`/editar-vehiculo/${v.slug}`} style={{ padding: "0.4rem 0.75rem", background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", textDecoration: "none" }}>Editar</a>
+                        
+                        {v.status !== "ELIMINADO" && (
+                          <button onClick={() => deleteVehicle(v.id)} style={{ padding: "0.4rem 0.75rem", background: "transparent", border: "1px solid rgba(248,113,113,0.3)", color: "#f87171", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Eliminar</button>
+                        )}
                       </div>
                     </td>
                   </tr>

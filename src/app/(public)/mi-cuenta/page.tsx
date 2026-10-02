@@ -124,7 +124,9 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
                     <div className={styles.badgesWrapper}>
                       {isActive && <span className={`${styles.badge} ${styles.badgeActive}`}>ACTIVO</span>}
                       {isPending && <span className={`${styles.badge} ${styles.badgePending}`}>EN REVISIÓN</span>}
-                      {v.status === "VENDIDO" && <span className={`${styles.badge} ${styles.badgeSold}`}>VENDIDO</span>}
+                      {v.status === "VENDIDO" && <span className={`${styles.badge} ${styles.badgeSold}`} style={{backgroundColor: '#ef4444'}}>VENDIDO</span>}
+                      {v.status === "PAUSADO" && <span className={styles.badge} style={{backgroundColor: '#555', color: '#fff'}}>PAUSADO</span>}
+                      {v.status === "RECHAZADO" && <span className={styles.badge} style={{backgroundColor: 'rgba(248,113,113,0.2)', color: '#f87171'}}>RECHAZADO</span>}
                     </div>
                   </div>
                   <div className={styles.listPrice}>
