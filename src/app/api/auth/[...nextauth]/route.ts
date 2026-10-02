@@ -83,30 +83,36 @@ export const authOptions: NextAuthOptions = {
       }
     },
     async jwt({ token, user, account }) {
-      // Si el usuario acaba de iniciar sesión con Google o Credenciales
-      if (account && user?.email) {
-        const dbUser = await db.query.users.findFirst({
-          where: eq(users.email, user.email)
-        });
-        if (dbUser) {
-          token.id = dbUser.id.toString();
-          token.role = dbUser.role;
-          token.phone = dbUser.phone;
-          token.name = `${dbUser.name} ${dbUser.lastName}`;
+      try {
+        if (account && user?.email) {
+          const dbUser = await db.query.users.findFirst({
+            where: eq(users.email, user.email)
+          });
+          if (dbUser) {
+            token.id = dbUser.id.toString();
+            token.role = dbUser.role;
+            token.phone = dbUser.phone;
+            token.name = `${dbUser.name} ${dbUser.lastName}`;
+          }
+        } else if (user) {
+          token.id = user.id;
+          token.role = (user as any).role;
+          token.phone = (user as any).phone;
         }
-      } else if (user) {
-        // En caso de credenciales directas que ya traen el id y role (fallback)
-        token.id = user.id;
-        token.role = (user as any).role;
-        token.phone = (user as any).phone;
+      } catch (error) {
+        console.error("Error in jwt callback:", error);
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
-        (session.user as any).phone = token.phone;
+      try {
+        if (session.user) {
+          (session.user as any).id = token.id;
+          (session.user as any).role = token.role;
+          (session.user as any).phone = token.phone;
+        }
+      } catch (error) {
+        console.error("Error in session callback:", error);
       }
       return session;
     }
