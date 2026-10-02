@@ -76,7 +76,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
   const siteSettings = await db.query.settings.findFirst();
   const rawPhone = siteSettings?.whatsappNumber || "573000000000";
   const cleanPhone = rawPhone.replace(/\D/g, "");
-  const whatsappMsg = `Hola Autos del Patrón, estoy interesado(a) en el vehículo ${vehicle.brandName} ${vehicle.modelName} ${vehicle.year} (SKU: 0${vehicle.id}84${vehicle.id}) que vi en su página web. ¿Me podrían dar más información?`;
+  const whatsappMsg = `Hola Autos del Patrón, estoy interesado(a) en el vehículo ${vehicle.brandName} ${vehicle.modelName} ${vehicle.year} que vi en su página web. ¿Me podrían dar más información?`;
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`;
 
   // Formato para ocultar placa (solo mostrar último dígito)
@@ -111,9 +111,6 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
 
         <div className={styles.price}>{formattedPrice} COP</div>
 
-        <div className={styles.skuRow}>
-          <span className={styles.sku}>SKU: 0{vehicle.id}84{vehicle.id}</span>
-        </div>
 
         <div className={styles.divider}></div>
           {vehicle.status === "VENDIDO" ? (
