@@ -58,6 +58,10 @@ export default function AdminVehiclesPage() {
     <div>
       <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="serif-title" style={{ fontSize: "2rem", color: "#fff" }}>Gestión de Vehículos</h1>
+        <a href="/publicar" className="btn-primary" style={{ display: 'inline-flex', padding: '0.5rem 1rem', fontSize: '0.9rem', textDecoration: 'none', alignItems: 'center', gap: '0.5rem' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Publicar Vehículo
+        </a>
       </div>
 
       <div style={{ background: "#080808", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>

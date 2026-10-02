@@ -78,8 +78,8 @@ export async function POST(req: Request) {
       locationStatus: data.locationStatus || "Vitrina",
       cityRegistered: data.cityRegistered || "",
 
-      // Todo vehículo entra como PENDIENTE de aprobación por el Admin
-      status: "PENDIENTE",
+      // Si el usuario es ADMIN, queda ACTIVO inmediatamente. Si no, PENDIENTE.
+      status: (session?.user as any)?.role === "ADMIN" ? "ACTIVO" : "PENDIENTE",
       isFeatured: false,
       isPromoted: false,
     }).returning();
