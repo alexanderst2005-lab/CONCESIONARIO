@@ -11,8 +11,8 @@ export default function AdminCategoriesPage() {
   const [loading, setLoading] = useState(true);
   
   // Use array of brand names for form + imageUrl
-  const [form, setForm] = useState<{ name: string, isActive: boolean, subtypes: string, selectedBrands: string[], imageUrl: string }>({ 
-    name: "", isActive: true, subtypes: "", selectedBrands: [], imageUrl: "" 
+  const [form, setForm] = useState<{ name: string, isActive: boolean, subtypes: string, brandsInput: string, imageUrl: string }>({ 
+    name: "", isActive: true, subtypes: "", brandsInput: "", imageUrl: "" 
   });
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -81,11 +81,15 @@ export default function AdminCategoriesPage() {
       ? form.subtypes.split(',').map(s => s.trim()).filter(s => s) 
       : [];
       
+    const brandsArray = form.brandsInput
+      ? form.brandsInput.split(',').map(s => s.trim()).filter(s => s)
+      : [];
+      
     const payload = { 
       name: form.name,
       isActive: form.isActive,
       subtypes: JSON.stringify(subtypesArray),
-      brandsList: JSON.stringify(form.selectedBrands),
+      brandsList: JSON.stringify(brandsArray),
       imageUrl: form.imageUrl
     };
 
@@ -102,7 +106,7 @@ export default function AdminCategoriesPage() {
         body: JSON.stringify(payload),
       });
     }
-    setForm({ name: "", isActive: true, subtypes: "", selectedBrands: [], imageUrl: "" });
+    setForm({ name: "", isActive: true, subtypes: "", brandsInput: "", imageUrl: "" });
     setImagePreview(null);
     setEditingId(null);
     fetchCategories();
@@ -112,17 +116,6 @@ export default function AdminCategoriesPage() {
     if (!confirm("¿Desactivar esta categoría?")) return;
     await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
     fetchCategories();
-  };
-
-  const toggleBrand = (brandName: string) => {
-    setForm(p => {
-      const isSelected = p.selectedBrands.includes(brandName);
-      if (isSelected) {
-        return { ...p, selectedBrands: p.selectedBrands.filter(b => b !== brandName) };
-      } else {
-        return { ...p, selectedBrands: [...p.selectedBrands, brandName] };
-      }
-    });
   };
 
   const inputStyle: React.CSSProperties = {
@@ -192,29 +185,21 @@ export default function AdminCategoriesPage() {
               {editingId ? "Actualizar" : "Agregar Tipo"}
             </button>
             {editingId && (
-              <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true, subtypes: "", selectedBrands: [], imageUrl: "" }); setImagePreview(null); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
+              <button type="button" onClick={() => { setEditingId(null); setForm({ name: "", isActive: true, subtypes: "", brandsInput: "", imageUrl: "" }); setImagePreview(null); }} style={{ padding: "0.8rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", cursor: "pointer" }}>
                 Cancelar
               </button>
             )}
           </div>
         </div>
 
-        <div style={{ flex: "1 1 300px" }}>
-          <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>MARCAS DISPONIBLES PARA ESTE TIPO</label>
-          <div style={{ maxHeight: "350px", overflowY: "auto", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", background: "#050505", padding: "0.5rem" }}>
-            {globalBrands.length === 0 ? <p style={{ padding: "0.5rem", color: "#666", fontSize: "0.85rem", margin: 0 }}>No hay marcas globales registradas.</p> : (
-              globalBrands.map(brand => (
-                <label key={brand.id} style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer" }}>
-                  <input 
-                    type="checkbox" 
-                    checked={form.selectedBrands.includes(brand.name)} 
-                    onChange={() => toggleBrand(brand.name)}
-                    style={{ accentColor: "var(--gold-accent)" }}
-                  />
-                  <span style={{ color: "#fff", fontSize: "0.9rem" }}>{brand.name}</span>
-                </label>
-              ))
-            )}
+          <div>
+            <label style={{ display: "block", color: "#888", fontSize: "0.8rem", marginBottom: "0.5rem" }}>MARCAS (Separadas por coma)</label>
+            <textarea 
+              style={{ ...inputStyle, minHeight: "100px", resize: "vertical" }} 
+              value={form.brandsInput} 
+              onChange={e => setForm(p => ({ ...p, brandsInput: e.target.value }))} 
+              placeholder="Ej: Chevrolet, Mazda, Ford" 
+            />
           </div>
         </div>
       </form>
@@ -260,7 +245,7 @@ export default function AdminCategoriesPage() {
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   <button onClick={() => { 
                     setEditingId(cat.id); 
-                    setForm({ name: cat.name, isActive: cat.isActive, subtypes: subtypesStr, selectedBrands: brandsArr, imageUrl: cat.imageUrl || "" }); 
+                    setForm({ name: cat.name, isActive: cat.isActive, subtypes: subtypesStr, brandsInput: brandsStr, imageUrl: cat.imageUrl || "" }); 
                     setImagePreview(cat.imageUrl || null);
                   }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
                   {cat.isActive && <button onClick={() => handleDeactivate(cat.id)} style={{ padding: "0.5rem 1rem", background: "rgba(248,113,113,0.1)", color: "#f87171", border: "none", borderRadius: "4px", cursor: "pointer" }}>Desactivar</button>}
