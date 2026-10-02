@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Car, Bike, CarFront, Truck } from "lucide-react";
+import styles from "./CategoryFilterSelector.module.css";
 
 export default function CategoryFilterSelector({
   categories,
@@ -39,9 +40,9 @@ export default function CategoryFilterSelector({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className={styles.container}>
       {/* Scrollable Categories Row */}
-      <div style={{ display: "flex", gap: "1rem", overflowX: "auto", paddingBottom: "1rem", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+      <div className={styles.scrollableRow}>
         {categories.map(cat => {
           const nameUpper = cat.name.toUpperCase();
           let Icon = Car;
@@ -55,33 +56,21 @@ export default function CategoryFilterSelector({
             <button
               key={cat.id}
               onClick={() => handleSelectCategory(cat)}
+              className={styles.categoryButton}
               style={{
-                flex: "0 0 auto",
-                scrollSnapAlign: "start",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "1.5rem",
                 background: isSelected ? "var(--gold-accent)" : "#111",
                 color: isSelected ? "#000" : "#fff",
-                border: isSelected ? "1px solid var(--gold-accent)" : "1px solid rgba(255,255,255,0.05)",
-                borderRadius: "12px",
-                minWidth: "160px",
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-                position: "relative",
-                overflow: "hidden"
+                border: isSelected ? "1px solid var(--gold-accent)" : "1px solid rgba(255,255,255,0.05)"
               }}
             >
               {cat.imageUrl ? (
-                <div style={{ width: "80px", height: "60px", marginBottom: "1rem", borderRadius: "8px", overflow: "hidden", border: isSelected ? "1px solid rgba(0,0,0,0.1)" : "none" }}>
+                <div className={styles.categoryImage} style={{ border: isSelected ? "1px solid rgba(0,0,0,0.1)" : "none" }}>
                   <img src={cat.imageUrl} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
               ) : (
-                <Icon size={40} strokeWidth={1.5} style={{ marginBottom: "1rem", color: isSelected ? "#000" : "var(--gold-accent)" }} />
+                <Icon className={styles.categoryIcon} strokeWidth={1.5} style={{ color: isSelected ? "#000" : "var(--gold-accent)" }} />
               )}
-              <span style={{ fontSize: "1rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <span className={styles.categoryName}>
                 {cat.name}
               </span>
             </button>
@@ -91,20 +80,8 @@ export default function CategoryFilterSelector({
 
       {/* Filter Panel below selected category */}
       {selectedCat && (
-        <div style={{
-          background: "#111",
-          border: "1px solid rgba(255,255,255,0.1)",
-          borderRadius: "12px",
-          padding: "1.5rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "1rem",
-          animation: "fadeIn 0.3s ease",
-          boxSizing: "border-box",
-          width: "100%",
-          maxWidth: "100%"
-        }}>
-          <h3 style={{ margin: 0, color: "#fff", fontSize: "1.2rem", fontWeight: 600 }}>Filtrar {selectedCat.name}</h3>
+        <div className={styles.filterPanel}>
+          <h3 className={styles.filterPanelTitle}>Filtrar {selectedCat.name}</h3>
           
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
             

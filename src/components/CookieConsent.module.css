@@ -167,6 +167,29 @@
   }
 }
 
+@media (max-width: 600px) {
+  .bannerContainer {
+    padding: 0.75rem;
+  }
+  .bannerHeader {
+    gap: 0.5rem;
+  }
+  .bannerTitle {
+    font-size: 0.95rem;
+  }
+  .bannerDescription {
+    font-size: 0.8rem;
+  }
+  .btnAcceptAll, .btnReject, .btnConfigure {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  .cookieIcon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
 .btnConfigure:hover {
   background: rgba(212, 175, 55, 0.1);
   border-color: #d4af37;
