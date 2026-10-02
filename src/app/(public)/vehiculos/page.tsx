@@ -9,7 +9,7 @@ import { Car } from "lucide-react";
 export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const { marca, categoria, modelo, ciudad } = await searchParams;
 
-  let conditions: any[] = [inArray(vehicles.status, ["ACTIVO", "VENDIDO"])];
+  let conditions: any[] = [inArray(vehicles.status, ["ACTIVO", "VENDIDO", "approved", "APPROVED"])];
   
   if (marca) {
     const matchingBrands = await db.select({ id: brands.id }).from(brands).where(ilike(brands.name, `%${marca}%`));

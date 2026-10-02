@@ -111,38 +111,11 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
+    maxAge: 2 * 60 * 60, // 2 hours
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const nextAuthHandler = NextAuth(authOptions);
+const handler = NextAuth(authOptions);
 
-async function customHandler(req: NextRequest, ctx: any) {
-  const response = await nextAuthHandler(req, ctx);
-
-  const setCookieHeaders = response.headers.get("set-cookie");
-  if (setCookieHeaders && setCookieHeaders.includes("next-auth.session-token")) {
-    const tokenMatch = setCookieHeaders.match(/next-auth\.session-token=([^;]+)/);
-    if (tokenMatch) {
-      try {
-        const decoded = await decode({ token: tokenMatch[1], secret: process.env.NEXTAUTH_SECRET || "" });
-        
-        if (decoded && decoded.role !== "ADMIN") {
-          let newSetCookie = setCookieHeaders
-            .replace(/Max-Age=[0-9]+;\s?/gi, '')
-            .replace(/Expires=[a-zA-Z]{3},\s[0-9]{2}\s[a-zA-Z]{3}\s[0-9]{4}\s[0-9]{2}:[0-9]{2}:[0-9]{2}\sGMT;\s?/gi, '');
-          
-          const newRes = new NextResponse(response.body, response);
-          newRes.headers.set("set-cookie", newSetCookie);
-          return newRes;
-        }
-      } catch (e) {
-        console.error("Error decoding token for session cookie modification:", e);
-      }
-    }
-  }
-
-  return response;
-}
-
-export { customHandler as GET, customHandler as POST };
+export { handler as GET, handler as POST };
