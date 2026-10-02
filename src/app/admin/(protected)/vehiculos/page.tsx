@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import { useUI } from "@/components/UIProvider";
 
 export default function AdminVehiclesPage() {
   const [vehicles, setVehicles] = useState<any[]>([]);
@@ -21,26 +22,36 @@ export default function AdminVehiclesPage() {
     fetchVehicles();
   }, []);
 
+  const { toast, confirmAction } = useUI();
+
   const changeStatus = async (id: number, status: string) => {
-    if (!confirm(`¿Cambiar estado a ${status}?`)) return;
-    
-    await fetch("/api/admin/vehicles", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status }),
+    confirmAction(`¿Seguro que deseas cambiar el estado a ${status}?`, async () => {
+      try {
+        await fetch("/api/admin/vehicles", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, status }),
+        });
+        toast("Estado actualizado correctamente", "success");
+        fetchVehicles();
+      } catch (error) {
+        toast("Error al actualizar estado", "error");
+      }
     });
-    
-    fetchVehicles();
   };
 
   const deleteVehicle = async (id: number) => {
-    if (!confirm("¿Eliminar este vehículo permanentemente?")) return;
-    
-    await fetch(`/api/admin/vehicles?id=${id}`, {
-      method: "DELETE",
+    confirmAction("¿Eliminar este vehículo permanentemente?", async () => {
+      try {
+        await fetch(`/api/admin/vehicles?id=${id}`, {
+          method: "DELETE",
+        });
+        toast("Vehículo eliminado exitosamente", "success");
+        fetchVehicles();
+      } catch (error) {
+        toast("Error al eliminar vehículo", "error");
+      }
     });
-    
-    fetchVehicles();
   };
 
   const getStatusColor = (status: string) => {

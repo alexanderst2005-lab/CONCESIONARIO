@@ -79,6 +79,9 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
             <h1 className={`${styles.catalogTitle} serif-title`}>
               {marca ? `Vehículos ${marca}` : categoria ? `Tipo ${categoria}` : "Catálogo"}
             </h1>
+            <div style={{ display: 'none' }} id="debug-info">
+              {JSON.stringify({ marca, categoria, modelo, ciudad })}
+            </div>
             <p className={styles.resultsCount}>
               <span className={styles.resultsNumber}>{vehiclesData.length}</span>
               {" "}vehículo{vehiclesData.length !== 1 ? "s" : ""} encontrado{vehiclesData.length !== 1 ? "s" : ""}

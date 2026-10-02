@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useUI } from "@/components/UIProvider";
 
 export default function AdminUsersPage() {
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -16,25 +17,38 @@ export default function AdminUsersPage() {
 
   useEffect(() => { fetchUsers(); }, []);
 
+  const { toast, confirmAction } = useUI();
+
   const changeRole = async (id: number, currentRole: string) => {
     const newRole = currentRole === "ADMIN" ? "USER" : "ADMIN";
-    if (!confirm(`¿Cambiar rol a ${newRole}?`)) return;
     
-    await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, role: newRole }),
+    confirmAction(`¿Seguro que deseas cambiar el rol a ${newRole}?`, async () => {
+      try {
+        await fetch("/api/admin/users", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, role: newRole }),
+        });
+        toast("Rol actualizado correctamente", "success");
+        fetchUsers();
+      } catch (error) {
+        toast("Error al actualizar el rol", "error");
+      }
     });
-    fetchUsers();
   };
 
   const deleteUser = async (id: number) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
-    
-    await fetch(`/api/admin/users?id=${id}`, {
-      method: "DELETE",
+    confirmAction("¿Estás seguro de que deseas eliminar este usuario? Será borrado inmediatamente.", async () => {
+      try {
+        await fetch(`/api/admin/users?id=${id}`, {
+          method: "DELETE",
+        });
+        toast("Usuario eliminado correctamente", "success");
+        fetchUsers();
+      } catch (error) {
+        toast("Error al eliminar el usuario", "error");
+      }
     });
-    fetchUsers();
   };
 
   return (

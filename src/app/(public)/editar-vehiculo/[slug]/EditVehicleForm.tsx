@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import styles from "@/app/(public)/publicar/page.module.css";
+import { useUI } from "@/components/UIProvider";
 
 const CLOUDINARY_CLOUD_NAME = "ofcfneae";
 const CLOUDINARY_UPLOAD_PRESET = "autos_preset";
@@ -54,11 +55,13 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const { toast } = useUI();
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
       if (previewUrls.length + selectedFiles.length > 15) {
-        alert("Máximo 15 imágenes permitidas.");
+        toast("Máximo 15 imágenes permitidas.", "warning");
         return;
       }
       setNewImages((prev) => [...prev, ...selectedFiles]);
@@ -130,15 +133,15 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
       });
 
       if (res.ok) {
-        alert("Vehículo actualizado exitosamente.");
+        toast("Vehículo actualizado exitosamente.", "success");
         router.push("/mi-cuenta");
         router.refresh();
       } else {
         const errorData = await res.json();
-        alert(`Error al actualizar: ${errorData.message}`);
+        toast(`Error al actualizar: ${errorData.message}`, "error");
       }
     } catch (err) {
-      alert("Error de conexión");
+      toast("Error de conexión", "error");
     } finally {
       setIsSubmitting(false);
     }

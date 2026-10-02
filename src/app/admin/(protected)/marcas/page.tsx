@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useUI } from "@/components/UIProvider";
 
 interface Brand {
   id: number;
@@ -108,10 +109,13 @@ export default function AdminBrandsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const { confirmAction } = useUI();
+
   const handleDeactivate = async (id: number) => {
-    if (!confirm("¿Desactivar esta marca?")) return;
-    await fetch(`/api/brands?id=${id}`, { method: "DELETE" });
-    fetchBrands();
+    confirmAction("¿Desactivar esta marca?", async () => {
+      await fetch(`/api/brands?id=${id}`, { method: "DELETE" });
+      fetchBrands();
+    });
   };
 
   const handleActivate = async (id: number) => {

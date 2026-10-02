@@ -3,6 +3,7 @@
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { useUI } from "@/components/UIProvider";
 import styles from "./page.module.css";
 
 const CLOUDINARY_CLOUD_NAME = "ofcfneae";
@@ -68,11 +69,13 @@ export default function PublicarPage() {
     });
   };
 
+  const { toast } = useUI();
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
       if (images.length + selectedFiles.length > 15) {
-        alert("Máximo 15 imágenes permitidas.");
+        toast("Máximo 15 imágenes permitidas.", "warning");
         return;
       }
       setImages((prev) => [...prev, ...selectedFiles]);
@@ -136,18 +139,18 @@ export default function PublicarPage() {
 
       if (res.ok) {
         if (isAdmin) {
-          alert("Vehículo publicado exitosamente y ya está ACTIVO.");
+          toast("Vehículo publicado exitosamente y ya está ACTIVO.", "success");
           router.push("/admin/vehiculos");
         } else {
-          alert("Vehículo publicado exitosamente. Quedará en estado PENDIENTE hasta su aprobación.");
+          toast("Vehículo publicado exitosamente. Quedará en estado PENDIENTE hasta su aprobación.", "success");
           router.push("/mi-cuenta");
         }
       } else {
         const errorData = await res.json();
-        alert(`Error al publicar: ${errorData.message}`);
+        toast(`Error al publicar: ${errorData.message}`, "error");
       }
     } catch (err) {
-      alert("Error de conexión");
+      toast("Error de conexión", "error");
     } finally {
       setIsSubmitting(false);
     }

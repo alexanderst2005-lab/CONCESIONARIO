@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import styles from "./page.module.css";
+import { useUI } from "@/components/UIProvider";
 
 export default function ProfileForm({ user }: { user: any }) {
   const [formData, setFormData] = useState({
@@ -20,6 +21,8 @@ export default function ProfileForm({ user }: { user: any }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
+  const { toast } = useUI();
+
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingProfile(true);
@@ -30,12 +33,12 @@ export default function ProfileForm({ user }: { user: any }) {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        alert("Perfil actualizado correctamente");
+        toast("Perfil actualizado correctamente", "success");
       } else {
-        alert("Error al actualizar el perfil");
+        toast("Error al actualizar el perfil", "error");
       }
     } catch (e) {
-      alert("Error de conexión");
+      toast("Error de conexión", "error");
     } finally {
       setSavingProfile(false);
     }
@@ -44,7 +47,7 @@ export default function ProfileForm({ user }: { user: any }) {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert("Las nuevas contraseñas no coinciden");
+      toast("Las nuevas contraseñas no coinciden", "warning");
       return;
     }
     setSavingPassword(true);
@@ -56,13 +59,13 @@ export default function ProfileForm({ user }: { user: any }) {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Contraseña actualizada exitosamente");
+        toast("Contraseña actualizada exitosamente", "success");
         setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
       } else {
-        alert(data.message || "Error al actualizar la contraseña");
+        toast(data.message || "Error al actualizar la contraseña", "error");
       }
     } catch (e) {
-      alert("Error de conexión");
+      toast("Error de conexión", "error");
     } finally {
       setSavingPassword(false);
     }

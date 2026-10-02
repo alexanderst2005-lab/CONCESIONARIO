@@ -4,12 +4,15 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useUI } from "@/components/UIProvider";
 import styles from "../login/page.module.css";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { toast } = useUI();
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -39,7 +42,7 @@ export default function RegisterPage() {
       const result = await res.json();
 
       if (res.ok) {
-        alert("¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.");
+        toast("¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.", "success");
         router.push("/login");
       } else {
         setError(result.message || "Ocurrió un error");

@@ -3,6 +3,7 @@ import { Playfair_Display, Manrope } from "next/font/google";
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import AuthProvider from "@/components/AuthProvider";
+import { UIProvider } from "@/components/UIProvider";
 
 const playfair = Playfair_Display({ 
   subsets: ["latin"], 
@@ -28,8 +29,10 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${manrope.className} ${playfair.variable} ${manrope.variable}`}>
         <AuthProvider>
-          {children}
-          <CookieConsent />
+          <UIProvider>
+            {children}
+            <CookieConsent />
+          </UIProvider>
         </AuthProvider>
       </body>
     </html>

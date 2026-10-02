@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useUI } from "@/components/UIProvider";
 
 const CLOUDINARY_CLOUD_NAME = "ofcfneae";
 const CLOUDINARY_UPLOAD_PRESET = "autos_preset";
@@ -41,6 +42,8 @@ export default function AdminCategoriesPage() {
     fetchBrands();
   }, []);
 
+  const { toast, confirmAction } = useUI();
+
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -65,10 +68,10 @@ export default function AdminCategoriesPage() {
         setForm(prev => ({ ...prev, imageUrl: result.secure_url }));
         setImagePreview(result.secure_url);
       } else {
-        alert("Error al subir la imagen. Intente de nuevo.");
+        toast("Error al subir la imagen. Intente de nuevo.", "error");
       }
     } catch {
-      alert("Error de conexión al subir la imagen.");
+      toast("Error de conexión al subir la imagen.", "error");
     } finally {
       setUploadingImage(false);
     }
@@ -99,12 +102,14 @@ export default function AdminCategoriesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: editingId, ...payload }),
       });
+      toast("Tipo de vehículo actualizado", "success");
     } else {
       await fetch("/api/admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+      toast("Tipo de vehículo agregado", "success");
     }
     setForm({ name: "", isActive: true, subtypes: "", brandsInput: "", imageUrl: "" });
     setImagePreview(null);
@@ -113,9 +118,11 @@ export default function AdminCategoriesPage() {
   };
 
   const handleDeactivate = async (id: number) => {
-    if (!confirm("¿Desactivar esta categoría?")) return;
-    await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
-    fetchCategories();
+    confirmAction("¿Desactivar esta categoría?", async () => {
+      await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
+      toast("Categoría desactivada", "success");
+      fetchCategories();
+    });
   };
 
   const inputStyle: React.CSSProperties = {
