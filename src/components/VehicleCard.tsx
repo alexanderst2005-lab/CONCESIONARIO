@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import styles from "./VehicleCard.module.css";
@@ -8,6 +8,47 @@ import { Heart, Gauge, Calendar, Settings2, MapPin } from "lucide-react";
 
 export default function VehicleCard({ vehicle }: { vehicle: any }) {
   const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("vehicleFavorites");
+      if (stored) {
+        const favorites = JSON.parse(stored);
+        if (favorites.some((v: any) => v.slug === vehicle.slug)) {
+          setIsFavorite(true);
+        }
+      }
+    } catch (e) {}
+  }, [vehicle.slug]);
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      const stored = localStorage.getItem("vehicleFavorites");
+      let favorites = stored ? JSON.parse(stored) : [];
+      
+      if (isFavorite) {
+        favorites = favorites.filter((v: any) => v.slug !== vehicle.slug);
+      } else {
+        favorites.push({
+          slug: vehicle.slug,
+          brandName: vehicle.brandName,
+          modelName: vehicle.modelName,
+          year: vehicle.year,
+          city: vehicle.city,
+          price: vehicle.price,
+          image: vehicle.image || vehicle.imageUrl || "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
+        });
+      }
+      
+      localStorage.setItem("vehicleFavorites", JSON.stringify(favorites));
+      setIsFavorite(!isFavorite);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Manejar el precio de forma segura
   const formattedPrice = new Intl.NumberFormat("es-CO", {
@@ -23,11 +64,7 @@ export default function VehicleCard({ vehicle }: { vehicle: any }) {
     <div className={styles.card}>
       <button 
         className={`${styles.favoriteBtn} ${isFavorite ? styles.favoriteBtnActive : ''}`} 
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsFavorite(!isFavorite);
-        }}
+        onClick={toggleFavorite}
         style={{ zIndex: 10 }}
       >
         <Heart 

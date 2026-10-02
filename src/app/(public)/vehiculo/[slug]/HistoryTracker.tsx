@@ -20,7 +20,7 @@ export default function HistoryTracker({ vehicle }: { vehicle: any }) {
         year: vehicle.year || "-",
         city: vehicle.city || "-",
         price: vehicle.price || 0,
-        image: vehicle.images && vehicle.images.length > 0 ? vehicle.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
+        image: vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
       });
       
       // Keep only last 10

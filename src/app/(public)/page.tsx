@@ -98,10 +98,10 @@ export default async function Home() {
 
           {/* CTA buttons */}
           <div className={styles.heroButtons}>
-            <a href="#encuentra-por-tipo" className={styles.primaryBtn}>
+            <Link href="/vehiculos" className={styles.primaryBtn}>
               <span>BUSCAR VEHÍCULO</span>
               <span className={styles.btnArrow}>→</span>
-            </a>
+            </Link>
             <Link href="/vehiculos" className={styles.secondaryBtn}>
               VER TODO EL INVENTARIO
             </Link>

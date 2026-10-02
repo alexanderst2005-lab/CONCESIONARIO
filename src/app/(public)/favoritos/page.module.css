@@ -1,0 +1,188 @@
+.main {
+  padding-top: 70px;
+  min-height: calc(100vh - 70px);
+  background-color: #000;
+  color: #fff;
+}
+
+.heroSection {
+  background: linear-gradient(180deg, rgba(30,30,30,1) 0%, rgba(0,0,0,1) 100%);
+  padding: 4rem 0 2rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.heroTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  color: var(--gold-accent);
+  margin-bottom: 0.5rem;
+}
+
+.heroSubtitle {
+  color: #888;
+  font-size: 1rem;
+}
+
+.contentContainer {
+  padding: 3rem 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  text-align: center;
+  background: #080808;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.emptyIcon {
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+.emptyState h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.emptyState p {
+  color: #888;
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+.primaryBtn {
+  background: var(--gold-accent);
+  color: #000;
+  padding: 0.8rem 2rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.primaryBtn:hover {
+  background: var(--gold-hover);
+  transform: translateY(-2px);
+}
+
+.vehicleList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.vehicleListItem {
+  display: flex;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  overflow: hidden;
+  align-items: center;
+  padding-right: 1.5rem;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.vehicleListItem:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.listImageContainer {
+  width: 150px;
+  height: 100px;
+  flex-shrink: 0;
+  background: #111;
+}
+
+.listImageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listInfo {
+  flex: 1;
+  padding: 0 1.5rem;
+}
+
+.listInfo h4 {
+  font-size: 1.2rem;
+  margin-bottom: 0.3rem;
+  color: #fff;
+}
+
+.listInfo p {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.listPrice {
+  padding: 0 1.5rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #fff;
+  border-left: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 150px;
+}
+
+.listActions {
+  padding-left: 1rem;
+}
+
+.actionBtn {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: var(--gold-accent);
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .vehicleListItem {
+    flex-direction: column;
+    padding: 0;
+    padding-bottom: 1.5rem;
+  }
+  
+  .listImageContainer {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .listInfo {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .listPrice {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem 1.5rem;
+    text-align: center;
+    width: 100%;
+  }
+  
+  .listActions {
+    padding: 0 1.5rem;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .actionBtn {
+    width: 100%;
+  }
+}
