@@ -62,47 +62,68 @@ export default async function Home() {
 
   return (
     <>
-      {/* ═══════════════════ HERO PREMIUM ═══════════════════ */}
+      {/* ═══════════════════ HERO PREMIUM CINEMATIC ═══════════════════ */}
       <section className={styles.heroSection}>
 
-        {/* Background image — responsive per breakpoint */}
+        {/* Cinematic background image */}
         <div className={styles.heroBg} aria-hidden="true">
           <img
-            src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=1920&auto=format&fit=crop"
-            alt="Vehículo de lujo"
+            src="https://images.unsplash.com/photo-1544636331-e26879cd4d9b?q=80&w=2048&auto=format&fit=crop"
+            alt="Vehículo de lujo Autos del Patrón"
             className={styles.heroBgImg}
           />
           <div className={styles.heroOverlay} />
         </div>
 
-        {/* Content */}
+        {/* Main content — left aligned on desktop, center on mobile */}
         <div className={`container ${styles.heroContent} animate-fade-in`}>
 
-          <div className={styles.heroTextWrapper}>
-            <h1 className={`${styles.heroTitle} serif-title`}>
-              ENCUENTRA TU PRÓXIMO VEHÍCULO
-            </h1>
-
-            <p className={styles.heroSubtitle}>
-              Explora • Descubre • Elige
-            </p>
-
-            <div className={styles.heroButtons}>
-              <a href="#encuentra-por-tipo" className={styles.primaryBtn}>
-                BUSCAR VEHÍCULO
-              </a>
-              <Link href="/vehiculos" className={styles.secondaryBtn}>
-                VER TODO EL INVENTARIO
-              </Link>
-            </div>
+          {/* Gold eyebrow */}
+          <div className={styles.heroEyebrow}>
+            <span className={styles.heroEyebrowLine} />
+            <span className={styles.heroEyebrowText}>CONCESIONARIO PREMIUM</span>
           </div>
 
-          <a href="#encuentra-por-tipo" className={styles.scrollIndicator}>
-            <span className={styles.scrollText}>DESLIZA PARA EXPLORAR</span>
-            <span className={styles.scrollArrow}>↓</span>
-          </a>
+          {/* Title — large cinematic */}
+          <h1 className={`${styles.heroTitle} serif-title`}>
+            ENCUENTRA<br />
+            <span className={styles.heroTitleGold}>TU PRÓXIMO</span><br />
+            VEHÍCULO
+          </h1>
+
+          {/* Subtitle dots */}
+          <p className={styles.heroSubtitle}>
+            Explora <span className={styles.dot}>•</span> Descubre <span className={styles.dot}>•</span> Elige
+          </p>
+
+          {/* CTA buttons */}
+          <div className={styles.heroButtons}>
+            <a href="#encuentra-por-tipo" className={styles.primaryBtn}>
+              <span>BUSCAR VEHÍCULO</span>
+              <span className={styles.btnArrow}>→</span>
+            </a>
+            <Link href="/vehiculos" className={styles.secondaryBtn}>
+              VER TODO EL INVENTARIO
+            </Link>
+          </div>
+
+          {/* Trust badges */}
+          <div className={styles.heroBadges}>
+            <span>Vehículos seleccionados</span>
+            <span className={styles.badgeDot}>•</span>
+            <span>Compra segura</span>
+            <span className={styles.badgeDot}>•</span>
+            <span>Atención personalizada</span>
+          </div>
 
         </div>
+
+        {/* Scroll indicator — centered bottom */}
+        <a href="#encuentra-por-tipo" className={styles.scrollIndicator} aria-label="Explorar">
+          <span className={styles.scrollText}>DESLIZA PARA EXPLORAR</span>
+          <span className={styles.scrollArrow}>↓</span>
+        </a>
+
       </section>
 
       {/* DESTACADOS */}
