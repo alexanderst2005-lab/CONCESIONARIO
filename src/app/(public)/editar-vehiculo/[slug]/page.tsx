@@ -12,6 +12,7 @@ export default async function EditarVehiculoPage({ params }: { params: Promise<{
     with: {
       brand: true,
       model: true,
+      category: true,
       images: true,
       features: true
     }
@@ -24,6 +25,7 @@ export default async function EditarVehiculoPage({ params }: { params: Promise<{
   // Pre-fill data
   const initialData = {
     id: vehicleRecord.id,
+    categoryName: vehicleRecord.category?.name || "",
     brandName: vehicleRecord.brand?.name || "",
     modelName: vehicleRecord.model?.name || "",
     version: vehicleRecord.version || "",

@@ -33,33 +33,8 @@ export default function FilterPanel({
   const [filteredBrands, setFilteredBrands] = useState(allBrands);
 
   useEffect(() => {
-    if (selectedCat) {
-      const catObj = allCats.find(c => c.name === selectedCat);
-      if (catObj && catObj.brandsList) {
-        let parsedBrands: string[] = [];
-        try {
-          const parsed = JSON.parse(catObj.brandsList);
-          if (Array.isArray(parsed)) parsedBrands = parsed;
-        } catch(e) {
-          if (typeof catObj.brandsList === 'string' && catObj.brandsList.trim() !== '') {
-            parsedBrands = catObj.brandsList.split(',').map(s => s.trim());
-          }
-        }
-        
-        const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
-        setFilteredBrands(allBrands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim())));
-        
-        // If current selected brand is not in the new filtered list, reset it
-        if (selectedBrand && !lowercaseParsed.includes(selectedBrand.toLowerCase().trim())) {
-          setSelectedBrand("");
-        }
-      } else {
-        setFilteredBrands(allBrands);
-      }
-    } else {
-      setFilteredBrands(allBrands);
-    }
-  }, [selectedCat, allBrands, allCats]); // Only run when category changes
+    setFilteredBrands(allBrands);
+  }, [allBrands]); // Only run when category changes
 
   const hasActiveFilters = !!(currentMarca || currentCategoria || currentModelo || currentCiudad);
   const activeCount = [currentMarca, currentCategoria, currentModelo, currentCiudad].filter(Boolean).length;

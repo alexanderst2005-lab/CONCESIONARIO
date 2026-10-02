@@ -15,18 +15,21 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [dbBrands, setDbBrands] = useState<{id: number, name: string}[]>([]);
+  const [dbCategories, setDbCategories] = useState<any[]>([]);
   
   React.useEffect(() => {
-    fetch('/api/brands')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) setDbBrands(data);
-      })
-      .catch(e => console.error(e));
+    Promise.all([
+      fetch('/api/brands').then(res => res.json()),
+      fetch('/api/admin/categories').then(res => res.json())
+    ]).then(([brandsData, catsData]) => {
+      if (Array.isArray(brandsData)) setDbBrands(brandsData);
+      if (Array.isArray(catsData)) setDbCategories(catsData);
+    }).catch(e => console.error(e));
   }, []);
 
   const [formData, setFormData] = useState({
     id: initialData.id,
+    categoryName: initialData.categoryName || "",
     brandName: initialData.brandName,
     modelName: initialData.modelName,
     version: initialData.version,
@@ -141,6 +144,25 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
     }
   };
 
+  const allowedBrands = React.useMemo(() => {
+    if (!formData.categoryName || dbCategories.length === 0) return dbBrands;
+    const cat = dbCategories.find(c => c.name === formData.categoryName);
+    if (!cat || !cat.brandsList) return dbBrands;
+    
+    let parsedBrands: string[] = [];
+    try {
+      const parsed = JSON.parse(cat.brandsList);
+      if (Array.isArray(parsed)) parsedBrands = parsed;
+    } catch(e) {
+      if (typeof cat.brandsList === 'string' && cat.brandsList.trim() !== '') {
+        parsedBrands = cat.brandsList.split(',').map((s: string) => s.trim());
+      }
+    }
+    
+    const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
+    return dbBrands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+  }, [formData.categoryName, dbCategories, dbBrands]);
+
   return (
     <div className={styles.publishContainer}>
       <div className={styles.header}>
@@ -155,15 +177,34 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
             <h2>Información Básica</h2>
             <div className={styles.formGrid}>
               <div className={styles.inputGroup}>
+                <label>Tipo de Vehículo</label>
+                <select name="categoryName" value={formData.categoryName} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona un tipo</option>
+                  {dbCategories.length > 0 ? (
+                    dbCategories.filter(c => c.isActive).map(c => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="Automóviles">Automóviles</option>
+                      <option value="SUV">SUV</option>
+                      <option value="Camionetas">Camionetas</option>
+                      <option value="Motos">Motos</option>
+                      <option value="Comerciales">Comerciales</option>
+                    </>
+                  )}
+                </select>
+              </div>
+              <div className={styles.inputGroup}>
                 <label>Marca</label>
-                <select name="brandName" value={formData.brandName} onChange={handleInputChange} required>
+                <select name="brandName" value={formData.brandName} onChange={handleInputChange} required disabled={!formData.categoryName}>
                   <option value="" disabled>Selecciona una marca</option>
-                  {dbBrands.length > 0 ? (
-                    dbBrands.map(b => (
+                  {allowedBrands.length > 0 ? (
+                    allowedBrands.map(b => (
                       <option key={b.id} value={b.name}>{b.name}</option>
                     ))
                   ) : (
-                    <option value="" disabled>Cargando marcas...</option>
+                    <option value="" disabled>No hay marcas asociadas</option>
                   )}
                 </select>
               </div>
