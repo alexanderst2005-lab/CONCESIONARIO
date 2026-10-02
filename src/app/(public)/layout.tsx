@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import RequirePhoneModal from "@/components/RequirePhoneModal";
+import CookieTrigger from "@/components/CookieTrigger";
 
 export default async function PublicLayout({
   children,
@@ -39,6 +40,7 @@ export default async function PublicLayout({
               <li><Link href="/vehiculos" style={{ color: "#888", textDecoration: "none" }}>Vehículos</Link></li>
               <li><Link href="/login" style={{ color: "#888", textDecoration: "none" }}>Vender mi auto</Link></li>
               <li><Link href="/contacto" style={{ color: "#888", textDecoration: "none" }}>Contacto</Link></li>
+              <li><CookieTrigger /></li>
             </ul>
           </div>
         </div>

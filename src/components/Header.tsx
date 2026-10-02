@@ -69,11 +69,11 @@ export default function Header({ session }: { session: any }) {
         <div className={styles.logo}>
           <Link href="/" onClick={() => setMenuOpen(false)}>
             <Image 
-              src="/logo.png" 
+              src="/logo_transparent.png" 
               alt="Autos del Patrón Logo" 
               width={140} 
               height={45} 
-              style={{ objectFit: 'contain', mixBlendMode: 'lighten' }} 
+              style={{ objectFit: 'contain' }} 
               priority
             />
           </Link>
