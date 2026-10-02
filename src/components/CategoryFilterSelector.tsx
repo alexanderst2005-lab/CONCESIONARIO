@@ -116,7 +116,7 @@ export default function CategoryFilterSelector({
 
               if (subtypesArr.length > 0) {
                 return (
-                  <div style={{ flex: "1 1 100%", minWidth: "150px" }}>
+                  <div style={{ flex: "1 1 100%" }}>
                     <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Subtipo</label>
                     <select
                       value={selectedSubtype}
@@ -136,23 +136,27 @@ export default function CategoryFilterSelector({
 
             {/* Selector de marca general */}
             {(() => {
-              let allowedBrands = brands;
+              let allowedBrands: any[] = [];
+              let showBrandSelector = false;
               
-              // Filter brands based on category's brandsList if available
+              // Filter brands based on category's brandsList
               if (selectedCat.brandsList) {
                 try {
                   const parsedBrands = JSON.parse(selectedCat.brandsList);
                   if (Array.isArray(parsedBrands) && parsedBrands.length > 0) {
                     const lowercaseParsed = parsedBrands.map((b: string) => b.toLowerCase().trim());
                     allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+                    showBrandSelector = true;
                   }
                 } catch(e) {
-                  // Ignore parse error, default to all
+                  // Ignore parse error
                 }
               }
 
+              if (!showBrandSelector) return null;
+
               return (
-                <div style={{ flex: "1 1 100%", minWidth: "150px" }}>
+                <div style={{ flex: "1 1 100%" }}>
                   <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Marca</label>
                   <select
                     value={selectedBrand}
