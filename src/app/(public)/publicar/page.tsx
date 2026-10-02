@@ -13,6 +13,17 @@ export default function PublicarPage() {
   const [images, setImages] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [dbBrands, setDbBrands] = useState<{id: number, name: string}[]>([]);
+  
+  React.useEffect(() => {
+    fetch('/api/brands')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setDbBrands(data);
+      })
+      .catch(e => console.error(e));
+  }, []);
 
   const [formData, setFormData] = useState({
     categoryName: "",
@@ -153,28 +164,13 @@ export default function PublicarPage() {
                 <label>Marca</label>
                 <select name="brandName" value={formData.brandName} onChange={handleInputChange} required>
                   <option value="" disabled>Selecciona una marca</option>
-                  <option value="Audi">Audi</option>
-                  <option value="BMW">BMW</option>
-                  <option value="Chevrolet">Chevrolet</option>
-                  <option value="Ford">Ford</option>
-                  <option value="Honda">Honda</option>
-                  <option value="Hyundai">Hyundai</option>
-                  <option value="Jeep">Jeep</option>
-                  <option value="Kia">Kia</option>
-                  <option value="Mazda">Mazda</option>
-                  <option value="Mercedes-Benz">Mercedes-Benz</option>
-                  <option value="Mitsubishi">Mitsubishi</option>
-                  <option value="Nissan">Nissan</option>
-                  <option value="Peugeot">Peugeot</option>
-                  <option value="Porsche">Porsche</option>
-                  <option value="RAM">RAM</option>
-                  <option value="Renault">Renault</option>
-                  <option value="Seat">Seat</option>
-                  <option value="Subaru">Subaru</option>
-                  <option value="Suzuki">Suzuki</option>
-                  <option value="Toyota">Toyota</option>
-                  <option value="Volkswagen">Volkswagen</option>
-                  <option value="Volvo">Volvo</option>
+                  {dbBrands.length > 0 ? (
+                    dbBrands.map(b => (
+                      <option key={b.id} value={b.name}>{b.name}</option>
+                    ))
+                  ) : (
+                    <option value="" disabled>Cargando marcas...</option>
+                  )}
                 </select>
               </div>
               <div className={styles.inputGroup}>
