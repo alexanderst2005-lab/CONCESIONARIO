@@ -99,7 +99,7 @@
   .heroContent {
     text-align: left;
     padding: 0 3rem;
-    max-width: 700px;
+    max-width: 850px;
     margin-left: 0;
     margin-right: auto;
   }
@@ -144,14 +144,13 @@
 
 /* ─── Main title ─── */
 .heroTitle {
-  font-size: clamp(2.6rem, 8vw, 6rem);
+  font-size: clamp(2.4rem, 5.5vw, 4.5rem);
   font-weight: 900;
-  line-height: 1.0;
+  line-height: 1.1;
   margin: 0 0 1.25rem 0;
   color: #ffffff;
   text-shadow: 0 4px 30px rgba(0,0,0,0.8);
   letter-spacing: -0.02em;
-  word-break: break-word;
 }
 
 .heroTitleGold {
