@@ -69,7 +69,7 @@ export default async function Home() {
         <div className={styles.heroBg} aria-hidden="true">
           <img
             src="https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?q=80&w=1920&auto=format&fit=crop"
-            alt=""
+            alt="Vehículo de lujo"
             className={styles.heroBgImg}
           />
           <div className={styles.heroOverlay} />
@@ -78,57 +78,29 @@ export default async function Home() {
         {/* Content */}
         <div className={`container ${styles.heroContent} animate-fade-in`}>
 
-          {/* Eyebrow tag */}
-          <span className={styles.heroTag}>Autos del Patrón</span>
+          <div className={styles.heroTextWrapper}>
+            <h1 className={`${styles.heroTitle} serif-title`}>
+              ENCUENTRA TU PRÓXIMO VEHÍCULO
+            </h1>
 
-          {/* Main title */}
-          <h1 className={`${styles.heroTitle} serif-title`}>
-            TU PRÓXIMO VEHÍCULO<br className={styles.titleBreak} /> ESTÁ AQUÍ.
-          </h1>
+            <p className={styles.heroSubtitle}>
+              Explora • Descubre • Elige
+            </p>
 
-          {/* Subtitle */}
-          <p className={styles.heroSubtitle}>
-            Compra, vende y descubre vehículos seleccionados en un solo lugar.
-          </p>
-
-          {/* ─── Compact inline search bar ─── */}
-          <form className={styles.searchBar} action="/vehiculos" method="GET">
-
-            <div className={styles.searchField}>
-              <label htmlFor="hs-marca"><Car size={13} strokeWidth={2} /> Marca</label>
-              <select id="hs-marca" name="marca">
-                <option value="">Cualquier marca</option>
-                {brandNames.map(b => <option key={b} value={b}>{b}</option>)}
-              </select>
+            <div className={styles.heroButtons}>
+              <a href="#encuentra-por-tipo" className={styles.primaryBtn}>
+                BUSCAR VEHÍCULO
+              </a>
+              <Link href="/vehiculos" className={styles.secondaryBtn}>
+                VER TODO EL INVENTARIO
+              </Link>
             </div>
-
-            <div className={styles.searchDivider} />
-
-            <div className={styles.searchField}>
-              <label htmlFor="hs-modelo"><Settings2 size={13} strokeWidth={2} /> Modelo</label>
-              <input id="hs-modelo" type="text" name="modelo" placeholder="Ej: CX-5" />
-            </div>
-
-            <div className={styles.searchDivider} />
-
-            <div className={styles.searchField}>
-              <label htmlFor="hs-ciudad"><MapPin size={13} strokeWidth={2} /> Ciudad</label>
-              <input id="hs-ciudad" type="text" name="ciudad" placeholder="Bogotá, Medellín…" />
-            </div>
-
-            <button type="submit" className={styles.searchBtn} aria-label="Buscar">
-              <Search size={18} strokeWidth={2.5} />
-              <span>Buscar</span>
-            </button>
-
-          </form>
-
-          {/* Advanced filters link */}
-          <div className={styles.heroMeta}>
-            <Link href="/vehiculos" className={styles.advancedLink}>
-              Ver filtros avanzados &rarr;
-            </Link>
           </div>
+
+          <a href="#encuentra-por-tipo" className={styles.scrollIndicator}>
+            <span className={styles.scrollText}>DESLIZA PARA EXPLORAR</span>
+            <span className={styles.scrollArrow}>↓</span>
+          </a>
 
         </div>
       </section>
@@ -183,7 +155,7 @@ export default async function Home() {
       </section>
 
       {/* CATEGORÍAS */}
-      <section className="container" style={{ padding: "4rem 1rem", overflow: "hidden" }}>
+      <section id="encuentra-por-tipo" className="container" style={{ padding: "4rem 1rem", overflow: "hidden" }}>
         <div className={styles.sectionHeader}>
           <h2 className={`${styles.sectionTitle} serif-title`}>Encuentra por tipo</h2>
         </div>
