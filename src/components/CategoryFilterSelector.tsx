@@ -136,24 +136,20 @@ export default function CategoryFilterSelector({
 
             {/* Selector de marca general */}
             {(() => {
-              let allowedBrands: any[] = [];
-              let showBrandSelector = false;
+              let allowedBrands = brands;
               
-              // Filter brands based on category's brandsList
+              // Filter brands based on category's brandsList if available
               if (selectedCat.brandsList) {
                 try {
                   const parsedBrands = JSON.parse(selectedCat.brandsList);
                   if (Array.isArray(parsedBrands) && parsedBrands.length > 0) {
                     const lowercaseParsed = parsedBrands.map((b: string) => b.toLowerCase().trim());
                     allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
-                    showBrandSelector = true;
                   }
                 } catch(e) {
-                  // Ignore parse error
+                  // Ignore parse error, default to all
                 }
               }
-
-              if (!showBrandSelector) return null;
 
               return (
                 <div style={{ flex: "1 1 100%" }}>
