@@ -6,7 +6,7 @@
 .heroSection {
   position: relative;
   width: 100%;
-  min-height: 100svh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -16,6 +16,13 @@
   padding-top: 80px;
   overflow: hidden;
   background-color: #050505;
+}
+
+@media (max-width: 639px) {
+  .heroSection {
+    margin-top: -70px;
+    padding-top: 70px;
+  }
 }
 
 @media (min-width: 768px) {

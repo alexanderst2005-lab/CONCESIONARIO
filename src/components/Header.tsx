@@ -73,7 +73,7 @@ export default function Header({ session }: { session: any }) {
               alt="Autos del Patrón Logo" 
               width={140} 
               height={45} 
-              style={{ objectFit: 'contain' }} 
+              style={{ objectFit: 'contain', mixBlendMode: 'lighten' }} 
               priority
             />
           </Link>
