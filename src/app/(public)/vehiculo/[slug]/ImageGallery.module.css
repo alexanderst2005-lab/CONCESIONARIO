@@ -26,7 +26,7 @@
   font-size: 2.5rem;
   font-weight: 200;
   cursor: pointer;
-  padding: 1rem;
+  padding: 0.5rem;
   z-index: 2;
   opacity: 0.8;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -37,11 +37,11 @@
 }
 
 .navPrev {
-  left: 0;
+  left: -0.25rem;
 }
 
 .navNext {
-  right: 0;
+  right: -0.25rem;
 }
 
 .dotsContainer {
