@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, boolean, timestamp, primaryKey, index } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, boolean, timestamp, primaryKey, index, jsonb } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Usuarios
@@ -159,6 +159,10 @@ export const settings = pgTable('settings', {
   id: serial('id').primaryKey(),
   whatsappNumber: text('whatsapp_number'),
   defaultMessage: text('default_message'),
+  minDownPaymentPercentage: integer('min_down_payment_percentage').default(10),
+  maxDownPaymentPercentage: integer('max_down_payment_percentage').default(70),
+  downPaymentStep: integer('down_payment_step').default(5),
+  financingNotificationEmail: text('financing_notification_email'),
 });
 
 // Relaciones Drizzle (Opcional, para facilitar consultas con db.query)
@@ -199,3 +203,53 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
   expiresAt: timestamp('expires_at').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
+
+// Bancos / Entidades Financieras
+export const banks = pgTable('banks', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  rate: text('rate').notNull(), // String for flexibility like "1.5"
+  terms: jsonb('terms').default('[]').notNull(), // [12, 24, 36, 48, 60]
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Solicitudes de Financiación
+export const financingRequests = pgTable('financing_requests', {
+  id: serial('id').primaryKey(),
+  requestNumber: text('request_number').notNull().unique(), // SOL-2026-000124
+  userId: integer('user_id').notNull().references(() => users.id),
+  vehicleId: integer('vehicle_id').notNull().references(() => vehicles.id),
+  bankId: integer('bank_id').notNull().references(() => banks.id),
+  
+  personalData: jsonb('personal_data').notNull(),
+  laborData: jsonb('labor_data').notNull(),
+  financialData: jsonb('financial_data').notNull(),
+  
+  vehiclePrice: integer('vehicle_price').notNull(),
+  downPayment: integer('down_payment').notNull(),
+  financedAmount: integer('financed_amount').notNull(),
+  term: integer('term').notNull(),
+  rate: text('rate').notNull(),
+  estimatedMonthly: integer('estimated_monthly').notNull(),
+  
+  status: text('status').notNull().default('Pendiente'),
+  
+  idDocumentUrl: text('id_document_url'),
+  pdfUrl: text('pdf_url'),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const banksRelations = relations(banks, ({ many }) => ({
+  financingRequests: many(financingRequests),
+}));
+
+export const financingRequestsRelations = relations(financingRequests, ({ one }) => ({
+  user: one(users, { fields: [financingRequests.userId], references: [users.id] }),
+  vehicle: one(vehicles, { fields: [financingRequests.vehicleId], references: [vehicles.id] }),
+  bank: one(banks, { fields: [financingRequests.bankId], references: [banks.id] }),
+}));
+

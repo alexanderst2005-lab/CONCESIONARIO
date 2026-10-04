@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { Menu, X, LayoutDashboard, Car, Tags, Users, MessageSquare, ListTree, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, Car, Tags, Users, MessageSquare, ListTree, Settings, FileText, Building } from "lucide-react";
 import styles from "./AdminSidebar.module.css";
 
 export default function AdminSidebar() {
@@ -16,6 +16,8 @@ export default function AdminSidebar() {
     { name: "Vehículos", href: "/admin/vehiculos", icon: <Car size={18} /> },
     { name: "Marcas", href: "/admin/marcas", icon: <Tags size={18} /> },
     { name: "Tipos de Vehículo", href: "/admin/categorias", icon: <ListTree size={18} /> },
+    { name: "Solicitudes Crédito", href: "/admin/financiacion", icon: <FileText size={18} /> },
+    { name: "Bancos / Financiación", href: "/admin/financiacion/bancos", icon: <Building size={18} /> },
     { name: "Usuarios", href: "/admin/usuarios", icon: <Users size={18} /> },
     { name: "Interesados", href: "/admin/leads", icon: <MessageSquare size={18} /> },
   ];
