@@ -20,6 +20,10 @@ export async function POST(req: Request) {
       formData
     } = body;
 
+    if (!vehicleId || !bankId) {
+      return NextResponse.json({ message: "Faltan parámetros del vehículo o banco" }, { status: 400 });
+    }
+
     // Generar PDF (Básico por ahora, se mejorará con la plantilla real)
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([600, 800]);
@@ -43,28 +47,28 @@ export async function POST(req: Request) {
     const newRequest = await db.insert(financingRequests).values({
       requestNumber,
       userId,
-      vehicleId: Number(vehicleId),
-      bankId: Number(bankId),
+      vehicleId: Number(vehicleId) || 0,
+      bankId: Number(bankId) || 0,
       personalData: {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        documentType: formData.documentType,
-        documentNumber: formData.documentNumber,
+        firstName: formData.firstName || "",
+        lastName: formData.lastName || "",
+        documentType: formData.documentType || "",
+        documentNumber: formData.documentNumber || "",
       },
       laborData: {
-        occupation: formData.occupationType,
-        company: formData.companyName,
-        salary: formData.salary,
+        occupation: formData.occupationType || "",
+        company: formData.companyName || "",
+        salary: formData.salary || "",
       },
       financialData: {
-        expenses: formData.expenses,
+        expenses: formData.expenses || "",
       },
-      vehiclePrice: Number(vehiclePrice),
-      downPayment: Number(downPayment),
-      financedAmount: Number(financedAmount),
-      term: Number(term),
-      rate: rate.toString(),
-      estimatedMonthly: Number(estimatedMonthly),
+      vehiclePrice: Number(vehiclePrice) || 0,
+      downPayment: Number(downPayment) || 0,
+      financedAmount: Number(financedAmount) || 0,
+      term: Number(term) || 0,
+      rate: rate ? rate.toString() : "0",
+      estimatedMonthly: Number(estimatedMonthly) || 0,
       status: "Pendiente",
       pdfUrl: pdfUrl
     }).returning();
