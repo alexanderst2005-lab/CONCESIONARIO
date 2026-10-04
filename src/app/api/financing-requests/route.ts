@@ -12,7 +12,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "No autorizado" }, { status: 401 });
     }
 
-    const userId = Number(session.user.id);
+    const userId = Number((session.user as any).id);
     const body = await req.json();
     const { 
       vehicleId, bankId, vehiclePrice, downPayment, financedAmount, 

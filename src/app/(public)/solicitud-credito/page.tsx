@@ -76,7 +76,7 @@ function SolicitudFormContent() {
   };
 
   const submitApplication = async () => {
-    toast("Procesando solicitud...", "info");
+    toast("Procesando solicitud...");
     try {
       const res = await fetch("/api/financing-requests", {
         method: "POST",
