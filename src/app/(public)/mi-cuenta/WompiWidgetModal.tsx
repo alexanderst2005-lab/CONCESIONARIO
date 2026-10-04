@@ -36,42 +36,43 @@ export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId
         return;
       }
 
-      // 1. Simulación o Apertura de Widget de Wompi real
-      // Normalmente aquí inyectaríamos el script de Wompi y llamaríamos a su Widget
-      // pasándole data.wompiPublicKey, data.amountInCents, y data.reference.
-      
-      // Para efectos del prototipo: mostramos alerta de éxito de Wompi y luego simulamos el webhook
-      const confirmWompi = window.confirm(
-        `[WOMPI SANDBOX]\n¿Autorizar cobro recurrente por $${(data.amountInCents/100).toLocaleString('es-CO')} para destacar ${vehicleName}?`
-      );
-
-      if (confirmWompi) {
-        // Simulamos el webhook que Wompi llamaría por detrás
-        await fetch("/api/webhooks/wompi", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            event: "transaction.updated",
-            data: {
-              transaction: {
-                id: `TEST_TRANS_${Date.now()}`,
-                status: "APPROVED",
-                reference: data.reference,
-                amount_in_cents: data.amountInCents,
-                payment_method: { token: "tok_test_12345" }
-              }
-            }
-          })
+      // Cargar el script de Wompi dinámicamente si no está en la página
+      if (!document.getElementById("wompi-widget-script")) {
+        const script = document.createElement("script");
+        script.id = "wompi-widget-script";
+        script.src = "https://checkout.wompi.co/widget.js";
+        script.async = true;
+        document.body.appendChild(script);
+        
+        await new Promise((resolve) => {
+          script.onload = resolve;
         });
-
-        toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
-        setTimeout(() => window.location.reload(), 2000);
-      } else {
-        toast("Pago cancelado", "error");
-        setLoading(false);
       }
 
+      // Inicializar el Widget Oficial de Wompi
+      // @ts-ignore
+      const checkout = new window.WidgetCheckout({
+        currency: 'COP',
+        amountInCents: data.amountInCents,
+        reference: data.reference,
+        publicKey: data.wompiPublicKey, // Se inyecta de forma segura desde el backend
+      });
+
+      checkout.open(function (result: any) {
+        const transaction = result.transaction;
+        console.log("Wompi Transaction Result:", transaction);
+        
+        if (transaction.status === "APPROVED") {
+          toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
+          setTimeout(() => window.location.reload(), 2000);
+        } else {
+          toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
+          setLoading(false);
+        }
+      });
+
     } catch (e) {
+      console.error(e);
       toast("Error de conexión", "error");
       setLoading(false);
     }
