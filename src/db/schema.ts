@@ -253,3 +253,63 @@ export const financingRequestsRelations = relations(financingRequests, ({ one })
   bank: one(banks, { fields: [financingRequests.bankId], references: [banks.id] }),
 }));
 
+// Planes de Promoción (Destacado)
+export const promotionPlans = pgTable('promotion_plans', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  description: text('description').notNull(),
+  amount: integer('amount').notNull(), // Precio mensual en COP
+  interval: text('interval').notNull().default('month'), // 'month', 'year', etc.
+  active: boolean('active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Suscripciones de Vehículos
+export const subscriptions = pgTable('subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  vehicleId: integer('vehicle_id').notNull().references(() => vehicles.id, { onDelete: 'cascade' }),
+  planId: integer('plan_id').notNull().references(() => promotionPlans.id),
+  
+  status: text('status').notNull().default('pending'), // pending, active, past_due, canceled, suspended, expired
+  amount: integer('amount').notNull(),
+  
+  startDate: timestamp('start_date'),
+  nextBillingDate: timestamp('next_billing_date'),
+  lastPaymentDate: timestamp('last_payment_date'),
+  cancelledAt: timestamp('cancelled_at'),
+  currentPeriodEnd: timestamp('current_period_end'),
+  
+  wompiPaymentSourceId: text('wompi_payment_source_id'),
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Pagos de Suscripciones (Historial de transacciones)
+export const subscriptionPayments = pgTable('subscription_payments', {
+  id: serial('id').primaryKey(),
+  subscriptionId: integer('subscription_id').notNull().references(() => subscriptions.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(),
+  transactionId: text('transaction_id'),
+  reference: text('reference').notNull().unique(), // Referencia única del cobro
+  status: text('status').notNull(), // APPROVED, DECLINED, ERROR
+  paidAt: timestamp('paid_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const promotionPlansRelations = relations(promotionPlans, ({ many }) => ({
+  subscriptions: many(subscriptions),
+}));
+
+export const subscriptionsRelations = relations(subscriptions, ({ one, many }) => ({
+  user: one(users, { fields: [subscriptions.userId], references: [users.id] }),
+  vehicle: one(vehicles, { fields: [subscriptions.vehicleId], references: [vehicles.id] }),
+  plan: one(promotionPlans, { fields: [subscriptions.planId], references: [promotionPlans.id] }),
+  payments: many(subscriptionPayments),
+}));
+
+export const subscriptionPaymentsRelations = relations(subscriptionPayments, ({ one }) => ({
+  subscription: one(subscriptions, { fields: [subscriptionPayments.subscriptionId], references: [subscriptions.id] }),
+}));
