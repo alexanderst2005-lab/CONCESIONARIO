@@ -62,6 +62,9 @@ export async function POST(req: Request) {
             <a href="${resetUrl}" style="background-color: #cda434; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">Restablecer Contraseña</a>
           </div>
           <p style="color: #555; font-size: 16px;">Si no solicitaste este cambio, puedes ignorar este correo.</p>
+          <div style="background-color: #fff6d6; border: 1px solid #cda434; border-radius: 6px; padding: 12px; margin-top: 20px;">
+            <p style="color: #7a5c00; font-size: 14px; margin: 0;"><strong>¿Este correo llegó a spam?</strong> Márcalo como <strong>"No es spam"</strong> para que el botón funcione correctamente.</p>
+          </div>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
           <p style="color: #888; font-size: 12px; text-align: center;">AutosElPatron - El concesionario premium</p>
         </div>

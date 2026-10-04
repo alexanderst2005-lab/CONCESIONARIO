@@ -50,9 +50,12 @@ export default function ForgotPasswordPage() {
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <CheckCircle2 size={56} color="#34A853" style={{ marginBottom: '1rem' }} />
             <h3 style={{ marginBottom: '1rem', color: '#fff' }}>¡Correo enviado!</h3>
-            <p style={{ color: '#aaa', marginBottom: '2rem', lineHeight: 1.5 }}>
+            <p style={{ color: '#aaa', marginBottom: '1.5rem', lineHeight: 1.5 }}>
               Si existe una cuenta asociada a <strong>{email}</strong>, hemos enviado las instrucciones para restablecer tu contraseña.
             </p>
+            <div style={{ background: 'rgba(205, 164, 52, 0.12)', border: '1px solid #cda434', borderRadius: 8, padding: '1rem', marginBottom: '2rem', color: '#f3d675', lineHeight: 1.5, fontSize: '0.95rem' }}>
+              <strong>¿No ves el correo?</strong> Revisa tu carpeta de <strong>spam o correo no deseado</strong>. Si está ahí, ábrelo y márcalo como <strong>&quot;No es spam&quot;</strong> para que el enlace funcione.
+            </div>
             <Link href="/login" className="btn-primary" style={{ display: 'inline-block', width: '100%', padding: '1rem' }}>
               Volver a Iniciar Sesión
             </Link>
