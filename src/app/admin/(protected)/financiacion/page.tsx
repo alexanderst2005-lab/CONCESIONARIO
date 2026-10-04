@@ -76,11 +76,9 @@ export default function SolicitudesCreditoPage() {
                     </span>
                   </td>
                   <td style={{ padding: "1rem", textAlign: "right" }}>
-                    {req.pdfUrl && (
-                      <a href={req.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
-                        <Download size={16} /> PDF
-                      </a>
-                    )}
+                    <a href={`/api/financing-requests/${req.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
+                      <Download size={16} /> PDF
+                    </a>
                   </td>
                 </tr>
               ))
