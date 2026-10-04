@@ -82,34 +82,29 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 
     // 1. ENCABEZADO
-    currentY -= 80;
-    page.drawRectangle({ x: 0, y: currentY, width: width, height: 80, color: colDark });
+    currentY -= 90; // Aumentar altura del header a 90
+    page.drawRectangle({ x: 0, y: currentY, width: width, height: 90, color: colDark });
     
     if (logoImg) {
-      // Calcular dimensiones para que encaje bien en el header de 80px de alto
-      const imgDims = logoImg.scaleToFit(150, 60);
+      const imgDims = logoImg.scaleToFit(140, 50);
       page.drawImage(logoImg, {
         x: margin,
-        y: currentY + 10,
+        y: currentY + 20,
         width: imgDims.width,
         height: imgDims.height,
       });
-      // Mover el texto a la derecha del logo
-      drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin + imgDims.width + 15, currentY + 35, fontBold, 14, colPrimary);
+      // Título debajo o al lado pero más pequeño/ajustado
+      drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin + imgDims.width + 15, currentY + 38, fontBold, 11, colPrimary);
     } else {
       drawText('AUTOS EL PATRÓN', margin, currentY + 45, fontBold, 22, colPrimary);
       drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin, currentY + 25, fontReg, 10, rgb(1,1,1));
     }
     
-    drawText(`No. de Solicitud: ${request.requestNumber}`, width - margin - 150, currentY + 45, fontReg, 10, rgb(1,1,1));
+    drawText(`No. Solicitud: ${request.requestNumber}`, width - margin - 150, currentY + 55, fontReg, 9, rgb(1,1,1));
     const reqDate = new Date(request.createdAt).toLocaleDateString('es-CO');
-    drawText(`Fecha: ${reqDate}`, width - margin - 150, currentY + 25, fontReg, 10, rgb(1,1,1));
+    drawText(`Fecha: ${reqDate}`, width - margin - 150, currentY + 35, fontReg, 9, rgb(1,1,1));
 
     currentY -= 20;
-
-    // ELIMINADO EL BLOQUE DE ESTADO PENDIENTE POR PETICIÓN DEL USUARIO
-    // (Ajustar margen Y)
-    currentY -= 10;
 
     // HELPERS DE DISEÑO
     const drawSectionHeader = (title: string) => {
@@ -146,11 +141,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       { label: 'Nombre Completo', value: `${pd.firstName || ''} ${pd.lastName || ''}`.trim() },
       { label: 'Tipo Documento', value: pd.documentType },
       { label: 'No. Documento', value: pd.documentNumber },
-      { label: 'Fecha de Nacimiento', value: pd.dob || 'No informado' },
+      { label: 'Fecha Nacimiento', value: pd.dob || 'No informado' },
       { label: 'Estado Civil', value: pd.maritalStatus || 'No informado' },
       { label: 'Dirección', value: pd.address || 'No informado' },
       { label: 'Ciudad', value: pd.city || 'No informado' },
-      { label: 'Correo Electrónico', value: pd.email || 'No informado' },
+      { label: 'Correo', value: pd.email || 'No informado' },
       { label: 'Teléfono', value: pd.phone || 'No informado' }
     ], 3);
 
@@ -158,14 +153,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const ld = request.laborData as any;
     drawSectionHeader('02 — INFORMACIÓN LABORAL Y ECONÓMICA');
     drawGrid([
-      { label: 'Tipo de Actividad', value: ld.activityType || 'No informado' },
+      { label: 'Actividad', value: ld.activityType || 'No informado' },
       { label: 'Ocupación', value: ld.occupation || 'No informado' },
       { label: 'Empresa', value: ld.company || 'No informado' },
       { label: 'Profesión', value: ld.profession || 'No informado' },
-      { label: 'Ingresos Mensuales', value: ld.salary ? `$${Number(ld.salary).toLocaleString('es-CO')}` : 'No informado' },
-      { label: 'Antigüedad Laboral', value: ld.seniority || 'No informado' },
+      { label: 'Ingresos', value: ld.salary ? `$${Number(ld.salary).toLocaleString('es-CO')}` : 'No informado' },
+      { label: 'Antigüedad', value: ld.seniority || 'No informado' },
       { label: 'Otros Ingresos', value: ld.otherIncome ? `$${Number(ld.otherIncome).toLocaleString('es-CO')}` : 'No informado' },
-      { label: 'Egresos Mensuales', value: (request.financialData as any)?.expenses ? `$${Number((request.financialData as any).expenses).toLocaleString('es-CO')}` : 'No informado' }
+      { label: 'Egresos', value: (request.financialData as any)?.expenses ? `$${Number((request.financialData as any).expenses).toLocaleString('es-CO')}` : 'No informado' }
     ], 3);
 
     // 03 — VEHÍCULO
@@ -177,9 +172,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       { label: 'Marca', value: vBrand },
       { label: 'Modelo / Línea', value: vModel },
       { label: 'Año', value: 'No informado' },
-      { label: 'Tipo de Vehículo', value: 'Automóvil' },
+      { label: 'Tipo', value: 'Automóvil' },
       { label: 'Placa', value: 'No informado' },
-      { label: 'Precio de Venta', value: `$${request.vehiclePrice.toLocaleString('es-CO')}` }
+      { label: 'Precio', value: `$${request.vehiclePrice.toLocaleString('es-CO')}` }
     ], 3);
 
     // 04 — RESUMEN DE FINANCIACIÓN
@@ -214,23 +209,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     currentY = summaryBoxY - 20;
 
-    drawText('La cuota presentada corresponde a una simulación y está sujeta a las condiciones, políticas y aprobación de la entidad financiera.', margin, currentY, fontReg, 8, colTextLight);
+    drawText('La cuota presentada corresponde a una simulación y está sujeta a aprobación de la entidad financiera.', margin, currentY, fontReg, 8, colTextLight);
     
     currentY -= 30;
 
-    // 05 — DOCUMENTACIÓN
-    drawSectionHeader('05 — DOCUMENTACIÓN');
-    drawText('Documento de Identidad:', margin, currentY, fontBold, 10, colText);
-    drawText('Adjuntado en el sistema (Ver panel)', margin + 140, currentY, fontReg, 10, colTextLight);
-    currentY -= 25;
-
-    // DECLARACIÓN Y FIRMAS
-    checkPageBreak(180); // Espacio seguro para firmas
-
-    currentY -= 10;
-    drawText('DECLARACIÓN DEL SOLICITANTE', margin, currentY, fontBold, 10, colDark);
-    currentY -= 20;
+    // 05 — DOCUMENTACIÓN Y DECLARACIÓN
+    drawSectionHeader('05 — DOCUMENTACIÓN Y DECLARACIÓN');
     
+    drawText('Documento de Identidad:', margin, currentY, fontBold, 9, colText);
+    drawText(`Adjuntado en el sistema (C.C. ${pd.documentNumber})`, margin + 130, currentY, fontReg, 9, colTextLight);
+    currentY -= 20;
+
     const disclaimer = 'La información suministrada por el solicitante corresponde a los datos registrados durante el proceso de solicitud y será utilizada para la gestión y evaluación de la financiación solicitada. Al firmar este documento, el solicitante autoriza el tratamiento de sus datos personales bajo las leyes vigentes.';
     
     // Wrapping manual básico del disclaimer
@@ -238,16 +227,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     let line = '';
     for (let word of words) {
       if ((line + word).length > 100) {
-        drawText(line, margin, currentY, fontReg, 9, colTextLight);
+        drawText(line, margin, currentY, fontReg, 8, colTextLight);
         currentY -= 12;
         line = word + ' ';
       } else {
         line += word + ' ';
       }
     }
-    drawText(line, margin, currentY, fontReg, 9, colTextLight);
+    drawText(line, margin, currentY, fontReg, 8, colTextLight);
 
-    currentY -= 80;
+    currentY -= 50;
+    
+    checkPageBreak(80); // Reducir el threshold para que no deje tanto espacio en blanco si cabe justo
 
     // Bloque de Firma
     page.drawLine({ start: { x: margin, y: currentY }, end: { x: margin + 200, y: currentY }, color: colDark, thickness: 1 });
