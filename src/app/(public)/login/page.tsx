@@ -16,7 +16,11 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       const urlError = params.get("error");
       if (urlError) {
-        setError(`Error NextAuth: ${urlError}`);
+        if (urlError === "GoogleNotRegistered") {
+          setError("Esta cuenta de Google no está registrada. Por favor, regístrate usando el formulario o usa una cuenta vinculada.");
+        } else {
+          setError(`Error NextAuth: ${urlError}`);
+        }
       }
     }
   }, []);

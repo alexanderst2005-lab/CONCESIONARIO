@@ -59,7 +59,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!existingUser) {
-            return "/login?error=AccessDenied";
+            return "/login?error=GoogleNotRegistered";
           }
           return true;
         }
