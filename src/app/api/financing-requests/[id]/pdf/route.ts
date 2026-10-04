@@ -56,7 +56,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const pdfBytes = await pdfDoc.save();
 
     // Retornar el PDF como un archivo descargable
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
