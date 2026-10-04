@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Error procesando solicitud de crédito:", error);
-    return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json({ message: "Error interno del servidor: " + (error as any).message }, { status: 500 });
   }
 }
 
