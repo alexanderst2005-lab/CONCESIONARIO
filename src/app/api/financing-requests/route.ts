@@ -63,12 +63,12 @@ export async function POST(req: Request) {
       financialData: {
         expenses: formData.expenses || "",
       },
-      vehiclePrice: Number(vehiclePrice) || 0,
-      downPayment: Number(downPayment) || 0,
-      financedAmount: Number(financedAmount) || 0,
-      term: Number(term) || 0,
+      vehiclePrice: Math.round(Number(vehiclePrice)) || 0,
+      downPayment: Math.round(Number(downPayment)) || 0,
+      financedAmount: Math.round(Number(financedAmount)) || 0,
+      term: Math.round(Number(term)) || 0,
       rate: rate ? rate.toString() : "0",
-      estimatedMonthly: Number(estimatedMonthly) || 0,
+      estimatedMonthly: Math.round(Number(estimatedMonthly)) || 0,
       status: "Pendiente",
       pdfUrl: pdfUrl
     }).returning();
