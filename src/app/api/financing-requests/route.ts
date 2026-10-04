@@ -108,9 +108,10 @@ export async function POST(req: Request) {
           });
 
           const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+          const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER;
 
           await transporter.sendMail({
-            from: `"Autos El Patrón" <${process.env.SMTP_USER}>`,
+            from: `"Autos El Patrón" <${fromEmail}>`,
             to: adminEmail,
             subject: `Nueva Solicitud de Crédito - ${requestNumber}`,
             text: `Se ha recibido una nueva solicitud de crédito para el vehículo ${fullRequest.vehicle?.brand?.name || ''} ${fullRequest.vehicle?.model?.name || ''}. Adjunto encontrarás el documento PDF con todos los detalles.`,

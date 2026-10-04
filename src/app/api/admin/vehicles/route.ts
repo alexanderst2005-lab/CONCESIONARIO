@@ -82,8 +82,9 @@ export async function PATCH(request: NextRequest) {
             },
           });
           
+          const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER;
           await transporter.sendMail({
-            from: `"Autos El Patrón" <${process.env.SMTP_USER}>`,
+            from: `"Autos El Patrón" <${fromEmail}>`,
             to: vehicle.user.email,
             subject: `¡Tu vehículo ha sido Aprobado! - Autos El Patrón`,
             html: `
