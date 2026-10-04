@@ -185,8 +185,8 @@ export default function PublicarPage() {
       }
     }
     
-    // If the category has NO brands linked, maybe just show all or show nothing?
-    // According to filter logic: it strictly filters. So if empty array, it shows 0 brands.
+    if (parsedBrands.length === 0) return dbBrands;
+    
     const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
     return dbBrands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
   }, [formData.categoryName, dbCategories, dbBrands]);
