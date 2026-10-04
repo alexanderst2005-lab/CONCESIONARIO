@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { subscriptions, users } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, not } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
     const userSubscriptions = await db.query.subscriptions.findMany({
-      where: eq(subscriptions.userId, user.id),
+      where: and(eq(subscriptions.userId, user.id), not(eq(subscriptions.status, 'pending'))),
       with: {
         plan: true,
         vehicle: {

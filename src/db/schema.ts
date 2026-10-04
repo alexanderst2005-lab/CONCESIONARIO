@@ -287,14 +287,17 @@ export const subscriptions = pgTable('subscriptions', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Pagos de Suscripciones (Historial de transacciones)
+// Pagos de Suscripciones (Historial de transacciones e intentos)
 export const subscriptionPayments = pgTable('subscription_payments', {
   id: serial('id').primaryKey(),
-  subscriptionId: integer('subscription_id').notNull().references(() => subscriptions.id, { onDelete: 'cascade' }),
+  subscriptionId: integer('subscription_id').references(() => subscriptions.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  vehicleId: integer('vehicle_id').references(() => vehicles.id, { onDelete: 'cascade' }),
+  planId: integer('plan_id').references(() => promotionPlans.id),
   amount: integer('amount').notNull(),
   transactionId: text('transaction_id'),
   reference: text('reference').notNull().unique(), // Referencia única del cobro
-  status: text('status').notNull(), // APPROVED, DECLINED, ERROR
+  status: text('status').notNull(), // PENDING, APPROVED, DECLINED, ERROR, EXPIRED, FAILED
   paidAt: timestamp('paid_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });

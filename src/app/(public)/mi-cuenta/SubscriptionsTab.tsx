@@ -93,6 +93,19 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
                       Fecha de finalización: {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}
                     </p>
                   </div>
+                ) : sub.status === 'past_due' ? (
+                  <div style={{ background: "rgba(248,113,113,0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(248,113,113,0.2)" }}>
+                    <h4 style={{ color: "#f87171", margin: "0 0 0.5rem 0" }}>🔴 Renovación fallida</h4>
+                    <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem", marginBottom: "1rem" }}>
+                      No pudimos procesar el pago de renovación. Tu vehículo volvió al inventario normal.
+                    </p>
+                    <button 
+                      onClick={() => window.location.href = `/suscripciones?vehicleId=${vehicle.id}&planId=${sub.planId}`}
+                      style={{ padding: "0.5rem 1.5rem", background: "var(--gold-accent)", color: "#000", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                    >
+                      RENOVAR SUSCRIPCIÓN
+                    </button>
+                  </div>
                 ) : (
                   <div>
                     <button 

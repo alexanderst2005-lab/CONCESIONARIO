@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { promotionPlans, subscriptions, vehicles } from "@/db/schema";
+import { promotionPlans, subscriptions, vehicles, subscriptionPayments } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -36,17 +36,19 @@ export async function POST(req: NextRequest) {
 
     if (!plan || !plan.active) return NextResponse.json({ message: "Plan no válido o inactivo" }, { status: 400 });
 
-    // Crear la suscripción pendiente en nuestra base de datos
-    const [newSub] = await db.insert(subscriptions).values({
+    const amountInCents = plan.amount * 100;
+    const reference = `PAYINT_${user.id}_${vehicle.id}_${plan.id}_${Date.now()}`;
+
+    // Crear el INTENTO de pago en la base de datos (NO una suscripción)
+    await db.insert(subscriptionPayments).values({
       userId: user.id,
       vehicleId: vehicle.id,
       planId: plan.id,
-      status: 'pending',
+      status: 'PENDING',
       amount: plan.amount,
-    }).returning();
+      reference: reference,
+    });
 
-    const amountInCents = plan.amount * 100;
-    const reference = `SUB_${newSub.id}_${Date.now()}`;
     const currency = 'COP';
     const integrityKey = process.env.WOMPI_INTEGRITY_KEY || "";
     
@@ -56,8 +58,7 @@ export async function POST(req: NextRequest) {
     const signature = crypto.createHash('sha256').update(rawString).digest('hex');
     
     return NextResponse.json({ 
-      message: "Suscripción iniciada", 
-      subscriptionId: newSub.id,
+      message: "Intento de pago iniciado", 
       amountInCents: amountInCents,
       reference: reference,
       signature: signature,

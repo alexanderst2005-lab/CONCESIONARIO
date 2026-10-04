@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { subscriptions, subscriptionPayments, vehicles } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { subscriptions, subscriptionPayments, vehicles, promotionPlans } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
@@ -17,66 +17,174 @@ export async function POST(req: NextRequest) {
       const status = transaction.status; // "APPROVED", "DECLINED", "ERROR", etc.
       const reference = transaction.reference; // Ej: SUB_5_1638202...
       
-      // Extraemos el ID de la suscripción de la referencia
-      const subIdStr = reference.split("_")[1];
-      const subId = parseInt(subIdStr);
+      // Extraemos la información del intento de pago de la referencia
+      // Formato: PAYINT_{userId}_{vehicleId}_{planId}_{timestamp}
+      // O para compatibilidad hacia atrás: SUB_{subId}_{timestamp}
+      const refParts = reference.split("_");
+      
+      let userId, vehicleId, planId, oldSubId;
+      let isNewFlow = refParts[0] === "PAYINT";
 
-      if (isNaN(subId)) return NextResponse.json({ message: "Referencia inválida" }, { status: 400 });
+      if (isNewFlow) {
+        userId = parseInt(refParts[1]);
+        vehicleId = parseInt(refParts[2]);
+        planId = parseInt(refParts[3]);
+      } else if (refParts[0] === "SUB") {
+        oldSubId = parseInt(refParts[1]);
+      }
 
-      // Buscamos la suscripción
-      const subscription = await db.query.subscriptions.findFirst({
-        where: eq(subscriptions.id, subId),
-        with: { plan: true }
+      if (!isNewFlow && isNaN(oldSubId as number)) return NextResponse.json({ message: "Referencia inválida" }, { status: 400 });
+      if (isNewFlow && (isNaN(userId as number) || isNaN(vehicleId as number) || isNaN(planId as number))) return NextResponse.json({ message: "Referencia PAYINT inválida" }, { status: 400 });
+
+      // Actualizamos el historial de transacciones (el intento de pago)
+      // Buscamos si existe el intento previo
+      const paymentIntent = await db.query.subscriptionPayments.findFirst({
+        where: eq(subscriptionPayments.reference, reference)
       });
 
-      if (!subscription) return NextResponse.json({ message: "Suscripción no encontrada" }, { status: 404 });
-
-      // Guardamos la transacción en el historial inmutable
-      await db.insert(subscriptionPayments).values({
-        subscriptionId: subId,
-        amount: transaction.amount_in_cents / 100, // Lo volvemos a pesos
-        transactionId: transaction.id,
-        reference: reference,
-        status: status,
-        paidAt: status === "APPROVED" ? new Date() : null,
-      });
+      if (paymentIntent) {
+        await db.update(subscriptionPayments).set({
+          status: status,
+          transactionId: transaction.id,
+          amount: transaction.amount_in_cents / 100,
+          paidAt: status === "APPROVED" ? new Date() : null,
+        }).where(eq(subscriptionPayments.id, paymentIntent.id));
+      } else {
+        // Por si llega primero el webhook o no se guardó el pending
+        await db.insert(subscriptionPayments).values({
+          subscriptionId: oldSubId || null,
+          userId: userId || null,
+          vehicleId: vehicleId || null,
+          planId: planId || null,
+          amount: transaction.amount_in_cents / 100,
+          transactionId: transaction.id,
+          reference: reference,
+          status: status,
+          paidAt: status === "APPROVED" ? new Date() : null,
+        });
+      }
 
       if (status === "APPROVED") {
-        // Activamos la suscripción
         const now = new Date();
         const nextBilling = new Date();
         
-        // Sumamos tiempo según el intervalo del plan (asumimos mes por defecto)
-        if (subscription.plan.interval === 'month') {
+        // Obtener el plan para el intervalo
+        let thePlanId = planId;
+        if (!isNewFlow && oldSubId) {
+          const oldSub = await db.query.subscriptions.findFirst({ where: eq(subscriptions.id, oldSubId) });
+          if (oldSub) thePlanId = oldSub.planId;
+        }
+
+        const plan = thePlanId ? await db.query.promotionPlans.findFirst({ where: eq(promotionPlans.id, thePlanId) }) : null;
+
+        if (plan && plan.interval === 'month') {
           nextBilling.setMonth(nextBilling.getMonth() + 1);
-        } else if (subscription.plan.interval === 'year') {
+        } else if (plan && plan.interval === 'year') {
           nextBilling.setFullYear(nextBilling.getFullYear() + 1);
         } else {
-          // Fallback a 30 días
           nextBilling.setDate(nextBilling.getDate() + 30);
         }
 
-        await db.update(subscriptions).set({
-          status: 'active',
-          startDate: now,
-          lastPaymentDate: now,
-          nextBillingDate: nextBilling,
-          currentPeriodEnd: nextBilling,
-          // Extraemos la fuente de pago de la transacción si Wompi la envió (para los futuros cobros recurrentes)
-          wompiPaymentSourceId: transaction.payment_method?.token || null,
-          updatedAt: now
-        }).where(eq(subscriptions.id, subId));
+        let activeSubscriptionId = oldSubId;
 
-        // Destacamos el vehículo!
-        await db.update(vehicles)
-          .set({ isFeatured: true })
-          .where(eq(vehicles.id, subscription.vehicleId));
+        if (isNewFlow && userId && vehicleId && planId) {
+          // Buscamos si ya existe una suscripción para evitar duplicados por webhooks idempotentes
+          const existingSub = await db.query.subscriptions.findFirst({
+            where: and(eq(subscriptions.userId, userId), eq(subscriptions.vehicleId, vehicleId))
+          });
 
-      } else if (status === "DECLINED" || status === "ERROR") {
-        await db.update(subscriptions).set({
-          status: 'past_due', // O rejected si es la primera vez
-          updatedAt: new Date()
-        }).where(eq(subscriptions.id, subId));
+          if (existingSub) {
+             // Es una renovación o webhook duplicado
+             activeSubscriptionId = existingSub.id;
+             await db.update(subscriptions).set({
+               status: 'active',
+               planId: planId,
+               amount: transaction.amount_in_cents / 100,
+               lastPaymentDate: now,
+               nextBillingDate: nextBilling,
+               currentPeriodEnd: nextBilling,
+               wompiPaymentSourceId: transaction.payment_method?.token || existingSub.wompiPaymentSourceId,
+               updatedAt: now
+             }).where(eq(subscriptions.id, existingSub.id));
+          } else {
+             // Creamos la SUSCRIPCIÓN REAL ahora sí
+             const [newSub] = await db.insert(subscriptions).values({
+               userId: userId,
+               vehicleId: vehicleId,
+               planId: planId,
+               status: 'active',
+               amount: transaction.amount_in_cents / 100,
+               startDate: now,
+               lastPaymentDate: now,
+               nextBillingDate: nextBilling,
+               currentPeriodEnd: nextBilling,
+               wompiPaymentSourceId: transaction.payment_method?.token || null,
+             }).returning();
+             activeSubscriptionId = newSub.id;
+          }
+          
+          // Actualizamos el intento de pago para linkearlo a la suscripción real
+          await db.update(subscriptionPayments).set({
+            subscriptionId: activeSubscriptionId
+          }).where(eq(subscriptionPayments.reference, reference));
+
+        } else if (oldSubId) {
+           // Flujo antiguo: la suscripción ya existía como pending
+           await db.update(subscriptions).set({
+             status: 'active',
+             startDate: now, // Si ya tenía no importa, se actualiza
+             lastPaymentDate: now,
+             nextBillingDate: nextBilling,
+             currentPeriodEnd: nextBilling,
+             wompiPaymentSourceId: transaction.payment_method?.token || null,
+             updatedAt: now
+           }).where(eq(subscriptions.id, oldSubId));
+        }
+
+        // Destacamos el vehículo! (Regla 10)
+        let finalVehicleId: number | null = null;
+        if (isNewFlow && vehicleId) {
+            finalVehicleId = vehicleId;
+        } else if (oldSubId) {
+            const tempSub = await db.query.subscriptions.findFirst({where: eq(subscriptions.id, oldSubId)});
+            if (tempSub) finalVehicleId = tempSub.vehicleId;
+        }
+
+        if (finalVehicleId) {
+            await db.update(vehicles)
+              .set({ isFeatured: true })
+              .where(eq(vehicles.id, finalVehicleId));
+        }
+
+      } else if (status === "DECLINED" || status === "ERROR" || status === "FAILED") {
+        // Si es flujo nuevo, no hay suscripción que poner en past_due si era intento inicial.
+        // Si ya existía suscripción (renovación fallida), la ponemos en past_due.
+        if (isNewFlow && userId && vehicleId) {
+          const existingSub = await db.query.subscriptions.findFirst({
+            where: and(eq(subscriptions.userId, userId), eq(subscriptions.vehicleId, vehicleId))
+          });
+          if (existingSub) {
+             await db.update(subscriptions).set({
+               status: 'past_due',
+               updatedAt: new Date()
+             }).where(eq(subscriptions.id, existingSub.id));
+             
+             // Si el currentPeriodEnd ya pasó, quitar el destacado (Regla 13)
+             if (existingSub.currentPeriodEnd && existingSub.currentPeriodEnd < new Date()) {
+                await db.update(vehicles).set({ isFeatured: false }).where(eq(vehicles.id, vehicleId));
+             }
+          }
+        } else if (oldSubId) {
+           await db.update(subscriptions).set({
+             status: 'past_due',
+             updatedAt: new Date()
+           }).where(eq(subscriptions.id, oldSubId));
+           
+           const oldSub = await db.query.subscriptions.findFirst({ where: eq(subscriptions.id, oldSubId) });
+           if (oldSub && oldSub.currentPeriodEnd && oldSub.currentPeriodEnd < new Date()) {
+              await db.update(vehicles).set({ isFeatured: false }).where(eq(vehicles.id, oldSub.vehicleId));
+           }
+        }
       }
     }
 
