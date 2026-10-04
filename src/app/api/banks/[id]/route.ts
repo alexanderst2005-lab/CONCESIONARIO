@@ -3,9 +3,10 @@ import { db } from "@/db";
 import { banks } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     if (isNaN(id)) return NextResponse.json({ message: "ID inválido" }, { status: 400 });
 
     const body = await req.json();
@@ -26,9 +27,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     if (isNaN(id)) return NextResponse.json({ message: "ID inválido" }, { status: 400 });
 
     await db.delete(banks).where(eq(banks.id, id));
