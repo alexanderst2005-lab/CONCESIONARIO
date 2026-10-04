@@ -4,6 +4,7 @@ import { financingRequests } from "@/db/schema";
 import { PDFDocument, rgb } from "pdf-lib";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -25,21 +26,8 @@ export async function POST(req: Request) {
     }
 
     // Generar PDF (Básico por ahora, se mejorará con la plantilla real)
-    const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([600, 800]);
-    const { width, height } = page.getSize();
-    
-    page.drawText('SOLICITUD DE CRÉDITO DE VEHÍCULO', { x: 50, y: height - 50, size: 20 });
-    page.drawText(`Cliente: ${formData.firstName} ${formData.lastName}`, { x: 50, y: height - 100, size: 12 });
-    page.drawText(`Cédula: ${formData.documentNumber}`, { x: 50, y: height - 120, size: 12 });
-    page.drawText(`Monto a Financiar: $${financedAmount}`, { x: 50, y: height - 140, size: 12 });
-    page.drawText(`Plazo: ${term} meses`, { x: 50, y: height - 160, size: 12 });
-    page.drawText(`Entidad: Banco #${bankId}`, { x: 50, y: height - 180, size: 12 });
-    
-    // Aquí idealmente guardaríamos el PDF en Vercel Blob o AWS S3
-    // Por ahora, simularemos que se guardó
-    // const pdfBytes = await pdfDoc.save();
-    const pdfUrl = "https://example.com/pdf/simulado.pdf";
+    // El PDF se generará dinámicamente cuando el admin haga clic en descargar
+    const pdfUrl = "";
 
     // Guardar en Base de Datos
     const requestNumber = `SOL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -70,8 +58,12 @@ export async function POST(req: Request) {
       rate: rate ? rate.toString() : "0",
       estimatedMonthly: Math.round(Number(estimatedMonthly)) || 0,
       status: "Pendiente",
-      pdfUrl: pdfUrl
     }).returning();
+
+    // Actualizar con la URL del PDF dinámico
+    await db.update(financingRequests)
+      .set({ pdfUrl: `/api/financing-requests/${newRequest[0].id}/pdf` })
+      .where(eq(financingRequests.id, newRequest[0].id));
 
     // Aquí iría el envío de correo al concesionario con el PDF adjunto
 
