@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FileText, Eye, Download } from "lucide-react";
+import { FileText, Eye, Download, Trash2 } from "lucide-react";
 import { useUI } from "@/components/UIProvider";
 
 export default function SolicitudesCreditoPage() {
@@ -24,6 +24,23 @@ export default function SolicitudesCreditoPage() {
     };
     fetchRequests();
   }, []);
+
+  const handleDelete = async (id: number) => {
+    if (confirm("¿Estás seguro de que deseas eliminar esta solicitud de forma permanente?")) {
+      try {
+        const res = await fetch(`/api/financing-requests/${id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setRequests(requests.filter((r: any) => r.id !== id));
+        } else {
+          alert("Error al eliminar la solicitud");
+        }
+      } catch (error) {
+        console.error("Error al eliminar", error);
+      }
+    }
+  };
 
   return (
     <div style={{ padding: "2rem", color: "#fff", maxWidth: "1200px", margin: "0 auto" }}>
@@ -76,9 +93,14 @@ export default function SolicitudesCreditoPage() {
                     </span>
                   </td>
                   <td style={{ padding: "1rem", textAlign: "right" }}>
-                    <a href={`/api/financing-requests/${req.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
-                      <Download size={16} /> PDF
-                    </a>
+                    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+                      <a href={`/api/financing-requests/${req.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
+                        <Download size={16} /> PDF
+                      </a>
+                      <button onClick={() => handleDelete(req.id)} style={{ background: "transparent", border: "1px solid rgba(239,68,68,0.5)", padding: "0.5rem", borderRadius: "4px", color: "#ef4444", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }} title="Eliminar solicitud">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
