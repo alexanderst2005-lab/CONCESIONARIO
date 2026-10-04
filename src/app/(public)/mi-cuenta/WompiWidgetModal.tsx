@@ -2,11 +2,18 @@
 import React, { useState, useEffect } from "react";
 import { useUI } from "@/components/UIProvider";
 
+import { createPortal } from "react-dom";
+
 export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = "⭐ DESTACAR" }: { vehicleId: number, vehicleName: string, buttonText?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { toast } = useUI();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (isOpen && plans.length === 0) {
@@ -99,8 +106,8 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
         {buttonText}
       </button>
 
-      {isOpen && (
-        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem" }}>
+      {mounted && isOpen && createPortal(
+        <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100000, padding: "1rem" }}>
           <div style={{ backgroundColor: "#111", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "500px", border: "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
             <h2 style={{ color: "var(--gold-accent)", marginBottom: "1rem" }}>⭐ Destacar Vehículo</h2>
             <p style={{ color: "#ccc", marginBottom: "1.5rem" }}>
@@ -137,7 +144,8 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
               Cerrar
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
