@@ -136,15 +136,6 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             </div>
           )}
 
-          {/* SIMULADOR FINANCIERO */}
-          {vehicle.status !== "VENDIDO" && (
-            <FinancingSimulator 
-              vehiclePrice={vehicle.price} 
-              vehicleId={vehicle.id} 
-              vehicleName={`${vehicle.brandName} ${vehicle.modelName} ${vehicle.year}`} 
-            />
-          )}
-
         </div>
         </div>
 
@@ -265,6 +256,18 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
             </p>
           )}
         </div>
+
+        {/* SIMULADOR FINANCIERO MOVIDO AQUÍ */}
+        <div style={{ marginTop: '2rem' }}>
+          {vehicle.status !== "VENDIDO" && (
+            <FinancingSimulator 
+              vehiclePrice={vehicle.price} 
+              vehicleId={vehicle.id} 
+              vehicleName={`${vehicle.brandName} ${vehicle.modelName} ${vehicle.year}`} 
+            />
+          )}
+        </div>
+
       </div>
 
       </div>

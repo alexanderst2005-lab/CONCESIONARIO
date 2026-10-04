@@ -75,7 +75,62 @@ export async function POST(req: Request) {
       .set({ pdfUrl: `/api/financing-requests/${newRequest[0].id}/pdf` })
       .where(eq(financingRequests.id, newRequest[0].id));
 
-    // Aquí iría el envío de correo al concesionario con el PDF adjunto
+    // Generar PDF y enviar por correo al concesionario
+    try {
+      const fullRequest = await db.query.financingRequests.findFirst({
+        where: eq(financingRequests.id, newRequest[0].id),
+        with: {
+          bank: true,
+          vehicle: {
+            with: { brand: true, model: true }
+          }
+        }
+      });
+
+      if (fullRequest) {
+        // Importación dinámica para no afectar la ejecución inicial
+        const { generateFinancingPdfBuffer } = await import('./[id]/pdf/route');
+        const pdfBytes = await generateFinancingPdfBuffer(fullRequest);
+        
+        const nodemailer = await import('nodemailer');
+        
+        // Configurar transporte usando variables de entorno o un fallback
+        // Si no hay SMTP configurado, solo lo informamos por consola pero no falla
+        if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+          const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: {
+              user: process.env.SMTP_USER,
+              pass: process.env.SMTP_PASS,
+            },
+          });
+
+          const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
+
+          await transporter.sendMail({
+            from: `"Autos El Patrón" <${process.env.SMTP_USER}>`,
+            to: adminEmail,
+            subject: `Nueva Solicitud de Crédito - ${requestNumber}`,
+            text: `Se ha recibido una nueva solicitud de crédito para el vehículo ${fullRequest.vehicle?.brand?.name || ''} ${fullRequest.vehicle?.model?.name || ''}. Adjunto encontrarás el documento PDF con todos los detalles.`,
+            attachments: [
+              {
+                filename: `Solicitud_${requestNumber}.pdf`,
+                content: Buffer.from(pdfBytes),
+                contentType: 'application/pdf'
+              }
+            ]
+          });
+          console.log("Correo enviado correctamente al concesionario");
+        } else {
+          console.log("SMTP no configurado. El PDF fue generado pero no se envió por correo.");
+        }
+      }
+    } catch (emailErr) {
+      console.error("Error al generar o enviar el PDF por correo:", emailErr);
+      // No bloqueamos la respuesta al cliente si el correo falla
+    }
 
     return NextResponse.json({ 
       message: "Solicitud procesada correctamente", 

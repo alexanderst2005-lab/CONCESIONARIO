@@ -16,7 +16,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const resolvedParams = await params;
     const { id } = resolvedParams;
 
-    // Buscar la solicitud
     const request = await db.query.financingRequests.findFirst({
       where: eq(financingRequests.id, Number(id)),
       with: {
@@ -34,6 +33,24 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ message: "Solicitud no encontrada" }, { status: 404 });
     }
 
+    const pdfBytes = await generateFinancingPdfBuffer(request);
+
+    // Retornar el PDF como un archivo descargable
+    return new NextResponse(Buffer.from(pdfBytes), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `inline; filename="Solicitud_${request.requestNumber}.pdf"`,
+      },
+    });
+
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    return NextResponse.json({ message: "Error interno al generar el PDF" }, { status: 500 });
+  }
+}
+
+export async function generateFinancingPdfBuffer(request: any) {
     // Generar el PDF Profesional (Nivel Empresarial)
     const pdfDoc = await PDFDocument.create();
     
@@ -255,19 +272,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       p.drawText(`Página ${i + 1} de ${pages.length}`, { x: width - margin - 40, y: 25, font: fontReg, size: 8, color: colTextLight });
     });
 
-    const pdfBytes = await pdfDoc.save();
-
-    // Retornar el PDF como un archivo descargable
-    return new NextResponse(Buffer.from(pdfBytes), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `inline; filename="Solicitud_${request.requestNumber}.pdf"`,
-      },
-    });
-
-  } catch (error) {
-    console.error("Error al generar PDF:", error);
-    return NextResponse.json({ message: "Error interno al generar el PDF" }, { status: 500 });
-  }
+    return await pdfDoc.save();
 }
