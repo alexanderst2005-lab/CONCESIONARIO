@@ -49,7 +49,8 @@ export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId
         });
       }
 
-      const checkout = new window.WidgetCheckout({
+      // @ts-ignore
+      const checkout = new (window as any).WidgetCheckout({
         currency: 'COP',
         amountInCents: data.amountInCents,
         reference: data.reference,
