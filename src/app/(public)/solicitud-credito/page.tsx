@@ -77,11 +77,33 @@ function SolicitudFormContent() {
 
   const submitApplication = async () => {
     toast("Procesando solicitud...", "info");
-    // Aquí implementaremos el POST a /api/financing-requests en la siguiente fase
-    setTimeout(() => {
-      toast("Solicitud enviada exitosamente", "success");
-      router.push("/vehiculos"); // Redirigir al inicio o a una página de éxito
-    }, 2000);
+    try {
+      const res = await fetch("/api/financing-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vehicleId,
+          bankId,
+          vehiclePrice: price,
+          downPayment: searchParams.get("downPayment"),
+          financedAmount: financed,
+          term,
+          rate: searchParams.get("rate"),
+          estimatedMonthly: searchParams.get("monthly"),
+          formData
+        }),
+      });
+
+      if (res.ok) {
+        toast("Solicitud enviada exitosamente", "success");
+        router.push("/vehiculos"); 
+      } else {
+        const errorData = await res.json();
+        toast(errorData.message || "Error al enviar la solicitud", "error");
+      }
+    } catch (error) {
+      toast("Error de conexión", "error");
+    }
   };
 
   const inputStyle = { width: "100%", padding: "0.8rem", background: "rgba(0,0,0,0.5)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", color: "#fff", marginBottom: "1rem" };

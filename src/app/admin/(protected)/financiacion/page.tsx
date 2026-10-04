@@ -8,13 +8,21 @@ export default function SolicitudesCreditoPage() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // En una fase posterior integraremos el fetch real a /api/financing-requests
   useEffect(() => {
-    // Simulando carga inicial
-    setTimeout(() => {
-      setRequests([]);
-      setLoading(false);
-    }, 500);
+    const fetchRequests = async () => {
+      try {
+        const res = await fetch("/api/financing-requests");
+        if (res.ok) {
+          const data = await res.json();
+          setRequests(data);
+        }
+      } catch (error) {
+        console.error("Error cargando solicitudes", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequests();
   }, []);
 
   return (
@@ -52,8 +60,30 @@ export default function SolicitudesCreditoPage() {
                 </td>
               </tr>
             ) : (
-              // Aquí iteraremos sobre las solicitudes reales
-              null
+              requests.map((req: any) => (
+                <tr key={req.id} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+                  <td style={{ padding: "1rem" }}>{req.requestNumber}</td>
+                  <td style={{ padding: "1rem" }}>{req.personalData?.firstName} {req.personalData?.lastName}</td>
+                  <td style={{ padding: "1rem" }}>{req.vehicle?.brand?.name} {req.vehicle?.model?.name}</td>
+                  <td style={{ padding: "1rem" }}>{req.bank?.name}</td>
+                  <td style={{ padding: "1rem" }}>
+                    <span style={{ 
+                      padding: "0.25rem 0.5rem", borderRadius: "4px", fontSize: "0.9rem",
+                      background: req.status === 'Pendiente' ? 'rgba(234,179,8,0.2)' : 'rgba(59,130,246,0.2)',
+                      color: req.status === 'Pendiente' ? '#eab308' : '#3b82f6'
+                    }}>
+                      {req.status}
+                    </span>
+                  </td>
+                  <td style={{ padding: "1rem", textAlign: "right" }}>
+                    {req.pdfUrl && (
+                      <a href={req.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>
+                        <Download size={16} /> PDF
+                      </a>
+                    )}
+                  </td>
+                </tr>
+              ))
             )}
           </tbody>
         </table>
