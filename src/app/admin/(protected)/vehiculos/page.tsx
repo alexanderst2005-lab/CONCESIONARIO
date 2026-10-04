@@ -54,7 +54,8 @@ export default function AdminVehiclesPage() {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null | undefined) => {
+    if (!status) return { bg: '#222', color: '#aaa' };
     switch(status.toUpperCase()) {
       case 'PENDIENTE': return { bg: 'rgba(245,198,11,0.2)', color: 'var(--gold-accent)' };
       case 'ACTIVO': 

@@ -123,9 +123,10 @@ export default function Header({ session }: { session: any }) {
                       </div>
                     </div>
                     <div className={styles.dropdownDivider} />
-                    <Link href="/mi-cuenta?tab=historial" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Historial</Link>
+                    <Link href="/mi-cuenta?tab=inicio" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Inicio</Link>
                     <Link href="/favoritos" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Favoritos</Link>
                     <Link href="/mi-cuenta?tab=publicaciones" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Mis Publicaciones</Link>
+                    <Link href="/mi-cuenta?tab=planes" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>⭐ Planes</Link>
                     <Link href="/mi-cuenta?tab=suscripciones" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Mis Suscripciones</Link>
                     <Link href="/publicar" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Vender mi Vehículo</Link>
                     <Link href="/mi-cuenta?tab=perfil" className={styles.dropdownItem} onClick={() => setAccountDropdownOpen(false)}>Perfil</Link>
