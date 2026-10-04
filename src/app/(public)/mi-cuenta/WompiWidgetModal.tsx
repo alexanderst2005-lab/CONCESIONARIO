@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useUI } from "@/components/UIProvider";
 
-export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId: number, vehicleName: string }) {
+export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = "⭐ DESTACAR" }: { vehicleId: number, vehicleName: string, buttonText?: string }) {
   const [isOpen, setIsOpen] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -85,7 +85,7 @@ export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId
         onClick={() => setIsOpen(true)}
         style={{ padding: "0.4rem 0.75rem", background: "rgba(245,198,11,0.1)", color: "var(--gold-accent)", border: "1px solid var(--gold-accent)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: "bold" }}
       >
-        ⭐ DESTACAR
+        {buttonText}
       </button>
 
       {isOpen && (

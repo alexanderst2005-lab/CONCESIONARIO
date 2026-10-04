@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useUI } from "@/components/UIProvider";
+import WompiWidgetModal from "./WompiWidgetModal";
 
 export default function SubscriptionsTab({ userId }: { userId: number }) {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
@@ -99,12 +100,11 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
                     <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem", marginBottom: "1rem" }}>
                       No pudimos procesar el pago de renovación. Tu vehículo volvió al inventario normal.
                     </p>
-                    <button 
-                      onClick={() => window.location.href = `/suscripciones?vehicleId=${vehicle.id}&planId=${sub.planId}`}
-                      style={{ padding: "0.5rem 1.5rem", background: "var(--gold-accent)", color: "#000", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-                    >
-                      RENOVAR SUSCRIPCIÓN
-                    </button>
+                    <WompiWidgetModal 
+                      vehicleId={vehicle.id} 
+                      vehicleName={`${vehicle.brand?.name} ${vehicle.model?.name}`} 
+                      buttonText="RENOVAR SUSCRIPCIÓN" 
+                    />
                   </div>
                 ) : (
                   <div>
