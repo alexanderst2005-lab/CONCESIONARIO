@@ -3,30 +3,42 @@
 import React, { useEffect, useState } from "react";
 import { useUI } from "@/components/UIProvider";
 
+/**
+ * Admin — Planes de Destacados (tabla planes_destacado).
+ * Precio y duración viven en la BD: editar aquí cambia lo que ven y pagan los
+ * usuarios en compras NUEVAS. Pagos ya iniciados conservan el precio/duración
+ * con que se crearon. Los planes no se eliminan, se desactivan.
+ */
+
+type Plan = {
+  id: number;
+  nombre: string;
+  duracionDias: number;
+  precio: number;
+  activo: boolean;
+};
+
+const th: React.CSSProperties = { padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" };
+const td: React.CSSProperties = { padding: "1rem", color: "#ccc" };
+const input: React.CSSProperties = { width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" };
+const label: React.CSSProperties = { display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" };
+
+const cop = (n: number) => `$${Math.round(n).toLocaleString("es-CO")}`;
+
 export default function PromotionPlansPage() {
-  const [plans, setPlans] = useState<any[]>([]);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
-  
+  const [saving, setSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<any>(null);
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    amount: "",
-    interval: "month",
-    duration: "30",
-    durationUnit: "días",
-    benefits: "",
-    autoRenew: true
-  });
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [formData, setFormData] = useState({ nombre: "", duracionDias: "", precio: "" });
 
   const { toast } = useUI();
 
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/promotions/plans");
+      const res = await fetch("/api/admin/planes-destacado", { cache: "no-store" });
       const data = await res.json();
       setPlans(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -42,101 +54,85 @@ export default function PromotionPlansPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (saving) return;
+    setSaving(true);
     try {
-      const url = "/api/admin/promotions/plans";
-      const method = editingPlan ? "PUT" : "POST";
-      
-      const benefitsArray = formData.benefits.split("\n").map(b => b.trim()).filter(b => b);
-
-      const res = await fetch(url, {
-        method,
+      const res = await fetch("/api/admin/planes-destacado", {
+        method: editingPlan ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           id: editingPlan?.id,
-          name: formData.name,
-          description: formData.description,
-          amount: formData.amount,
-          interval: formData.interval,
-          duration: formData.duration,
-          durationUnit: formData.durationUnit,
-          benefits: benefitsArray,
-          autoRenew: formData.autoRenew
+          nombre: formData.nombre,
+          duracionDias: Number(formData.duracionDias),
+          precio: Number(formData.precio),
         }),
       });
-      
+      const body = await res.json().catch(() => ({}));
       if (res.ok) {
         toast(editingPlan ? "Plan actualizado" : "Plan creado", "success");
         setIsModalOpen(false);
         fetchPlans();
       } else {
-        toast("Error al guardar el plan", "error");
+        toast(body?.message || "Error al guardar el plan", "error");
       }
-    } catch (e) {
+    } catch {
       toast("Error interno", "error");
     }
+    setSaving(false);
   };
 
-  const toggleStatus = async (id: number, currentStatus: boolean) => {
+  const toggleStatus = async (plan: Plan) => {
     try {
-      const res = await fetch("/api/admin/promotions/plans", {
+      const res = await fetch("/api/admin/planes-destacado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, active: !currentStatus }),
+        body: JSON.stringify({ id: plan.id, activo: !plan.activo }),
       });
       if (res.ok) {
-        toast(currentStatus ? "Plan desactivado" : "Plan activado", "success");
+        toast(plan.activo ? "Plan desactivado" : "Plan activado", "success");
         fetchPlans();
+      } else {
+        toast("No se pudo cambiar el estado", "error");
       }
-    } catch (e) {
+    } catch {
       toast("Error al cambiar estado", "error");
     }
   };
 
-  const openModal = (plan: any = null) => {
-    if (plan) {
-      setEditingPlan(plan);
-      setFormData({
-        name: plan.name,
-        description: plan.description,
-        amount: plan.amount.toString(),
-        interval: plan.interval,
-        duration: plan.duration?.toString() || "30",
-        durationUnit: plan.durationUnit || "días",
-        benefits: Array.isArray(plan.benefits) ? plan.benefits.join("\n") : "",
-        autoRenew: plan.autoRenew !== undefined ? plan.autoRenew : true
-      });
-    } else {
-      setEditingPlan(null);
-      setFormData({ 
-        name: "", description: "", amount: "", interval: "month",
-        duration: "30", durationUnit: "días", benefits: "Vehículo destacado\nMayor visibilidad", autoRenew: true
-      });
-    }
+  const openModal = (plan: Plan | null = null) => {
+    setEditingPlan(plan);
+    setFormData(plan
+      ? { nombre: plan.nombre, duracionDias: String(plan.duracionDias), precio: String(plan.precio) }
+      : { nombre: "", duracionDias: "", precio: "" });
     setIsModalOpen(true);
   };
 
+  const diasN = Number(formData.duracionDias);
+  const precioN = Number(formData.precio);
+  const precioDiaPreview = diasN > 0 && precioN > 0 ? cop(precioN / diasN) : "—";
+
   return (
     <div>
-      <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ marginBottom: "2rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
         <div>
           <h1 className="serif-title" style={{ fontSize: "2rem", color: "#fff" }}>Planes de Destacados</h1>
-          <p style={{ color: "#aaa", margin: 0 }}>Crea y gestiona los planes y suscripciones para los clientes.</p>
+          <p style={{ color: "#aaa", margin: 0 }}>Pago único por periodo. Si el usuario ya tiene un destacado vigente, los días nuevos se suman al final.</p>
         </div>
         <button onClick={() => openModal()} className="btn-primary" style={{ padding: '0.75rem 1.5rem', fontWeight: 600 }}>
           + Nuevo Plan
         </button>
       </div>
 
-      <div style={{ background: "#080808", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+      <div style={{ background: "#080808", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 640 }}>
           <thead>
             <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Plan</th>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Precio</th>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Duración</th>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Renovación</th>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Estado</th>
-              <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Acciones</th>
+              <th style={th}>Plan</th>
+              <th style={th}>Duración</th>
+              <th style={th}>Precio total</th>
+              <th style={th}>Precio por día</th>
+              <th style={th}>Estado</th>
+              <th style={th}>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -147,32 +143,26 @@ export default function PromotionPlansPage() {
             ) : (
               plans.map(plan => (
                 <tr key={plan.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.02)" }}>
-                  <td style={{ padding: "1rem", color: "#fff", fontWeight: 600 }}>{plan.name}</td>
-                  <td style={{ padding: "1rem", color: "var(--gold-accent)", fontWeight: 600 }}>
-                    ${parseInt(plan.amount).toLocaleString('es-CO')}
-                  </td>
-                  <td style={{ padding: "1rem", color: "#ccc" }}>
-                    {plan.duration} {plan.durationUnit}
-                  </td>
-                  <td style={{ padding: "1rem", color: "#ccc" }}>
-                    {plan.autoRenew ? 'Sí (Automática)' : 'No (Pago único)'}
-                  </td>
+                  <td style={{ ...td, color: "#fff", fontWeight: 600 }}>{plan.nombre}</td>
+                  <td style={td}>{plan.duracionDias} {plan.duracionDias === 1 ? "día" : "días"}</td>
+                  <td style={{ ...td, color: "var(--gold-accent)", fontWeight: 600 }}>{cop(plan.precio)}</td>
+                  <td style={td}>{cop(plan.precio / plan.duracionDias)}</td>
                   <td style={{ padding: "1rem" }}>
-                    <span style={{ 
-                      padding: "0.25rem 0.5rem", 
-                      borderRadius: "4px", 
-                      fontSize: "0.75rem", 
+                    <span style={{
+                      padding: "0.25rem 0.5rem",
+                      borderRadius: "4px",
+                      fontSize: "0.75rem",
                       fontWeight: 600,
-                      backgroundColor: plan.active ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)',
-                      color: plan.active ? '#4ade80' : '#f87171'
+                      backgroundColor: plan.activo ? 'rgba(74,222,128,0.2)' : 'rgba(248,113,113,0.2)',
+                      color: plan.activo ? '#4ade80' : '#f87171'
                     }}>
-                      {plan.active ? 'ACTIVO' : 'INACTIVO'}
+                      {plan.activo ? 'ACTIVO' : 'INACTIVO'}
                     </span>
                   </td>
                   <td style={{ padding: "1rem", display: "flex", gap: "0.5rem" }}>
                     <button onClick={() => openModal(plan)} style={{ padding: "0.4rem 0.75rem", background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Editar</button>
-                    <button onClick={() => toggleStatus(plan.id, plan.active)} style={{ padding: "0.4rem 0.75rem", background: plan.active ? "rgba(248,113,113,0.1)" : "rgba(74,222,128,0.1)", color: plan.active ? "#f87171" : "#4ade80", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
-                      {plan.active ? 'Desactivar' : 'Activar'}
+                    <button onClick={() => toggleStatus(plan)} style={{ padding: "0.4rem 0.75rem", background: plan.activo ? "rgba(248,113,113,0.1)" : "rgba(74,222,128,0.1)", color: plan.activo ? "#f87171" : "#4ade80", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
+                      {plan.activo ? 'Desactivar' : 'Activar'}
                     </button>
                   </td>
                 </tr>
@@ -184,64 +174,41 @@ export default function PromotionPlansPage() {
 
       {isModalOpen && (
         <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "1rem", overflowY: "auto" }}>
-          <div style={{ backgroundColor: "#111", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "600px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }}>
+          <div style={{ backgroundColor: "#111", padding: "2rem", borderRadius: "12px", width: "100%", maxWidth: "520px", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }}>
             <h2 style={{ color: "#fff", marginBottom: "1.5rem" }}>{editingPlan ? 'Editar Plan' : 'Nuevo Plan'}</h2>
-            
+
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
               <div>
-                <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Nombre del Plan (Ej: Plan Plata)</label>
-                <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }} />
-              </div>
-              
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                <div>
-                  <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Precio del cobro (COP)</label>
-                  <input required type="number" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }} placeholder="Ej: 20000" />
-                </div>
-                <div>
-                  <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Frecuencia de cobro (Intervalo)</label>
-                  <select value={formData.interval} onChange={e => setFormData({...formData, interval: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }}>
-                    <option value="month">Mensual</option>
-                    <option value="year">Anual</option>
-                  </select>
-                </div>
+                <label style={label}>Nombre del plan (Ej: Básico)</label>
+                <input required type="text" maxLength={60} minLength={2} value={formData.nombre} onChange={e => setFormData({ ...formData, nombre: e.target.value })} style={input} />
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                 <div>
-                  <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Duración (Número)</label>
-                  <input required type="number" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }} placeholder="Ej: 30" />
+                  <label style={label}>Duración (días)</label>
+                  <input required type="number" min={1} max={365} step={1} value={formData.duracionDias} onChange={e => setFormData({ ...formData, duracionDias: e.target.value })} style={input} placeholder="Ej: 15" />
                 </div>
                 <div>
-                  <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Unidad de duración</label>
-                  <select value={formData.durationUnit} onChange={e => setFormData({...formData, durationUnit: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }}>
-                    <option value="días">Días</option>
-                    <option value="semanas">Semanas</option>
-                    <option value="meses">Meses</option>
-                  </select>
+                  <label style={label}>Precio total (COP)</label>
+                  <input required type="number" min={1000} step={1} value={formData.precio} onChange={e => setFormData({ ...formData, precio: e.target.value })} style={input} placeholder="Ej: 75000" />
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "#fff", marginTop: "0.5rem", cursor: "pointer" }}>
-                  <input type="checkbox" checked={formData.autoRenew} onChange={e => setFormData({...formData, autoRenew: e.target.checked})} style={{ width: "18px", height: "18px" }} />
-                  ¿Renovación automática? (Se cobrará automáticamente al terminar el periodo)
-                </label>
+              <div style={{ background: "rgba(212,175,55,0.06)", border: "1px solid rgba(212,175,55,0.2)", borderRadius: "8px", padding: "0.75rem 1rem", color: "#ccc", fontSize: "0.9rem" }}>
+                Precio por día: <strong style={{ color: "var(--gold-accent)" }}>{precioDiaPreview}</strong>
               </div>
 
-              <div>
-                <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Beneficios (Uno por línea)</label>
-                <textarea required value={formData.benefits} onChange={e => setFormData({...formData, benefits: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px", minHeight: "100px", fontFamily: "inherit" }} placeholder="Mayor visibilidad&#10;Aparece primero&#10;Duración de 30 días"></textarea>
-              </div>
+              {editingPlan && (
+                <p style={{ color: "#888", fontSize: "0.8rem", margin: 0 }}>
+                  Los cambios aplican solo a compras nuevas. Los pagos ya iniciados conservan su precio y duración originales.
+                </p>
+              )}
 
-              <div>
-                <label style={{ display: "block", color: "#888", marginBottom: "0.5rem", fontSize: "0.9rem" }}>Descripción corta</label>
-                <input required type="text" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} style={{ width: "100%", padding: "0.75rem", background: "#222", border: "1px solid #333", color: "#fff", borderRadius: "6px" }} placeholder="Ej: Ideal para destacar tu vehículo rápido" />
-              </div>
-
-              <div style={{ marginTop: "1.5rem", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+              <div style={{ marginTop: "1rem", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
                 <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: "0.75rem 1.5rem", background: "transparent", color: "#fff", border: "1px solid #555", borderRadius: "8px", cursor: "pointer", fontWeight: 600 }}>Cancelar</button>
-                <button type="submit" style={{ padding: "0.75rem 1.5rem", background: "var(--gold-accent)", color: "#000", border: "none", borderRadius: "8px", cursor: "pointer", fontWeight: 600 }}>Guardar Plan</button>
+                <button type="submit" disabled={saving} style={{ padding: "0.75rem 1.5rem", background: "var(--gold-accent)", color: "#000", border: "none", borderRadius: "8px", cursor: saving ? "wait" : "pointer", fontWeight: 600, opacity: saving ? 0.7 : 1 }}>
+                  {saving ? "Guardando..." : "Guardar Plan"}
+                </button>
               </div>
             </form>
           </div>

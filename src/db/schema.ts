@@ -1,5 +1,5 @@
-import { pgTable, serial, text, integer, boolean, timestamp, primaryKey, index, jsonb } from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+import { pgTable, pgEnum, serial, uuid, varchar, text, integer, boolean, timestamp, primaryKey, index, jsonb, check } from 'drizzle-orm/pg-core';
+import { relations, sql } from 'drizzle-orm';
 
 // Usuarios
 export const users = pgTable('users', {
@@ -319,4 +319,115 @@ export const subscriptionsRelations = relations(subscriptions, ({ one, many }) =
 
 export const subscriptionPaymentsRelations = relations(subscriptionPayments, ({ one }) => ({
   subscription: one(subscriptions, { fields: [subscriptionPayments.subscriptionId], references: [subscriptions.id] }),
+}));
+
+// ═══════════════════════════════════════════════════════════════
+// SISTEMA DE VEHÍCULOS DESTACADOS (prepago + extensión) — Fase 1
+// Regla: el estado "destacado" NUNCA se guarda como booleano.
+// Se calcula: EXISTS destacados_activos WHERE termina_en > NOW().
+// ═══════════════════════════════════════════════════════════════
+
+export const tipoPagoEnum = pgEnum('tipo_pago', ['destacado', 'comision_venta']);
+export const estadoPagoEnum = pgEnum('estado_pago', ['pendiente', 'aprobado', 'rechazado', 'expirado']);
+export const estadoDestacadoEnum = pgEnum('estado_destacado', ['activo', 'expirado']);
+export const origenDestacadoEnum = pgEnum('origen_destacado', ['pago', 'cortesia_admin']);
+
+// timestamptz: evita errores de zona horaria al comparar contra NOW()
+const tz = { withTimezone: true } as const;
+
+// Planes editables desde BD / panel admin (nunca hardcodeados)
+export const planesDestacado = pgTable('planes_destacado', {
+  id: serial('id').primaryKey(),
+  nombre: varchar('nombre', { length: 60 }).notNull().unique(),
+  duracionDias: integer('duracion_dias').notNull(),
+  precio: integer('precio').notNull(), // COP enteros (ej. 25000)
+  activo: boolean('activo').default(true).notNull(),
+  creadoEn: timestamp('creado_en', tz).defaultNow().notNull(),
+  actualizadoEn: timestamp('actualizado_en', tz).defaultNow().notNull(),
+}, (t) => [
+  check('plan_duracion_valida', sql`${t.duracionDias} BETWEEN 1 AND 365`),
+  check('plan_precio_valido', sql`${t.precio} > 0`),
+]);
+
+// Pagos (destacado hoy; comisión de venta a futuro)
+export const pagos = pgTable('pagos', {
+  id: uuid('id').defaultRandom().primaryKey(), // no secuencial
+  referenciaUnica: varchar('referencia_unica', { length: 80 }).notNull().unique(),
+  usuarioId: integer('usuario_id').notNull().references(() => users.id, { onDelete: 'restrict' }),
+  vehiculoId: integer('vehiculo_id').references(() => vehicles.id, { onDelete: 'set null' }),
+  planId: integer('plan_id').references(() => planesDestacado.id, { onDelete: 'restrict' }),
+  tipo: tipoPagoEnum('tipo').notNull(),
+  monto: integer('monto').notNull(), // COP enteros; a Wompi se envía monto * 100
+  duracionDiasCompra: integer('duracion_dias_compra'), // snapshot del plan al crear el pago
+  estado: estadoPagoEnum('estado').default('pendiente').notNull(),
+  idTransaccionWompi: varchar('id_transaccion_wompi', { length: 64 }).unique(),
+  metodoPago: varchar('metodo_pago', { length: 30 }), // solo el tipo (CARD/PSE/NEQUI), nunca datos bancarios
+  creadoEn: timestamp('creado_en', tz).defaultNow().notNull(),
+  aprobadoEn: timestamp('aprobado_en', tz),
+  actualizadoEn: timestamp('actualizado_en', tz).defaultNow().notNull(),
+}, (t) => [
+  index('pagos_usuario_idx').on(t.usuarioId, t.creadoEn),
+  index('pagos_vehiculo_idx').on(t.vehiculoId),
+  index('pagos_estado_creado_idx').on(t.estado, t.creadoEn),
+  check('pago_monto_valido', sql`${t.monto} > 0`),
+  check('pago_destacado_con_plan', sql`${t.tipo} <> 'destacado' OR (${t.planId} IS NOT NULL AND ${t.duracionDiasCompra} > 0)`),
+  check('pago_aprobado_con_fecha', sql`${t.estado} <> 'aprobado' OR ${t.aprobadoEn} IS NOT NULL`),
+]);
+
+// Periodos de destacado (consecutivos, nunca superpuestos)
+export const destacadosActivos = pgTable('destacados_activos', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  vehiculoId: integer('vehiculo_id').notNull().references(() => vehicles.id, { onDelete: 'cascade' }),
+  pagoId: uuid('pago_id').unique().references(() => pagos.id, { onDelete: 'restrict' }), // UNIQUE = un pago activa una sola vez
+  planId: integer('plan_id').references(() => planesDestacado.id, { onDelete: 'restrict' }),
+  origen: origenDestacadoEnum('origen').default('pago').notNull(),
+  iniciaEn: timestamp('inicia_en', tz).notNull(),
+  terminaEn: timestamp('termina_en', tz).notNull(),
+  estado: estadoDestacadoEnum('estado').default('activo').notNull(),
+  creadoEn: timestamp('creado_en', tz).defaultNow().notNull(),
+}, (t) => [
+  index('dest_vehiculo_termina_idx').on(t.vehiculoId, t.terminaEn),
+  index('dest_termina_idx').on(t.terminaEn),
+  check('dest_rango_valido', sql`${t.terminaEn} > ${t.iniciaEn}`),
+  check('dest_pago_si_origen_pago', sql`${t.origen} <> 'pago' OR (${t.pagoId} IS NOT NULL AND ${t.planId} IS NOT NULL)`),
+]);
+
+// Auditoría de eventos de pago (webhooks, retornos, cron, intentos sospechosos)
+// Nunca guardar payloads completos ni datos de tarjeta.
+export const eventosPago = pgTable('eventos_pago', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  pagoId: uuid('pago_id').references(() => pagos.id, { onDelete: 'set null' }),
+  referencia: varchar('referencia', { length: 80 }),
+  origen: varchar('origen', { length: 20 }).notNull(), // 'webhook' | 'retorno' | 'cron'
+  evento: varchar('evento', { length: 40 }).notNull(), // 'firma_invalida', 'aprobado', 'monto_no_coincide', ...
+  estadoWompi: varchar('estado_wompi', { length: 20 }),
+  firmaValida: boolean('firma_valida'),
+  ip: varchar('ip', { length: 45 }),
+  creadoEn: timestamp('creado_en', tz).defaultNow().notNull(),
+}, (t) => [
+  index('eventos_ref_idx').on(t.referencia),
+  index('eventos_creado_idx').on(t.creadoEn),
+]);
+
+export const planesDestacadoRelations = relations(planesDestacado, ({ many }) => ({
+  pagos: many(pagos),
+  destacados: many(destacadosActivos),
+}));
+
+export const pagosRelations = relations(pagos, ({ one, many }) => ({
+  usuario: one(users, { fields: [pagos.usuarioId], references: [users.id] }),
+  vehiculo: one(vehicles, { fields: [pagos.vehiculoId], references: [vehicles.id] }),
+  plan: one(planesDestacado, { fields: [pagos.planId], references: [planesDestacado.id] }),
+  destacado: one(destacadosActivos),
+  eventos: many(eventosPago),
+}));
+
+export const destacadosActivosRelations = relations(destacadosActivos, ({ one }) => ({
+  vehiculo: one(vehicles, { fields: [destacadosActivos.vehiculoId], references: [vehicles.id] }),
+  pago: one(pagos, { fields: [destacadosActivos.pagoId], references: [pagos.id] }),
+  plan: one(planesDestacado, { fields: [destacadosActivos.planId], references: [planesDestacado.id] }),
+}));
+
+export const eventosPagoRelations = relations(eventosPago, ({ one }) => ({
+  pago: one(pagos, { fields: [eventosPago.pagoId], references: [pagos.id] }),
 }));

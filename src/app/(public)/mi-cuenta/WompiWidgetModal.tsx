@@ -10,11 +10,19 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
 
   useEffect(() => {
     if (isOpen && plans.length === 0) {
-      fetch("/api/admin/promotions/plans")
+      fetch("/api/planes-destacado")
         .then(res => res.json())
         .then(data => {
           if (Array.isArray(data)) {
-            setPlans(data.filter(p => p.active));
+            // Map to expected properties
+            const mappedPlans = data.map(p => ({
+              id: p.id,
+              name: p.nombre,
+              amount: p.precio,
+              duration: p.duracionDias,
+              interval: "month"
+            }));
+            setPlans(mappedPlans);
           }
         });
     }
@@ -23,15 +31,15 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
   const handleSubscribe = async (planId: number) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/subscriptions/create", {
+      const res = await fetch("/api/pagos-destacado/iniciar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vehicleId, planId }),
+        body: JSON.stringify({ vehiculoId: vehicleId, planId }),
       });
       
       const data = await res.json();
       if (!res.ok) {
-        toast(data.message || "Error al iniciar suscripción", "error");
+        toast(data.message || "Error al iniciar pago", "error");
         setLoading(false);
         return;
       }
@@ -52,10 +60,10 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
       // @ts-ignore
       const checkout = new (window as any).WidgetCheckout({
         currency: 'COP',
-        amountInCents: data.amountInCents,
-        reference: data.reference,
+        amountInCents: data.montoEnCentavos,
+        reference: data.referencia,
         publicKey: data.wompiPublicKey, // Se inyecta de forma segura desde el backend
-        signature: { integrity: data.signature }
+        signature: { integrity: data.firmaIntegridad }
       });
 
       checkout.open(function (result: any) {
@@ -64,6 +72,9 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
         
         if (transaction.status === "APPROVED") {
           toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
+          setTimeout(() => window.location.reload(), 2000);
+        } else if (transaction.status === "PENDING") {
+          toast("El pago está pendiente de confirmación.", "success");
           setTimeout(() => window.location.reload(), 2000);
         } else {
           toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");

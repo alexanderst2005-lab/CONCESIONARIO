@@ -37,7 +37,7 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
 
   const vehiclesRaw = await db.query.vehicles.findMany({
     where: and(...conditions),
-    orderBy: [desc(vehicles.createdAt)],
+    orderBy: [desc(vehicles.isFeatured), desc(vehicles.createdAt)],
     with: { brand: true, model: true, category: true, images: true },
     limit: limit + 1,
     offset: offset,

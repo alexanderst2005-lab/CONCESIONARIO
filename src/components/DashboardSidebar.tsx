@@ -26,8 +26,8 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
         </div>
         
         <nav className={styles.navMenu}>
-          <Link href="/mi-cuenta?tab=historial" className={`${styles.navItem} ${currentTab === 'historial' ? styles.active : ''}`}>
-            <Clock size={18} /> Historial
+          <Link href="/" className={styles.navItem}>
+            <span style={{ fontSize: '18px' }}>🏠</span> Inicio
           </Link>
           <Link href="/favoritos" className={styles.navItem}>
             <Heart size={18} /> Favoritos

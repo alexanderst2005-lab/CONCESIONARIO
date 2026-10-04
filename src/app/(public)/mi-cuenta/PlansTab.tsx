@@ -17,11 +17,26 @@ export default function PlansTab({ userId, userVehicles }: { userId: number, use
   const { toast } = useUI();
 
   useEffect(() => {
-    fetch("/api/admin/promotions/plans")
+    // Phase 3: Using the new public plans endpoint
+    fetch("/api/planes-destacado")
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
-          setPlans(data.filter(p => p.active));
+          // Map to expected properties
+          const mappedPlans = data.map(p => ({
+            id: p.id,
+            name: p.nombre,
+            amount: p.precio,
+            duration: p.duracionDias,
+            durationUnit: "días",
+            interval: p.duracionDias >= 30 ? "month" : "month",
+            benefits: [
+              "Vehículo Destacado Premium",
+              "Posicionamiento en primera página",
+              `${p.duracionDias} días de visibilidad`
+            ]
+          }));
+          setPlans(mappedPlans);
         }
         setLoading(false);
       });
@@ -45,15 +60,16 @@ export default function PlansTab({ userId, userVehicles }: { userId: number, use
     setProcessing(true);
 
     try {
-      const res = await fetch("/api/subscriptions/create", {
+      // Phase 3: Initiation of new Wompi flow
+      const res = await fetch("/api/pagos-destacado/iniciar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vehicleId: selectedVehicleId, planId: selectedPlan.id }),
+        body: JSON.stringify({ vehiculoId: selectedVehicleId, planId: selectedPlan.id }),
       });
       
       const data = await res.json();
       if (!res.ok) {
-        toast(data.message || "Error al iniciar suscripción", "error");
+        toast(data.message || "Error al iniciar pago", "error");
         setProcessing(false);
         return;
       }
@@ -73,16 +89,19 @@ export default function PlansTab({ userId, userVehicles }: { userId: number, use
       // @ts-ignore
       const checkout = new (window as any).WidgetCheckout({
         currency: 'COP',
-        amountInCents: data.amountInCents,
-        reference: data.reference,
+        amountInCents: data.montoEnCentavos,
+        reference: data.referencia,
         publicKey: data.wompiPublicKey,
-        signature: { integrity: data.signature }
+        signature: { integrity: data.firmaIntegridad }
       });
 
       checkout.open(function (result: any) {
         const transaction = result.transaction;
         if (transaction.status === "APPROVED") {
           toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
+          setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 2000);
+        } else if (transaction.status === "PENDING") {
+          toast("El pago está pendiente de confirmación. Te notificaremos cuando se apruebe.", "success");
           setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 2000);
         } else {
           toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");

@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/destacados",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

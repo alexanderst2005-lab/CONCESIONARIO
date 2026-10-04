@@ -16,7 +16,7 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
   const fetchSubscriptions = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/subscriptions");
+      const res = await fetch("/api/mi-cuenta/suscripciones");
       const data = await res.json();
       setSubscriptions(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -33,11 +33,11 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
     if (!cancelModalSub) return;
     setIsProcessing(true);
     try {
-      const res = await fetch(`/api/subscriptions/${cancelModalSub.id}/cancel`, {
+      const res = await fetch(`/api/mi-cuenta/suscripciones/${cancelModalSub.id}/cancel`, {
         method: "POST"
       });
       if (res.ok) {
-        toast("Suscripción cancelada correctamente", "success");
+        toast("Renovación cancelada correctamente", "success");
         setCancelModalSub(null);
         fetchSubscriptions();
       } else {
@@ -53,7 +53,7 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
     if (!reactivateModalSub) return;
     setIsProcessing(true);
     try {
-      const res = await fetch(`/api/subscriptions/${reactivateModalSub.id}/reactivate`, {
+      const res = await fetch(`/api/mi-cuenta/suscripciones/${reactivateModalSub.id}/reactivate`, {
         method: "POST"
       });
       if (res.ok) {
