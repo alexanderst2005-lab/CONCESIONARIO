@@ -24,8 +24,8 @@ export default function FinancingSimulator({ vehiclePrice, vehicleId, vehicleNam
   const [loading, setLoading] = useState(true);
 
   // Settings
-  const minDownPayment = 10;
-  const maxDownPayment = 70;
+  const minDownPayment = 0;
+  const maxDownPayment = 100;
   const step = 5;
 
   // State
