@@ -16,7 +16,13 @@ export async function GET(req: NextRequest) {
     if (!user) return NextResponse.json({ message: "No autorizado" }, { status: 401 });
 
     const userSubscriptions = await db.query.subscriptions.findMany({
-      where: and(eq(subscriptions.userId, user.id), not(eq(subscriptions.status, 'pending'))),
+      where: and(
+        eq(subscriptions.userId, user.id), 
+        not(eq(subscriptions.status, 'pending')),
+        // Filtramos intentos fallidos iniciales que nunca fueron activos
+        not(and(eq(subscriptions.status, 'past_due'), eq(subscriptions.startDate, null))),
+        not(and(eq(subscriptions.status, 'canceled'), eq(subscriptions.startDate, null)))
+      ),
       with: {
         plan: true,
         vehicle: {
