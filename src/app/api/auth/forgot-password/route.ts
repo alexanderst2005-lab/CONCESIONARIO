@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     // We assume the app runs on localhost for dev, but in prod it will be the real domain
     // we can construct it from req.url or use a generic one if we have an ENV var
-    const origin = process.env.NEXTAUTH_URL || req.headers.get("origin") || "http://localhost:3000";
+    const origin = (process.env.NEXTAUTH_URL || req.headers.get("origin") || "http://localhost:3000").trim().replace(/\/+$/, "");
     const resetUrl = `${origin}/restablecer?token=${token}`;
 
     const mailOptions = {
