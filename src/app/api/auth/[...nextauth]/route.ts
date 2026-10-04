@@ -1,4 +1,5 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
+import { cookies } from "next/headers";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { db } from "@/db";
@@ -58,8 +59,29 @@ export const authOptions: NextAuthOptions = {
             where: eq(users.email, user.email)
           });
 
+          const cookieStore = await cookies();
+          const authAction = cookieStore.get('auth_action')?.value;
+
           if (!existingUser) {
-            return "/login?error=GoogleNotRegistered";
+            if (authAction === 'register') {
+              // Generate a random password since they use Google
+              const randomPassword = Math.random().toString(36).slice(-10) + "A1!";
+              const hashedPassword = await bcrypt.hash(randomPassword, 10);
+              
+              let firstName = (profile as any)?.given_name || user.name?.split(' ')[0] || "Usuario";
+              let lastName = (profile as any)?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
+
+              await db.insert(users).values({
+                name: firstName,
+                lastName: lastName,
+                email: user.email,
+                password: hashedPassword,
+                role: 'USER',
+              });
+              return true;
+            } else {
+              return "/login?error=GoogleNotRegistered";
+            }
           }
           return true;
         }
