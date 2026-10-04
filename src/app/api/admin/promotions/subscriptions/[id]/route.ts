@@ -19,6 +19,20 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const resolvedParams = await params;
     const subId = parseInt(resolvedParams.id);
 
+    // 1. Obtener la suscripción para saber qué vehículo es
+    const sub = await db.query.subscriptions.findFirst({
+      where: eq(subscriptions.id, subId)
+    });
+
+    if (sub) {
+      // 2. Quitarle el destacado al vehículo
+      const { vehicles } = await import("@/db/schema");
+      await db.update(vehicles)
+        .set({ isFeatured: false })
+        .where(eq(vehicles.id, sub.vehicleId));
+    }
+
+    // 3. Eliminar la suscripción
     await db.delete(subscriptions).where(eq(subscriptions.id, subId));
 
     return NextResponse.json({ success: true });
