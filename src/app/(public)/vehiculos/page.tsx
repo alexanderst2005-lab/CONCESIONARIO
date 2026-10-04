@@ -31,13 +31,22 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
 
   if (ciudad) conditions.push(ilike(vehicles.city, `%${ciudad}%`));
 
+  const limit = 10;
+  const page = parseInt(await searchParams.then(p => p.page as string) || "1", 10);
+  const offset = (page - 1) * limit;
+
   const vehiclesRaw = await db.query.vehicles.findMany({
     where: and(...conditions),
     orderBy: [desc(vehicles.createdAt)],
-    with: { brand: true, model: true, category: true, images: true }
+    with: { brand: true, model: true, category: true, images: true },
+    limit: limit + 1,
+    offset: offset,
   });
 
-  const vehiclesData = vehiclesRaw.map(v => ({
+  const hasMore = vehiclesRaw.length > limit;
+  const vehiclesToDisplay = hasMore ? vehiclesRaw.slice(0, limit) : vehiclesRaw;
+
+  const vehiclesData = vehiclesToDisplay.map(v => ({
     id: v.id,
     slug: v.slug,
     version: v.version,
@@ -99,11 +108,29 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
             </a>
           </div>
         ) : (
-          <div className={styles.grid}>
-            {vehiclesData.map(v => (
-              <VehicleCard key={v.id} vehicle={v as any} />
-            ))}
-          </div>
+          <>
+            <div className={styles.grid}>
+              {vehiclesData.map(v => (
+                <VehicleCard key={v.id} vehicle={v as any} />
+              ))}
+            </div>
+            
+            {/* Pagination Controls */}
+            {(page > 1 || hasMore) && (
+              <div className={styles.pagination} style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+                {page > 1 && (
+                  <a href={`?${new URLSearchParams({...Object.fromEntries(Object.entries(await searchParams).filter(([k,v]) => v !== undefined) as [string, string][]), page: (page - 1).toString()}).toString()}`} className="btn-secondary" style={{ padding: '0.75rem 1.5rem', display: 'inline-block', textAlign: 'center', marginRight: '1rem', background: '#222', color: '#fff', textDecoration: 'none', borderRadius: '4px', border: '1px solid #333' }}>
+                    &larr; Anterior
+                  </a>
+                )}
+                {hasMore && (
+                  <a href={`?${new URLSearchParams({...Object.fromEntries(Object.entries(await searchParams).filter(([k,v]) => v !== undefined) as [string, string][]), page: (page + 1).toString()}).toString()}`} className="btn-primary" style={{ padding: '0.75rem 2rem', display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}>
+                    Ver más resultados &rarr;
+                  </a>
+                )}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

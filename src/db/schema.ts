@@ -260,6 +260,10 @@ export const promotionPlans = pgTable('promotion_plans', {
   description: text('description').notNull(),
   amount: integer('amount').notNull(), // Precio mensual en COP
   interval: text('interval').notNull().default('month'), // 'month', 'year', etc.
+  duration: integer('duration').default(30).notNull(), // Duración numérica (ej: 30)
+  durationUnit: text('duration_unit').default('días').notNull(), // 'días', 'semanas', 'meses'
+  benefits: jsonb('benefits').default('[]').notNull(), // ["Vehículo destacado", "Mayor visibilidad"]
+  autoRenew: boolean('auto_renew').default(true).notNull(), // Renovable o no
   active: boolean('active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

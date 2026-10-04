@@ -33,7 +33,11 @@ export async function POST(req: NextRequest) {
       description: data.description,
       amount: parseInt(data.amount),
       interval: data.interval || 'month',
-      active: true,
+      duration: data.duration !== undefined ? parseInt(data.duration) : 30,
+      durationUnit: data.durationUnit || 'días',
+      benefits: Array.isArray(data.benefits) ? data.benefits : [],
+      autoRenew: data.autoRenew !== undefined ? Boolean(data.autoRenew) : true,
+      active: data.active !== undefined ? Boolean(data.active) : true,
     }).returning();
     
     return NextResponse.json(newPlan[0], { status: 201 });
@@ -50,10 +54,15 @@ export async function PUT(req: NextRequest) {
     if (!data.id) return NextResponse.json({ message: "ID requerido" }, { status: 400 });
     
     const updated = await db.update(promotionPlans).set({
-      name: data.name,
-      description: data.description,
-      amount: data.amount ? parseInt(data.amount) : undefined,
-      active: data.active !== undefined ? data.active : undefined,
+      name: data.name !== undefined ? data.name : undefined,
+      description: data.description !== undefined ? data.description : undefined,
+      amount: data.amount !== undefined ? parseInt(data.amount) : undefined,
+      interval: data.interval !== undefined ? data.interval : undefined,
+      duration: data.duration !== undefined ? parseInt(data.duration) : undefined,
+      durationUnit: data.durationUnit !== undefined ? data.durationUnit : undefined,
+      benefits: data.benefits !== undefined ? data.benefits : undefined,
+      autoRenew: data.autoRenew !== undefined ? Boolean(data.autoRenew) : undefined,
+      active: data.active !== undefined ? Boolean(data.active) : undefined,
       updatedAt: new Date(),
     }).where(eq(promotionPlans.id, data.id)).returning();
     

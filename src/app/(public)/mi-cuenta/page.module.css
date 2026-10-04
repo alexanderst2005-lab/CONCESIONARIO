@@ -102,47 +102,36 @@
 
 /* Lista de Vehículos */
 .vehicleList {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
 .vehicleListItem {
-  background-color: transparent;
+  background-color: #0A0A0A;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
-  padding: 1.5rem;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  transition: border-color 0.3s ease;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
 .vehicleListItem:hover {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-@media (min-width: 768px) {
-  .vehicleListItem {
-    flex-direction: row;
-    align-items: center;
-    padding: 1.5rem 2rem;
-  }
+  border-color: var(--gold-accent);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.4);
 }
 
 .listImagePlaceholder {
   width: 100%;
-  height: 200px;
-  background-color: #0A0A0A;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  height: 180px;
+  background-color: #111;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #333;
-  font-weight: 400;
-  flex-shrink: 0;
-  font-family: var(--font-playfair);
   font-size: 1.2rem;
   letter-spacing: 0.05em;
 }
@@ -159,14 +148,16 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 1rem;
 }
 
 .listInfo h4 {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   color: #ffffff;
   font-family: var(--font-playfair);
   font-weight: 500;
   letter-spacing: 0.02em;
+  margin: 0;
 }
 
 .listInfo p {
@@ -174,6 +165,7 @@
   color: #888888;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  margin: 0;
 }
 
 .badgesWrapper {
@@ -219,15 +211,19 @@
 
 .listPrice {
   font-weight: 400;
-  color: #ffffff;
+  color: var(--gold-accent);
   font-size: 1.25rem;
-  min-width: 140px;
   font-family: var(--font-playfair);
+  padding: 0 1rem;
 }
 
 .listActions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: auto;
 }
 
 .actionBtn {
@@ -244,6 +240,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 1;
 }
 
 .actionBtn:hover {

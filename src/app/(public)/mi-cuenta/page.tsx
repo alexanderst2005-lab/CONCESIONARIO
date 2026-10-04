@@ -14,9 +14,10 @@ import HistoryTab from "./HistoryTab";
 import DeleteVehicleBtn from "./DeleteVehicleBtn";
 
 import SubscriptionsTab from "./SubscriptionsTab";
+import PlansTab from "./PlansTab";
 import WompiWidgetModal from "./WompiWidgetModal"; // Modal to show plans and Wompi
 
-export default async function MiCuentaPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+export default async function MiCuentaPage({ searchParams }: { searchParams: Promise<{ tab?: string; page?: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
     redirect("/login");
@@ -36,8 +37,40 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
   const initials = `${userRecord.name.charAt(0)}${userRecord.lastName.charAt(0)}`.toUpperCase();
   const fullName = `${userRecord.name} ${userRecord.lastName}`;
   const userRole = userRecord.role === "ADMIN" ? "Administrador" : "Vendedor Regular";
-
   let mainContent;
+  const limit = 10;
+  const page = parseInt(await searchParams.then(p => p.page as string) || "1", 10);
+  const offset = (page - 1) * limit;
+
+  const userVehiclesRaw = await db.query.vehicles.findMany({
+    where: eq(vehiclesTable.userId, userRecord.id),
+    orderBy: [desc(vehiclesTable.createdAt)],
+    with: {
+      brand: true,
+      model: true,
+      images: true
+    },
+    limit: limit + 1,
+    offset: offset,
+  });
+
+  const hasMore = userVehiclesRaw.length > limit;
+  const userVehiclesToDisplay = hasMore ? userVehiclesRaw.slice(0, limit) : userVehiclesRaw;
+
+  const userVehicles = userVehiclesToDisplay.map(v => ({
+    id: v.id,
+    slug: v.slug,
+    brandName: v.brand?.name || "Desconocida",
+    modelName: v.model?.name || "Desconocido",
+    version: v.version,
+    year: v.year,
+    mileage: v.mileage,
+    city: v.city,
+    price: v.price,
+    status: v.status,
+    isFeatured: v.isFeatured,
+    image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
+  }));
 
   if (tab === "perfil") {
     mainContent = <ProfileForm user={userRecord} />;
@@ -45,33 +78,10 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
     mainContent = <HistoryTab />;
   } else if (tab === "suscripciones") {
     mainContent = <SubscriptionsTab userId={userRecord.id} />;
+  } else if (tab === "planes") {
+    mainContent = <PlansTab userId={userRecord.id} userVehicles={userVehicles} />;
   } else {
     // Default: Publicaciones
-    const userVehiclesRaw = await db.query.vehicles.findMany({
-      where: eq(vehiclesTable.userId, userRecord.id),
-      orderBy: [desc(vehiclesTable.createdAt)],
-      with: {
-        brand: true,
-        model: true,
-        images: true
-      }
-    });
-
-    const userVehicles = userVehiclesRaw.map(v => ({
-      id: v.id,
-      slug: v.slug,
-      brandName: v.brand?.name || "Desconocida",
-      modelName: v.model?.name || "Desconocido",
-      version: v.version,
-      year: v.year,
-      mileage: v.mileage,
-      city: v.city,
-      price: v.price,
-      status: v.status,
-      isFeatured: v.isFeatured,
-      image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
-    }));
-
     const activeCount = userVehicles.filter((v) => v.status === "ACTIVO" || v.status === "approved").length;
     const pendingCount = userVehicles.filter((v) => v.status === "PENDIENTE").length;
     const soldCount = userVehicles.filter((v) => v.status === "VENDIDO").length;
@@ -154,6 +164,22 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
             })
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {(page > 1 || hasMore) && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+            {page > 1 && (
+              <a href={`?tab=publicaciones&page=${page - 1}`} className="btn-secondary" style={{ padding: '0.75rem 1.5rem', display: 'inline-block', textAlign: 'center', marginRight: '1rem', background: '#222', color: '#fff', textDecoration: 'none', borderRadius: '4px', border: '1px solid #333' }}>
+                &larr; Anterior
+              </a>
+            )}
+            {hasMore && (
+              <a href={`?tab=publicaciones&page=${page + 1}`} className="btn-primary" style={{ padding: '0.75rem 2rem', display: 'inline-block', textAlign: 'center', textDecoration: 'none' }}>
+                Ver más resultados &rarr;
+              </a>
+            )}
+          </div>
+        )}
       </>
     );
   }
