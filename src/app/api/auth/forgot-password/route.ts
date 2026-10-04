@@ -45,24 +45,24 @@ export async function POST(req: Request) {
 
     // We assume the app runs on localhost for dev, but in prod it will be the real domain
     // we can construct it from req.url or use a generic one if we have an ENV var
-    const origin = req.headers.get("origin") || "http://localhost:3000";
+    const origin = process.env.NEXTAUTH_URL || req.headers.get("origin") || "http://localhost:3000";
     const resetUrl = `${origin}/restablecer?token=${token}`;
 
     const mailOptions = {
-      from: `"Autos del Patrón" <${process.env.SMTP_USER}>`,
+      from: `"AutosElPatron" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: "Recuperación de contraseña - Autos del Patrón",
+      subject: "Recuperación de contraseña - AutosElPatron",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f9f9f9; padding: 20px; border-radius: 8px;">
           <h2 style="color: #333; text-align: center;">Recuperación de Contraseña</h2>
           <p style="color: #555; font-size: 16px;">Hola ${user.name},</p>
-          <p style="color: #555; font-size: 16px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Autos del Patrón.</p>
+          <p style="color: #555; font-size: 16px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en AutosElPatron.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}" style="background-color: #cda434; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 16px;">Restablecer Contraseña</a>
           </div>
           <p style="color: #555; font-size: 16px;">Si no solicitaste este cambio, puedes ignorar este correo.</p>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;" />
-          <p style="color: #888; font-size: 12px; text-align: center;">Autos del Patrón - El concesionario premium</p>
+          <p style="color: #888; font-size: 12px; text-align: center;">AutosElPatron - El concesionario premium</p>
         </div>
       `
     };

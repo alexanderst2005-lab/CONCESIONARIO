@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Condiciones del Servicio - Autos del Patrón",
-  description: "Condiciones de uso de la plataforma Autos del Patrón.",
+  title: "Condiciones del Servicio - AutosElPatron",
+  description: "Condiciones de uso de la plataforma AutosElPatron.",
 };
 
 export default function TerminosPage() {
@@ -11,7 +11,7 @@ export default function TerminosPage() {
 
       <h2>Uso del sitio</h2>
       <p>
-        Al usar Autos del Patrón aceptas estas condiciones. Debes ser mayor de
+        Al usar AutosElPatron aceptas estas condiciones. Debes ser mayor de
         edad y proporcionar información veraz al registrarte y publicar
         vehículos.
       </p>
@@ -24,7 +24,7 @@ export default function TerminosPage() {
 
       <h2>Responsabilidad</h2>
       <p>
-        Autos del Patrón es una plataforma de contacto entre compradores y
+        AutosElPatron es una plataforma de contacto entre compradores y
         vendedores y no es parte de las negociaciones entre ellos.
       </p>
 

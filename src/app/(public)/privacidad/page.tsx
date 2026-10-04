@@ -1,6 +1,6 @@
 export const metadata = {
-  title: "Política de Privacidad - Autos del Patrón",
-  description: "Cómo Autos del Patrón recopila, usa y protege tus datos personales.",
+  title: "Política de Privacidad - AutosElPatron",
+  description: "Cómo AutosElPatron recopila, usa y protege tus datos personales.",
 };
 
 export default function PrivacidadPage() {
