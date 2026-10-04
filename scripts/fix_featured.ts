@@ -1,11 +1,19 @@
-import { db } from "../src/db";
-import { vehicles } from "../src/db/schema";
-import { eq } from "drizzle-orm";
+import { drizzle } from 'drizzle-orm/neon-http';
+import { neon } from '@neondatabase/serverless';
+import { vehicles } from '../src/db/schema';
+import * as dotenv from 'dotenv';
+import { resolve } from 'path';
+
+dotenv.config({ path: resolve(process.cwd(), '.env.local') });
 
 async function run() {
-  console.log("Des-destacando todos los vehículos en la base de datos...");
+  console.log("Conectando a Neon...");
+  const sql = neon(process.env.DATABASE_URL!);
+  const db = drizzle(sql);
+
+  console.log("Limpiando destacados...");
   await db.update(vehicles).set({ isFeatured: false });
-  console.log("¡Listo! Todos los vehículos ahora son normales.");
+  console.log("¡Limpio!");
   process.exit(0);
 }
 

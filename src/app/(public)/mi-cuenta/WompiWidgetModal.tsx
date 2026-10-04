@@ -67,10 +67,11 @@ export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId
           setTimeout(() => window.location.reload(), 2000);
         } else {
           toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
-          setLoading(false);
         }
       });
-
+      
+      // Permitimos que el usuario intente de nuevo si cierra la pasarela
+      setLoading(false);
     } catch (e) {
       console.error(e);
       toast("Error de conexión", "error");

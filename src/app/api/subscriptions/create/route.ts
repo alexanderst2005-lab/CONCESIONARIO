@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       subscriptionId: newSub.id,
       amountInCents: plan.amount * 100, // Wompi usa centavos
       reference: `SUB_${newSub.id}_${Date.now()}`, // Referencia única
-      wompiPublicKey: process.env.WOMPI_PUBLIC_KEY || "pub_test_wompi_dummy_key"
+      wompiPublicKey: process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY || process.env.WOMPI_PUBLIC_KEY || "pub_test_wompi_dummy_key"
     }, { status: 201 });
 
   } catch (error) {
