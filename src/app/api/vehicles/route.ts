@@ -107,9 +107,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Vehículo publicado exitosamente", vehicleId: newVehicleRecord.id }, { status: 201 });
 
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error publicando vehículo:", error);
-    return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });
+    return NextResponse.json({ message: error.message || "Error interno del servidor" }, { status: 500 });
   }
 }
 
