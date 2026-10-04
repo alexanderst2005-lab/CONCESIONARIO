@@ -30,6 +30,21 @@ export async function GET() {
         .where(inArray(subscriptions.id, subIds));
     }
 
+    // 4. Expirar intentos de pago de más de 5 minutos (PENDING, FAILED, ERROR)
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60000);
+    
+    // Importamos subscriptionPayments desde schema. Import debe estar arriba pero usamos raw types aquí si no está
+    const { subscriptionPayments } = await import("@/db/schema");
+    
+    await db.update(subscriptionPayments)
+      .set({ status: 'EXPIRED' })
+      .where(
+        and(
+          inArray(subscriptionPayments.status, ['PENDING', 'FAILED', 'ERROR']),
+          lt(subscriptionPayments.createdAt, fiveMinutesAgo)
+        )
+      );
+
     return NextResponse.json({ 
       success: true, 
       message: `Procesadas ${expiredSubs.length} suscripciones expiradas.` 
