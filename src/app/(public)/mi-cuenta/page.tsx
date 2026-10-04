@@ -13,6 +13,9 @@ import ProfileForm from "./ProfileForm";
 import HistoryTab from "./HistoryTab";
 import DeleteVehicleBtn from "./DeleteVehicleBtn";
 
+import SubscriptionsTab from "./SubscriptionsTab";
+import WompiWidgetModal from "./WompiWidgetModal"; // Modal to show plans and Wompi
+
 export default async function MiCuentaPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
@@ -40,6 +43,8 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
     mainContent = <ProfileForm user={userRecord} />;
   } else if (tab === "historial") {
     mainContent = <HistoryTab />;
+  } else if (tab === "suscripciones") {
+    mainContent = <SubscriptionsTab userId={userRecord.id} />;
   } else {
     // Default: Publicaciones
     const userVehiclesRaw = await db.query.vehicles.findMany({
@@ -63,6 +68,7 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
       city: v.city,
       price: v.price,
       status: v.status,
+      isFeatured: v.isFeatured,
       image: v.images && v.images.length > 0 ? v.images[0].url : "https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop"
     }));
 
@@ -115,8 +121,11 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
 
               return (
                 <div key={v.id} className={styles.vehicleListItem}>
-                  <div className={styles.listImageContainer} style={{ width: '120px', height: '80px', flexShrink: 0, borderRadius: '4px', overflow: 'hidden', backgroundColor: '#111' }}>
+                  <div className={styles.listImageContainer} style={{ width: '120px', height: '80px', flexShrink: 0, borderRadius: '4px', overflow: 'hidden', backgroundColor: '#111', position: 'relative' }}>
                     <img src={v.image} alt={v.modelName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    {v.isFeatured && (
+                      <div style={{ position: 'absolute', top: '4px', left: '4px', background: 'var(--gold-accent)', color: '#000', fontSize: '0.6rem', padding: '0.1rem 0.3rem', borderRadius: '4px', fontWeight: 'bold' }}>⭐ DESTACADO</div>
+                    )}
                   </div>
                   <div className={styles.listInfo}>
                     <h4>{v.brandName || "Marca Desconocida"} {v.modelName || "Modelo Desconocido"} {v.version}</h4>
@@ -133,6 +142,9 @@ export default async function MiCuentaPage({ searchParams }: { searchParams: Pro
                     <p>{formattedPrice}</p>
                   </div>
                   <div className={styles.listActions}>
+                    {isActive && !v.isFeatured && (
+                      <WompiWidgetModal vehicleId={v.id} vehicleName={`${v.brandName} ${v.modelName}`} />
+                    )}
                     <Link href={`/vehiculo/${v.slug}`} className={styles.actionBtn}>VER</Link>
                     <Link href={`/editar-vehiculo/${v.slug}`} className={styles.actionBtn} style={{backgroundColor: '#333'}}>EDITAR</Link>
                     <DeleteVehicleBtn id={v.id} />

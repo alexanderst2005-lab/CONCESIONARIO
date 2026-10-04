@@ -35,6 +35,9 @@ export default function DashboardSidebar({ initials, fullName, userRole }: { ini
           <Link href="/mi-cuenta?tab=publicaciones" className={`${styles.navItem} ${currentTab === 'publicaciones' ? styles.active : ''}`}>
             <Car size={18} /> Mis Publicaciones
           </Link>
+          <Link href="/mi-cuenta?tab=suscripciones" className={`${styles.navItem} ${currentTab === 'suscripciones' ? styles.active : ''}`}>
+            <span style={{ fontSize: '18px' }}>⭐</span> Mis Suscripciones
+          </Link>
           <Link href="/mi-cuenta?tab=perfil" className={`${styles.navItem} ${currentTab === 'perfil' ? styles.active : ''}`}>
             <User size={18} /> Mi Perfil
           </Link>
