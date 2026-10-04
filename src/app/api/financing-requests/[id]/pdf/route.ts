@@ -67,11 +67,39 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       page.drawText(text, { x, y, font, size, color });
     };
 
+    // Cargar logo transparente
+    const fs = require('fs');
+    const path = require('path');
+    let logoImg = null;
+    try {
+      const logoPath = path.join(process.cwd(), 'public', 'logo_transparent.png');
+      if (fs.existsSync(logoPath)) {
+        const logoBytes = fs.readFileSync(logoPath);
+        logoImg = await pdfDoc.embedPng(logoBytes);
+      }
+    } catch (e) {
+      console.error("Error loading logo:", e);
+    }
+
     // 1. ENCABEZADO
     currentY -= 80;
     page.drawRectangle({ x: 0, y: currentY, width: width, height: 80, color: colDark });
-    drawText('AUTOS EL PATRÓN', margin, currentY + 45, fontBold, 22, colPrimary);
-    drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin, currentY + 25, fontReg, 10, rgb(1,1,1));
+    
+    if (logoImg) {
+      // Calcular dimensiones para que encaje bien en el header de 80px de alto
+      const imgDims = logoImg.scaleToFit(150, 60);
+      page.drawImage(logoImg, {
+        x: margin,
+        y: currentY + 10,
+        width: imgDims.width,
+        height: imgDims.height,
+      });
+      // Mover el texto a la derecha del logo
+      drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin + imgDims.width + 15, currentY + 35, fontBold, 14, colPrimary);
+    } else {
+      drawText('AUTOS EL PATRÓN', margin, currentY + 45, fontBold, 22, colPrimary);
+      drawText('SOLICITUD DE FINANCIACIÓN DE VEHÍCULO', margin, currentY + 25, fontReg, 10, rgb(1,1,1));
+    }
     
     drawText(`No. de Solicitud: ${request.requestNumber}`, width - margin - 150, currentY + 45, fontReg, 10, rgb(1,1,1));
     const reqDate = new Date(request.createdAt).toLocaleDateString('es-CO');
@@ -79,14 +107,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     currentY -= 20;
 
-    // 2. IDENTIFICACIÓN DEL DOCUMENTO
-    currentY -= 30;
-    page.drawRectangle({ x: margin, y: currentY, width: 120, height: 25, color: colBg, borderColor: colBorder, borderWidth: 1 });
-    
-    drawText('Estado:', margin + 10, currentY + 8, fontBold, 10, colText);
-    drawText(request.status, margin + 55, currentY + 8, fontBold, 10, request.status === 'Pendiente' ? rgb(0.8, 0.5, 0.1) : colPrimary);
-
-    currentY -= 30;
+    // ELIMINADO EL BLOQUE DE ESTADO PENDIENTE POR PETICIÓN DEL USUARIO
+    // (Ajustar margen Y)
+    currentY -= 10;
 
     // HELPERS DE DISEÑO
     const drawSectionHeader = (title: string) => {
