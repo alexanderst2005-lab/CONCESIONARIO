@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { subscriptions, users } from "@/db/schema";
-import { eq, not, and } from "drizzle-orm";
+import { eq, ne, and, or, isNotNull } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -18,10 +18,11 @@ export async function GET() {
 
     const allSubscriptions = await db.query.subscriptions.findMany({
       where: and(
-        not(eq(subscriptions.status, 'pending')),
-        // Filtramos intentos fallidos iniciales que nunca fueron activos (no tienen startDate)
-        not(and(eq(subscriptions.status, 'past_due'), eq(subscriptions.startDate, null))),
-        not(and(eq(subscriptions.status, 'canceled'), eq(subscriptions.startDate, null)))
+        ne(subscriptions.status, 'pending'),
+        or(
+          isNotNull(subscriptions.startDate),
+          and(ne(subscriptions.status, 'past_due'), ne(subscriptions.status, 'canceled'))
+        )
       ),
       orderBy: (subs, { desc }) => [desc(subs.createdAt)],
       with: {
