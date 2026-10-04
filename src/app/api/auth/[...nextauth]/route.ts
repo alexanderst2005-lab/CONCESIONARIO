@@ -59,20 +59,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!existingUser) {
-            // Generate a random password since they use Google
-            const randomPassword = Math.random().toString(36).slice(-10) + "A1!";
-            const hashedPassword = await bcrypt.hash(randomPassword, 10);
-            
-            let firstName = (profile as any)?.given_name || user.name?.split(' ')[0] || "Usuario";
-            let lastName = (profile as any)?.family_name || user.name?.split(' ').slice(1).join(' ') || "";
-
-            await db.insert(users).values({
-              name: firstName,
-              lastName: lastName,
-              email: user.email,
-              password: hashedPassword,
-              role: 'USER',
-            });
+            return "/login?error=AccessDenied";
           }
           return true;
         }

@@ -15,8 +15,7 @@ export async function POST(req: Request) {
     // Check if user exists
     const userRecords = await db.select().from(users).where(eq(users.email, email));
     if (userRecords.length === 0) {
-      // Don't leak existence of user, just pretend it worked
-      return NextResponse.json({ message: "Si el correo existe, se ha enviado un enlace." }, { status: 200 });
+      return NextResponse.json({ message: "Lo sentimos, tu usuario no se encuentra en la base de datos." }, { status: 404 });
     }
 
     const user = userRecords[0];
