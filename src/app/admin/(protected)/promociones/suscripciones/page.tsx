@@ -42,6 +42,7 @@ export default function AdminSubscriptionsPage() {
                 <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Estado</th>
                 <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Próximo Cobro</th>
                 <th style={{ padding: "1rem", textAlign: "left", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Pagos</th>
+                <th style={{ padding: "1rem", textAlign: "right", color: "#888", fontSize: "0.8rem", textTransform: "uppercase" }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -94,6 +95,34 @@ export default function AdminSubscriptionsPage() {
                             </div>
                           ))}
                         </div>
+                      </td>
+                      <td style={{ padding: "1rem", textAlign: "right" }}>
+                        <button 
+                          onClick={() => {
+                            if(window.confirm('¿Seguro que deseas eliminar esta suscripción por completo de la base de datos?')) {
+                              fetch(`/api/admin/promotions/subscriptions/${sub.id}`, { method: 'DELETE' })
+                                .then(res => {
+                                  if (res.ok) {
+                                    fetchSubscriptions();
+                                  } else {
+                                    alert('Error al eliminar');
+                                  }
+                                });
+                            }
+                          }}
+                          style={{
+                            background: "rgba(248,113,113,0.1)",
+                            color: "#f87171",
+                            border: "none",
+                            borderRadius: "4px",
+                            padding: "0.4rem 0.75rem",
+                            cursor: "pointer",
+                            fontSize: "0.8rem",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          Eliminar
+                        </button>
                       </td>
                     </tr>
                   )
