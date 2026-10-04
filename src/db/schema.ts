@@ -76,6 +76,7 @@ export const vehicles = pgTable('vehicles', {
     hasGas: boolean('has_gas').default(false),
     hasGps: boolean('has_gps').default(false),
     locationStatus: text('location_status').default('Cita'),
+    contactPhone: text('contact_phone'), // WhatsApp de contacto del vendedor para este vehículo
   
   price: integer('price').notNull(), // Precio comercial
   

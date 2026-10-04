@@ -23,6 +23,11 @@ export async function POST(req: Request) {
 
     const data = await req.json();
 
+    const contactPhone = String(data.contactPhone || "").replace(/\D/g, "");
+    if (contactPhone.length < 10) {
+      return NextResponse.json({ message: "El número de WhatsApp de contacto es obligatorio" }, { status: 400 });
+    }
+
     let categoryNameInput = data.categoryName || "Automóviles";
     let cat = await db.query.categories.findFirst({ where: (c, { eq }) => eq(c.name, categoryNameInput)});
     if (!cat) {
@@ -76,6 +81,7 @@ export async function POST(req: Request) {
       hasGas: data.hasGas === "true",
       hasGps: data.hasGps === "true",
       locationStatus: data.locationStatus || "Vitrina",
+      contactPhone: contactPhone,
       cityRegistered: data.cityRegistered || "",
 
       // Si el usuario es ADMIN, queda ACTIVO inmediatamente. Si no, PENDIENTE.
@@ -162,6 +168,9 @@ export async function PUT(req: Request) {
       tecnomecanica: data.tecnomecanica || "",
       prenda: data.prenda || "No",
       ownersCount: parseInt(data.ownersCount) || 1,
+      ...(String(data.contactPhone || "").replace(/\D/g, "").length >= 10
+        ? { contactPhone: String(data.contactPhone).replace(/\D/g, "") }
+        : {}),
     }).where(eq(vehicles.id, data.id));
 
     if (data.images && Array.isArray(data.images) && data.images.length > 0) {

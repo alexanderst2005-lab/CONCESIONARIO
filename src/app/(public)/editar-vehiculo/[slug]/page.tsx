@@ -45,6 +45,7 @@ export default async function EditarVehiculoPage({ params }: { params: Promise<{
     accessories: vehicleRecord.accessories || "",
     locationStatus: vehicleRecord.locationStatus || "Vitrina",
     cityRegistered: vehicleRecord.cityRegistered || "",
+    contactPhone: vehicleRecord.contactPhone || "",
     soat: vehicleRecord.soat ? "true" : "false",
     tecnomecanica: vehicleRecord.tecnomecanica ? "true" : "false",
     prenda: vehicleRecord.prenda ? "true" : "false",

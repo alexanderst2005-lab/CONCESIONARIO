@@ -48,6 +48,7 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
     tecnomecanica: initialData.tecnomecanica,
     prenda: initialData.prenda,
     ownersCount: initialData.ownersCount,
+    contactPhone: initialData.contactPhone || "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -276,6 +277,10 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
               <div className={styles.inputGroup}>
                 <label>Ciudad donde está ubicado</label>
                 <input type="text" name="city" value={formData.city} onChange={handleInputChange} required />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>WhatsApp de contacto *</label>
+                <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleInputChange} placeholder="Ej: 300 123 4567" required />
               </div>
               <div className={styles.inputGroup}>
                 <label>Placa</label>

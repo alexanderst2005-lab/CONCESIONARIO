@@ -74,7 +74,7 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
   const displayImages = vehicle.images.length > 0 ? vehicle.images : [fallbackImage];
 
   const siteSettings = await db.query.settings.findFirst();
-  const sellerPhone = (vehicleRecord.user?.phone || "").replace(/\D/g, "");
+  const sellerPhone = (vehicleRecord.contactPhone || vehicleRecord.user?.phone || "").replace(/\D/g, "");
   const fallbackPhone = (siteSettings?.whatsappNumber || "573000000000").replace(/\D/g, "");
   let cleanPhone = sellerPhone || fallbackPhone;
   // Números colombianos de 10 dígitos (ej. 300 123 4567) necesitan el prefijo 57

@@ -55,7 +55,16 @@ export default function PublicarPage() {
     hasGps: "false",
     locationStatus: "Vitrina",
     cityRegistered: "",
+    contactPhone: "",
   });
+
+  // Prellenar con el teléfono del perfil si el usuario ya lo tiene
+  React.useEffect(() => {
+    const profilePhone = (session?.user as any)?.phone;
+    if (profilePhone) {
+      setFormData((prev) => (prev.contactPhone ? prev : { ...prev, contactPhone: profilePhone }));
+    }
+  }, [session]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -115,6 +124,10 @@ export default function PublicarPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.contactPhone.replace(/\D/g, "").length < 10) {
+      toast("Ingresa un número de WhatsApp válido (mínimo 10 dígitos).", "warning");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -310,6 +323,10 @@ export default function PublicarPage() {
               <div className={styles.inputGroup}>
                 <label>Ubicación Física</label>
                 <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="Ciudad (Ej: Cali)" required />
+              </div>
+              <div className={styles.inputGroup}>
+                <label>WhatsApp de contacto *</label>
+                <input type="tel" name="contactPhone" value={formData.contactPhone} onChange={handleInputChange} placeholder="Ej: 300 123 4567" required />
               </div>
               <div className={styles.inputGroup}>
                 <label>Soat Vigente</label>
