@@ -99,20 +99,20 @@ export default function AdminSubscriptionsPage() {
                       <td style={{ padding: "1rem", textAlign: "right" }}>
                         <button 
                           onClick={() => {
-                            if(window.confirm('¿Seguro que deseas eliminar esta suscripción por completo de la base de datos?')) {
-                              fetch(`/api/admin/promotions/subscriptions/${sub.id}`, { method: 'DELETE' })
+                            if(window.confirm(`¿Seguro que deseas ${sub.vehicle?.isFeatured ? 'suspender' : 'reactivar'} el destacado de este vehículo por razones administrativas?`)) {
+                              fetch(`/api/admin/promotions/subscriptions/${sub.id}`, { method: 'PUT' })
                                 .then(res => {
                                   if (res.ok) {
                                     fetchSubscriptions();
                                   } else {
-                                    alert('Error al eliminar');
+                                    alert('Error al cambiar el estado del destacado');
                                   }
                                 });
                             }
                           }}
                           style={{
-                            background: "rgba(248,113,113,0.1)",
-                            color: "#f87171",
+                            background: sub.vehicle?.isFeatured ? "rgba(248,113,113,0.1)" : "rgba(74,222,128,0.1)",
+                            color: sub.vehicle?.isFeatured ? "#f87171" : "#4ade80",
                             border: "none",
                             borderRadius: "4px",
                             padding: "0.4rem 0.75rem",
@@ -121,7 +121,7 @@ export default function AdminSubscriptionsPage() {
                             fontWeight: "bold"
                           }}
                         >
-                          Eliminar
+                          {sub.vehicle?.isFeatured ? 'Suspender Destacado' : 'Reactivar Destacado'}
                         </button>
                       </td>
                     </tr>

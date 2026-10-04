@@ -25,7 +25,7 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
 
   const handleCancel = (subId: number) => {
     confirmAction(
-      "¿Quieres cancelar tu suscripción?\nAl cancelar, no se realizarán nuevos cobros recurrentes. Tu vehículo permanecerá destacado hasta finalizar el período que ya fue pagado.",
+      "¿Cancelar suscripción?\nAl cancelar, no se realizarán nuevos cobros recurrentes. Tu vehículo continuará destacado hasta finalizar el período que ya fue pagado. Después de esa fecha dejará automáticamente de aparecer como destacado.",
       async () => {
         try {
           const res = await fetch(`/api/subscriptions/${subId}/cancel`, {
@@ -62,43 +62,47 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
           subscriptions.map((sub: any) => {
             const isCanceled = sub.status === 'canceled';
             const isActive = sub.status === 'active';
-            const statusColor = isActive ? "#4ade80" : isCanceled ? "#f87171" : "#fbbf24";
+            const vehicle = sub.vehicle;
             
             return (
-              <div key={sub.id} style={{ background: "#111", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "8px", padding: "1.5rem", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
-                <div>
-                  <h3 style={{ margin: "0 0 0.5rem 0", color: "#fff" }}>{sub.vehicle.brand.name} {sub.vehicle.model.name} - {sub.plan.name}</h3>
-                  <div style={{ display: "flex", gap: "1rem", color: "#888", fontSize: "0.9rem" }}>
-                    <p style={{ margin: 0 }}><strong>Valor:</strong> ${sub.amount.toLocaleString('es-CO')} / {sub.plan.interval === 'month' ? 'mes' : 'año'}</p>
-                    <p style={{ margin: 0 }}>
-                      <strong>Estado:</strong> 
-                      <span style={{ color: statusColor, fontWeight: "bold", marginLeft: "0.25rem" }}>
-                        {sub.status.toUpperCase()}
-                      </span>
+              <div key={sub.id} style={{ background: "#111", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "8px", padding: "1.5rem" }}>
+                <h3 style={{ margin: "0 0 1rem 0", color: "var(--gold-accent)" }}>⭐ Vehículo destacado</h3>
+                <h4 style={{ margin: "0 0 1rem 0", color: "#fff", fontSize: "1.2rem" }}>{vehicle.brand.name} {vehicle.model.name}</h4>
+                
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", color: "#ccc", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
+                  <p style={{ margin: 0 }}><strong>Plan:</strong> {sub.plan.name}</p>
+                  <p style={{ margin: 0 }}><strong>Valor:</strong> ${sub.amount.toLocaleString('es-CO')} / {sub.plan.interval === 'month' ? 'mes' : 'año'}</p>
+                  <p style={{ margin: 0 }}>
+                    <strong>Estado:</strong> {isActive ? 'Activa' : 'Cancelada'}
+                  </p>
+                  {!isCanceled && sub.nextBillingDate && (
+                    <p style={{ margin: 0 }}><strong>Próximo cobro:</strong> {new Date(sub.nextBillingDate).toLocaleDateString('es-CO')}</p>
+                  )}
+                  <p style={{ margin: 0 }}>
+                    <strong>Vehículo:</strong> {vehicle.isFeatured ? 'Destacado' : 'Normal'}
+                  </p>
+                </div>
+
+                {isCanceled ? (
+                  <div style={{ background: "rgba(248,113,113,0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(248,113,113,0.2)" }}>
+                    <h4 style={{ color: "#f87171", margin: "0 0 0.5rem 0" }}>Suscripción cancelada</h4>
+                    <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem" }}>
+                      No se realizarán nuevos cobros. Tu vehículo continuará destacado hasta el {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}.
+                    </p>
+                    <p style={{ color: "#fff", margin: "0.5rem 0 0 0", fontWeight: "bold" }}>
+                      Fecha de finalización: {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}
                     </p>
                   </div>
-                  {isActive && sub.nextBillingDate && (
-                    <p style={{ margin: "0.5rem 0 0 0", color: "#ccc", fontSize: "0.85rem" }}>
-                      Próximo cobro: {new Date(sub.nextBillingDate).toLocaleDateString('es-CO')}
-                    </p>
-                  )}
-                  {isCanceled && sub.currentPeriodEnd && (
-                    <p style={{ margin: "0.5rem 0 0 0", color: "#f87171", fontSize: "0.85rem" }}>
-                      Se quitará el destacado el: {new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO')}
-                    </p>
-                  )}
-                </div>
-                
-                <div>
-                  {isActive && (
+                ) : (
+                  <div>
                     <button 
                       onClick={() => handleCancel(sub.id)}
-                      style={{ padding: "0.5rem 1rem", background: "transparent", color: "#f87171", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+                      style={{ padding: "0.5rem 1.5rem", background: "transparent", color: "#f87171", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
                     >
-                      Cancelar Suscripción
+                      Cancelar suscripción
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })
