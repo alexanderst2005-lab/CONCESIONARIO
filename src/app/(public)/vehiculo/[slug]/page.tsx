@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft, Eye, MessageCircle, User } from "lucide-react";
 import ImageGallery from "./ImageGallery";
 import HistoryTracker from "./HistoryTracker";
+import FinancingSimulator from "@/components/FinancingSimulator";
 
 export const dynamic = 'force-dynamic';
 
@@ -134,6 +135,16 @@ export default async function VehiculoDetalle({ params }: { params: Promise<{ sl
               </a>
             </div>
           )}
+
+          {/* SIMULADOR FINANCIERO */}
+          {vehicle.status !== "VENDIDO" && (
+            <FinancingSimulator 
+              vehiclePrice={vehicle.price} 
+              vehicleId={vehicle.id} 
+              vehicleName={`${vehicle.brandName} ${vehicle.modelName} ${vehicle.year}`} 
+            />
+          )}
+
         </div>
         </div>
 
