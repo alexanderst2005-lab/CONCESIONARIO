@@ -4,6 +4,7 @@ import { promotionPlans, subscriptions, vehicles } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
@@ -44,15 +45,22 @@ export async function POST(req: NextRequest) {
       amount: plan.amount,
     }).returning();
 
-    // Aquí, en una implementación completa de Wompi, devolveríamos la firma criptográfica
-    // (signature) calculada con el monto y la referencia (newSub.id) para el Widget de Wompi.
+    const amountInCents = plan.amount * 100;
+    const reference = `SUB_${newSub.id}_${Date.now()}`;
+    const currency = 'COP';
+    const integrityKey = process.env.WOMPI_INTEGRITY_KEY || "";
     
-    // Como Wompi usa una llave pública para el widget, la enviamos junto con la referencia
+    // Generar la firma de integridad que exige Wompi (sha256)
+    // Formula: referencia + monto_en_centavos + moneda + secreto_de_integridad
+    const rawString = `${reference}${amountInCents}${currency}${integrityKey}`;
+    const signature = crypto.createHash('sha256').update(rawString).digest('hex');
+    
     return NextResponse.json({ 
       message: "Suscripción iniciada", 
       subscriptionId: newSub.id,
-      amountInCents: plan.amount * 100, // Wompi usa centavos
-      reference: `SUB_${newSub.id}_${Date.now()}`, // Referencia única
+      amountInCents: amountInCents,
+      reference: reference,
+      signature: signature,
       wompiPublicKey: process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY || process.env.WOMPI_PUBLIC_KEY || "pub_test_wompi_dummy_key"
     }, { status: 201 });
 
@@ -61,3 +69,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Error interno" }, { status: 500 });
   }
 }
+

@@ -49,13 +49,12 @@ export default function WompiWidgetModal({ vehicleId, vehicleName }: { vehicleId
         });
       }
 
-      // Inicializar el Widget Oficial de Wompi
-      // @ts-ignore
       const checkout = new window.WidgetCheckout({
         currency: 'COP',
         amountInCents: data.amountInCents,
         reference: data.reference,
         publicKey: data.wompiPublicKey, // Se inyecta de forma segura desde el backend
+        signature: { integrity: data.signature }
       });
 
       checkout.open(function (result: any) {
