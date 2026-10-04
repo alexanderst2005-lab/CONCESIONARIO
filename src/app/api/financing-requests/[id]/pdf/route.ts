@@ -21,6 +21,12 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       where: eq(financingRequests.id, Number(id)),
       with: {
         bank: true,
+        vehicle: {
+          with: {
+            brand: true,
+            model: true
+          }
+        }
       }
     });
 
