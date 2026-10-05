@@ -50,6 +50,22 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   }
 }
 
+/** Devuelve el texto limpio o undefined si está vacío (para omitir el campo del PDF). */
+const val = (v: unknown): string | undefined => {
+  if (v === null || v === undefined) return undefined;
+  const s = String(v).trim();
+  return s === "" ? undefined : s;
+};
+
+/** Formatea un monto escrito por el usuario. Si no es numérico, se imprime tal cual. */
+const money = (v: unknown): string | undefined => {
+  const s = val(v);
+  if (!s) return undefined;
+  const digits = s.replace(/[^\d]/g, "");
+  if (!digits) return s;
+  return `$${Number(digits).toLocaleString('es-CO')}`;
+};
+
 export async function generateFinancingPdfBuffer(request: any) {
     // Generar el PDF Profesional (Nivel Empresarial)
     const pdfDoc = await PDFDocument.create();
@@ -61,6 +77,7 @@ export async function generateFinancingPdfBuffer(request: any) {
     const margin = 40;
     const width = 595.28; // A4
     const height = 841.89; // A4
+    const contentWidth = width - margin * 2;
     let page = pdfDoc.addPage([width, height]);
     
     // Paleta de colores corporativa
@@ -82,6 +99,40 @@ export async function generateFinancingPdfBuffer(request: any) {
 
     const drawText = (text: string, x: number, y: number, font: any, size: number, color: any) => {
       page.drawText(text, { x, y, font, size, color });
+    };
+
+    /** Ajusta el texto al ancho disponible: reduce la fuente y, si no alcanza, lo recorta con "…". */
+    const fitText = (text: string, font: any, size: number, maxWidth: number) => {
+      let s = size;
+      while (s > 7 && font.widthOfTextAtSize(text, s) > maxWidth) s -= 0.5;
+      let t = text;
+      if (font.widthOfTextAtSize(t, s) > maxWidth) {
+        while (t.length > 1 && font.widthOfTextAtSize(t + '…', s) > maxWidth) t = t.slice(0, -1);
+        t = t + '…';
+      }
+      return { text: t, size: s };
+    };
+
+    /** Escribe un párrafo con salto de línea según el ancho real del texto. */
+    const drawParagraph = (text: string, size: number, color: any, lineHeight = 12) => {
+      const words = text.split(' ');
+      let line = '';
+      for (const word of words) {
+        const test = line ? `${line} ${word}` : word;
+        if (fontReg.widthOfTextAtSize(test, size) > contentWidth) {
+          checkPageBreak(lineHeight);
+          drawText(line, margin, currentY, fontReg, size, color);
+          currentY -= lineHeight;
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if (line) {
+        checkPageBreak(lineHeight);
+        drawText(line, margin, currentY, fontReg, size, color);
+        currentY -= lineHeight;
+      }
     };
 
     // Cargar logo transparente
@@ -124,144 +175,163 @@ export async function generateFinancingPdfBuffer(request: any) {
     currentY -= 20;
 
     // HELPERS DE DISEÑO
+    // Las secciones se numeran según las que realmente se imprimen, para que no
+    // queden saltos (01, 02, 04…) cuando una sección se omite por falta de datos.
+    let sectionNumber = 0;
     const drawSectionHeader = (title: string) => {
+      sectionNumber += 1;
       checkPageBreak(40);
       currentY -= 25;
-      page.drawRectangle({ x: margin, y: currentY, width: width - margin * 2, height: 25, color: colBg, borderColor: colBorder, borderWidth: 1 });
-      drawText(title, margin + 10, currentY + 8, fontBold, 10, colDark);
+      page.drawRectangle({ x: margin, y: currentY, width: contentWidth, height: 25, color: colBg, borderColor: colBorder, borderWidth: 1 });
+      drawText(`${String(sectionNumber).padStart(2, '0')} — ${title}`, margin + 10, currentY + 8, fontBold, 10, colDark);
       currentY -= 15;
     };
 
-    const drawGrid = (data: {label: string, value: string}[], cols: number) => {
-      const colWidth = (width - margin * 2) / cols;
-      let x = margin;
-      let maxItemHeight = 35;
-      
-      checkPageBreak(maxItemHeight * Math.ceil(data.length / cols));
+    type Field = { label: string, value?: string };
 
-      data.forEach((item, index) => {
-        if (index > 0 && index % cols === 0) {
-          currentY -= maxItemHeight;
-          x = margin;
-        }
-        drawText(item.label.toUpperCase(), x, currentY, fontBold, 8, colTextLight);
-        drawText(item.value || 'No informado', x, currentY - 12, fontReg, 10, colText);
-        x += colWidth;
+    /**
+     * Dibuja una cuadrícula SOLO con los campos que tienen valor. Los campos vacíos
+     * no se dibujan ni dejan hueco: los siguientes se corren para ocupar su lugar.
+     */
+    const drawGrid = (data: Field[], cols: number) => {
+      const filled = data.filter(f => !!f.value);
+      if (filled.length === 0) return;
+      const colWidth = contentWidth / cols;
+      const rowHeight = 32;
+      const rows = Math.ceil(filled.length / cols);
+      checkPageBreak(rowHeight * rows);
+
+      filled.forEach((item, index) => {
+        const col = index % cols;
+        if (index > 0 && col === 0) currentY -= rowHeight;
+        const x = margin + col * colWidth;
+        const label = fitText(item.label.toUpperCase(), fontBold, 8, colWidth - 10);
+        const value = fitText(item.value!, fontReg, 10, colWidth - 10);
+        drawText(label.text, x, currentY, fontBold, label.size, colTextLight);
+        drawText(value.text, x, currentY - 12, fontReg, value.size, colText);
       });
-      currentY -= maxItemHeight;
+      currentY -= rowHeight;
     };
 
-    // 01 — DATOS DEL SOLICITANTE
-    const pd = request.personalData as any;
-    drawSectionHeader('01 — DATOS DEL SOLICITANTE');
-    drawGrid([
-      { label: 'Nombre Completo', value: `${pd.firstName || ''} ${pd.lastName || ''}`.trim() },
-      { label: 'Tipo Documento', value: pd.documentType },
-      { label: 'No. Documento', value: pd.documentNumber },
-      { label: 'Fecha Nacimiento', value: pd.dob || 'No informado' },
-      { label: 'Estado Civil', value: pd.maritalStatus || 'No informado' },
-      { label: 'Dirección', value: pd.address || 'No informado' },
-      { label: 'Ciudad', value: pd.city || 'No informado' },
-      { label: 'Correo', value: pd.email || 'No informado' },
-      { label: 'Teléfono', value: pd.phone || 'No informado' }
-    ], 3);
+    const hasAny = (data: Field[]) => data.some(f => !!f.value);
 
-    // 02 — INFORMACIÓN LABORAL Y ECONÓMICA
-    const ld = request.laborData as any;
-    drawSectionHeader('02 — INFORMACIÓN LABORAL Y ECONÓMICA');
-    drawGrid([
-      { label: 'Actividad', value: ld.activityType || 'No informado' },
-      { label: 'Ocupación', value: ld.occupation || 'No informado' },
-      { label: 'Empresa', value: ld.company || 'No informado' },
-      { label: 'Profesión', value: ld.profession || 'No informado' },
-      { label: 'Ingresos', value: ld.salary ? `$${Number(ld.salary).toLocaleString('es-CO')}` : 'No informado' },
-      { label: 'Antigüedad', value: ld.seniority || 'No informado' },
-      { label: 'Otros Ingresos', value: ld.otherIncome ? `$${Number(ld.otherIncome).toLocaleString('es-CO')}` : 'No informado' },
-      { label: 'Egresos', value: (request.financialData as any)?.expenses ? `$${Number((request.financialData as any).expenses).toLocaleString('es-CO')}` : 'No informado' }
-    ], 3);
-
-    // 03 — VEHÍCULO
+    const pd = (request.personalData || {}) as any;
+    const ld = (request.laborData || {}) as any;
+    const fd = (request.financialData || {}) as any;
+    const ref = (pd.reference || {}) as any;
     const reqAny = request as any;
-    const vBrand = reqAny.vehicle?.brand?.name || 'No informado';
-    const vModel = reqAny.vehicle?.model?.name || 'No informado';
-    drawSectionHeader('03 — VEHÍCULO');
-    drawGrid([
-      { label: 'Marca', value: vBrand },
-      { label: 'Modelo / Línea', value: vModel },
-      { label: 'Año', value: 'No informado' },
-      { label: 'Tipo', value: 'Automóvil' },
-      { label: 'Placa', value: 'No informado' },
-      { label: 'Precio', value: `$${request.vehiclePrice.toLocaleString('es-CO')}` }
-    ], 3);
 
-    // 04 — RESUMEN DE FINANCIACIÓN
-    drawSectionHeader('04 — RESUMEN DE FINANCIACIÓN');
-    
+    const fullName = [pd.firstName, pd.secondName, pd.lastName, pd.secondLastName].map(val).filter(Boolean).join(' ');
+    const docType = val(pd.documentType);
+    const docNumber = val(pd.documentNumber);
+
+    // DATOS DEL SOLICITANTE
+    // Solo campos que el formulario actual recolecta. Campos de versiones anteriores
+    // (fecha de nacimiento, estado civil, etc.) ya no se imprimen aunque existan en BD.
+    const personalFields: Field[] = [
+      { label: 'Nombre Completo', value: val(fullName) },
+      { label: 'Tipo Documento', value: docType },
+      { label: 'No. Documento', value: docNumber },
+      { label: 'Dirección', value: val(pd.address) },
+      { label: 'Ciudad', value: val(pd.city) },
+      { label: 'Celular', value: val(pd.phone) },
+      { label: 'Correo', value: val(pd.email) },
+      { label: 'Tipo de Vivienda', value: val(pd.housingType) },
+    ];
+    if (hasAny(personalFields)) {
+      drawSectionHeader('DATOS DEL SOLICITANTE');
+      drawGrid(personalFields, 3);
+    }
+
+    // INFORMACIÓN LABORAL Y ECONÓMICA
+    const laborFields: Field[] = [
+      { label: 'Ocupación', value: val(ld.activityType) },
+      { label: 'Empresa', value: val(ld.company) },
+      { label: 'Ingresos Mensuales', value: money(ld.salary) },
+      { label: 'Egresos Mensuales', value: money(fd.expenses) },
+    ];
+    if (hasAny(laborFields)) {
+      drawSectionHeader('INFORMACIÓN LABORAL Y ECONÓMICA');
+      drawGrid(laborFields, 3);
+    }
+
+    // VEHÍCULO (datos reales del vehículo seleccionado, nada quemado)
+    const vehicleFields: Field[] = [
+      { label: 'Marca', value: val(reqAny.vehicle?.brand?.name) },
+      { label: 'Modelo / Línea', value: val(reqAny.vehicle?.model?.name) },
+      { label: 'Año', value: val(reqAny.vehicle?.year) },
+    ];
+    if (hasAny(vehicleFields)) {
+      drawSectionHeader('VEHÍCULO');
+      drawGrid(vehicleFields, 3);
+    }
+
+    // RESUMEN DE FINANCIACIÓN
+    // Estos tres campos se imprimen SIEMPRE vacíos a propósito: el proceso actual no
+    // los diligencia y quedan para llenado manual. No usar request.vehiclePrice, etc.
+    drawSectionHeader('RESUMEN DE FINANCIACIÓN');
     currentY -= 5;
-    checkPageBreak(90);
-    
-    // Caja resaltada principal
-    const summaryBoxY = currentY - 80;
-    page.drawRectangle({ x: margin, y: summaryBoxY, width: width - margin * 2, height: 80, color: colBg, borderColor: colBorder, borderWidth: 1 });
-    
-    drawText('PRECIO DEL VEHÍCULO', margin + 15, summaryBoxY + 60, fontBold, 8, colTextLight);
-    drawText(`$${request.vehiclePrice.toLocaleString('es-CO')}`, margin + 15, summaryBoxY + 45, fontBold, 11, colText);
+    checkPageBreak(70);
+    const summaryH = 60;
+    const summaryBoxY = currentY - summaryH;
+    page.drawRectangle({ x: margin, y: summaryBoxY, width: contentWidth, height: summaryH, color: colBg, borderColor: colBorder, borderWidth: 1 });
+    const summaryLabels = ['PRECIO DEL VEHÍCULO', 'CUOTA INICIAL', 'MONTO A FINANCIAR'];
+    const summaryColW = contentWidth / summaryLabels.length;
+    summaryLabels.forEach((label, i) => {
+      const x = margin + i * summaryColW + 15;
+      drawText(label, x, summaryBoxY + summaryH - 20, fontBold, 8, colTextLight);
+      // Línea en blanco para diligenciar a mano
+      page.drawLine({ start: { x, y: summaryBoxY + 15 }, end: { x: x + summaryColW - 30, y: summaryBoxY + 15 }, color: colBorder, thickness: 1 });
+      drawText('$', x, summaryBoxY + 19, fontReg, 10, colTextLight);
+    });
+    currentY = summaryBoxY - 10;
 
-    drawText('CUOTA INICIAL', margin + 140, summaryBoxY + 60, fontBold, 8, colTextLight);
-    drawText(`$${request.downPayment.toLocaleString('es-CO')}`, margin + 140, summaryBoxY + 45, fontBold, 11, colText);
+    // REFERENCIA PERSONAL
+    const refFields: Field[] = [
+      { label: 'Nombre', value: val(ref.name) },
+      { label: 'Celular', value: val(ref.mobile) },
+      { label: 'Parentesco', value: val(ref.relation) },
+    ];
+    if (hasAny(refFields)) {
+      drawSectionHeader('REFERENCIA PERSONAL');
+      drawGrid(refFields, 3);
+    }
 
-    drawText('MONTO A FINANCIAR', margin + 250, summaryBoxY + 60, fontBold, 8, colTextLight);
-    drawText(`$${request.financedAmount.toLocaleString('es-CO')}`, margin + 250, summaryBoxY + 45, fontBold, 11, colText);
-
-    const downPercent = request.vehiclePrice > 0 ? Math.round((request.downPayment / request.vehiclePrice) * 100) : 0;
-    drawText(`Porcentaje inicial: ${downPercent}%`, margin + 15, summaryBoxY + 15, fontReg, 9, colTextLight);
-    drawText(`Entidad: ${request.bank?.name || 'N/A'}`, margin + 140, summaryBoxY + 15, fontReg, 9, colTextLight);
-    drawText(`Plazo: ${request.term} meses`, margin + 250, summaryBoxY + 15, fontReg, 9, colTextLight);
-
-    // Caja oscura de cuota estimada
-    const boxW = 150;
-    page.drawRectangle({ x: width - margin - boxW, y: summaryBoxY, width: boxW, height: 80, color: colDark });
-    drawText('CUOTA ESTIMADA', width - margin - boxW + 15, summaryBoxY + 60, fontBold, 8, colPrimary);
-    drawText(`$${request.estimatedMonthly.toLocaleString('es-CO')}`, width - margin - boxW + 15, summaryBoxY + 35, fontBold, 15, rgb(1,1,1));
-
-    currentY = summaryBoxY - 20;
-
-    drawText('La cuota presentada corresponde a una simulación y está sujeta a aprobación de la entidad financiera.', margin, currentY, fontReg, 8, colTextLight);
-    
-    currentY -= 30;
-
-    // 05 — DOCUMENTACIÓN Y DECLARACIÓN
-    drawSectionHeader('05 — DOCUMENTACIÓN Y DECLARACIÓN');
-    
-    drawText('Documento de Identidad:', margin, currentY, fontBold, 9, colText);
-    drawText(`Adjuntado en el sistema (C.C. ${pd.documentNumber})`, margin + 130, currentY, fontReg, 9, colTextLight);
+    // DOCUMENTACIÓN Y DECLARACIÓN
+    drawSectionHeader('DOCUMENTACIÓN Y DECLARACIÓN');
+    drawText('Documento de identidad:', margin, currentY, fontBold, 9, colText);
+    drawText('Pendiente de entrega física', margin + 120, currentY, fontReg, 9, colTextLight);
     currentY -= 20;
 
     const disclaimer = 'La información suministrada por el solicitante corresponde a los datos registrados durante el proceso de solicitud y será utilizada para la gestión y evaluación de la financiación solicitada. Al firmar este documento, el solicitante autoriza el tratamiento de sus datos personales bajo las leyes vigentes.';
-    
-    // Wrapping manual básico del disclaimer
-    const words = disclaimer.split(' ');
-    let line = '';
-    for (let word of words) {
-      if ((line + word).length > 100) {
-        drawText(line, margin, currentY, fontReg, 8, colTextLight);
-        currentY -= 12;
-        line = word + ' ';
-      } else {
-        line += word + ' ';
-      }
-    }
-    drawText(line, margin, currentY, fontReg, 8, colTextLight);
+    drawParagraph(disclaimer, 8, colTextLight);
 
-    currentY -= 50;
-    
-    checkPageBreak(80); // Reducir el threshold para que no deje tanto espacio en blanco si cabe justo
+    // BLOQUE DE CIERRE: FIRMA + HUELLA (mismo bloque, alineados)
+    const fpW = 71;  // ≈ 2.5 cm
+    const fpH = 85;  // ≈ 3 cm
+    const blockH = fpH + 30;
+    currentY -= 20;
+    checkPageBreak(blockH);
 
-    // Bloque de Firma
-    page.drawLine({ start: { x: margin, y: currentY }, end: { x: margin + 200, y: currentY }, color: colDark, thickness: 1 });
-    drawText('Firma del solicitante', margin, currentY - 15, fontBold, 9, colText);
-    drawText(`Nombre: ${pd.firstName || ''} ${pd.lastName || ''}`.trim(), margin, currentY - 28, fontReg, 9, colText);
-    drawText(`C.C.: ${pd.documentNumber || ''}`, margin, currentY - 40, fontReg, 9, colText);
+    const fpTop = currentY;
+    const fpBottom = fpTop - fpH;
+    const fpX = margin + 270;
+
+    // Firma: espacio a la izquierda, línea alineada con la parte baja de la huella
+    const sigLineY = fpBottom + 30;
+    const sigW = 220;
+    page.drawLine({ start: { x: margin, y: sigLineY }, end: { x: margin + sigW, y: sigLineY }, color: colDark, thickness: 1 });
+    drawText('Firma del solicitante', margin, sigLineY - 13, fontBold, 9, colText);
+    if (fullName) drawText(fitText(`Nombre: ${fullName}`, fontReg, 9, sigW).text, margin, sigLineY - 25, fontReg, 9, colText);
+    if (docNumber) drawText(`${docType || 'Documento'}: ${docNumber}`, margin, sigLineY - 37, fontReg, 9, colText);
+
+    // Huella: recuadro al lado de la firma
+    page.drawRectangle({ x: fpX, y: fpBottom, width: fpW, height: fpH, borderColor: colDark, borderWidth: 1 });
+    const fpLabel = 'Huella del solicitante';
+    const fpLabelW = fontBold.widthOfTextAtSize(fpLabel, 9);
+    drawText(fpLabel, fpX + fpW / 2 - fpLabelW / 2, fpBottom - 13, fontBold, 9, colText);
+
+    currentY = fpBottom - 25;
 
     // PIE DE PÁGINA GLOBAL
     const pages = pdfDoc.getPages();

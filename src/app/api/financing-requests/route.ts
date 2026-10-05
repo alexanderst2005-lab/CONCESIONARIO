@@ -5,6 +5,7 @@ import { PDFDocument, rgb } from "pdf-lib";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { eq } from "drizzle-orm";
+import { buildFinancingRequestData } from "@/lib/financingRequestData";
 
 export async function POST(req: Request) {
   try {
@@ -32,35 +33,17 @@ export async function POST(req: Request) {
     // Guardar en Base de Datos
     const requestNumber = `SOL-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+    // Solo se guardan los campos que el usuario realmente diligenció
+    const { personalData, laborData, financialData } = buildFinancingRequestData(formData);
+
     const newRequest = await db.insert(financingRequests).values({
       requestNumber,
       userId,
       vehicleId: Number(vehicleId) || 0,
       bankId: Number(bankId) || 0,
-      personalData: {
-        firstName: formData.firstName || "",
-        lastName: formData.lastName || "",
-        documentType: formData.documentType || "",
-        documentNumber: formData.documentNumber || "",
-        dob: formData.birthDate || "",
-        maritalStatus: formData.civilStatus || "",
-        address: formData.address || "",
-        city: formData.city || "",
-        email: formData.email || "",
-        phone: formData.mobile || formData.phone || "",
-      },
-      laborData: {
-        activityType: formData.occupationType || "",
-        occupation: formData.occupationType || "",
-        company: formData.companyName || "",
-        profession: formData.profession || "",
-        salary: formData.salary || "",
-        seniority: formData.laborAntiquity || "",
-        otherIncome: formData.otherIncome || "",
-      },
-      financialData: {
-        expenses: formData.expenses || "",
-      },
+      personalData,
+      laborData,
+      financialData,
       vehiclePrice: Math.round(Number(vehiclePrice)) || 0,
       downPayment: Math.round(Number(downPayment)) || 0,
       financedAmount: Math.round(Number(financedAmount)) || 0,

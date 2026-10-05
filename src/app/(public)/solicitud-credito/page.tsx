@@ -19,6 +19,8 @@ function SolicitudFormContent() {
   const term = searchParams.get("term");
   const bankId = searchParams.get("bankId");
   
+  // Solo campos que el usuario ve en pantalla. No agregar aquí campos sin input
+  // visible: cualquier valor por defecto terminaría guardado e impreso en el PDF.
   const [formData, setFormData] = useState({
     // Step 1: Personal
     firstName: "",
@@ -27,37 +29,22 @@ function SolicitudFormContent() {
     secondLastName: "",
     documentType: "C.C.",
     documentNumber: "",
-    birthDate: "",
-    birthCity: "",
-    civilStatus: "SOLTERO",
-    gender: "M",
     
     // Step 2: Contact
     address: "",
     city: "",
-    department: "",
-    phone: "",
     mobile: "",
     email: "",
     housingType: "Propia",
-    housingAntiquity: "",
     
     // Step 3: Laboral
     occupationType: "Empleado",
-    profession: "",
     companyName: "",
-    contractType: "INDEFINIDO",
-    laborAntiquity: "",
-    companyPhone: "",
     salary: "",
-    otherIncome: "",
     expenses: "",
     
     // Step 4: Referencias
-    spouseName: "",
-    spouseDocument: "",
     refName: "",
-    refCity: "",
     refMobile: "",
     refRelation: "",
   });
