@@ -73,18 +73,39 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
         signature: { integrity: data.firmaIntegridad }
       });
 
-      checkout.open(function (result: any) {
+      checkout.open(async function (result: any) {
         const transaction = result.transaction;
         console.log("Wompi Transaction Result:", transaction);
         
-        if (transaction.status === "APPROVED") {
-          toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
-          setTimeout(() => window.location.reload(), 2000);
-        } else if (transaction.status === "PENDING") {
-          toast("El pago está pendiente de confirmación.", "success");
-          setTimeout(() => window.location.reload(), 2000);
-        } else {
-          toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
+        try {
+          // Sincronización manual síncrona
+          const verifyRes = await fetch("/api/pagos-destacado/verificar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              reference: transaction.reference, 
+              transactionId: transaction.id, 
+              status: transaction.status,
+              paymentMethod: transaction.payment_method_type
+            }),
+          });
+
+          if (!verifyRes.ok) {
+            const errData = await verifyRes.json();
+            toast(`Error de sincronización: ${errData.message}`, "error");
+          } else {
+            if (transaction.status === "APPROVED") {
+              toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
+              setTimeout(() => window.location.reload(), 2000);
+            } else if (transaction.status === "PENDING") {
+              toast("El pago está pendiente de confirmación.", "success");
+              setTimeout(() => window.location.reload(), 2000);
+            } else {
+              toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
+            }
+          }
+        } catch (err) {
+          toast("Error verificando el pago con el servidor.", "error");
         }
       });
       
