@@ -94,3 +94,26 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ message: "Error al actualizar el plan" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  if (!(await esAdmin())) return noAutorizado();
+  
+  const { searchParams } = new URL(req.url);
+  const id = parseIdPositivo(searchParams.get("id"));
+  if (id === null) return NextResponse.json({ message: "ID de plan inválido" }, { status: 400 });
+
+  try {
+    const [eliminado] = await db.delete(planesDestacado)
+      .where(eq(planesDestacado.id, id))
+      .returning();
+      
+    if (!eliminado) return NextResponse.json({ message: "Plan no encontrado" }, { status: 404 });
+    return NextResponse.json({ message: "Plan eliminado" });
+  } catch (error: any) {
+    if (error?.code === "23503") {
+      return NextResponse.json({ message: "No se puede eliminar este plan porque ya tiene pagos o vehículos asociados. En su lugar, desactívalo." }, { status: 409 });
+    }
+    console.error("[admin/planes-destacado][DELETE]", error);
+    return NextResponse.json({ message: "Error al eliminar el plan" }, { status: 500 });
+  }
+}

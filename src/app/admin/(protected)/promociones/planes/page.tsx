@@ -99,6 +99,24 @@ export default function PromotionPlansPage() {
     }
   };
 
+  const deletePlan = async (plan: Plan) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar el plan "${plan.nombre}"?`)) return;
+    try {
+      const res = await fetch(`/api/admin/planes-destacado?id=${plan.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast("Plan eliminado con éxito", "success");
+        fetchPlans();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        toast(body?.message || "No se pudo eliminar el plan", "error");
+      }
+    } catch {
+      toast("Error al eliminar el plan", "error");
+    }
+  };
+
   const openModal = (plan: Plan | null = null) => {
     setEditingPlan(plan);
     setFormData(plan
@@ -163,6 +181,9 @@ export default function PromotionPlansPage() {
                     <button onClick={() => openModal(plan)} style={{ padding: "0.4rem 0.75rem", background: "rgba(255,255,255,0.05)", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>Editar</button>
                     <button onClick={() => toggleStatus(plan)} style={{ padding: "0.4rem 0.75rem", background: plan.activo ? "rgba(248,113,113,0.1)" : "rgba(74,222,128,0.1)", color: plan.activo ? "#f87171" : "#4ade80", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600 }}>
                       {plan.activo ? 'Desactivar' : 'Activar'}
+                    </button>
+                    <button onClick={() => deletePlan(plan)} style={{ padding: "0.4rem 0.75rem", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                      Eliminar
                     </button>
                   </td>
                 </tr>
