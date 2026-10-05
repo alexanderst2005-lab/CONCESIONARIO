@@ -97,67 +97,37 @@ export default function SubscriptionsTab({ userId }: { userId: number }) {
                 <h4 style={{ margin: "0 0 1rem 0", color: "#fff", fontSize: "1.2rem" }}>{vehicle.brand.name} {vehicle.model.name}</h4>
                 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", color: "#ccc", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
-                  <p style={{ margin: 0 }}><strong>Plan:</strong> {sub.plan?.name || "Premium"}</p>
-                  <p style={{ margin: 0 }}><strong>Valor:</strong> ${(sub.amount || 0).toLocaleString('es-CO')} / {(sub.plan?.interval || 'month') === 'month' ? 'mes' : 'año'}</p>
+                  <p style={{ margin: 0 }}><strong>Plan:</strong> {sub.plan?.name || "Básico"}</p>
+                  <p style={{ margin: 0 }}><strong>Valor:</strong> ${(sub.amount || 0).toLocaleString('es-CO')} (Pago único)</p>
                   <p style={{ margin: 0 }}>
-                    <strong>Estado:</strong> {isActive ? 'Activa' : isCanceled ? 'Cancelada' : isExpired ? 'Finalizada' : isPastDue ? 'Fallida' : 'Pendiente'}
+                    <strong>Estado:</strong> {isActive ? 'Activo' : isExpired ? 'Finalizado' : 'Pendiente'}
                   </p>
-                  {(!isCanceled && !isExpired && sub.nextBillingDate) && (
-                    <p style={{ margin: 0 }}><strong>Próximo cobro:</strong> {new Date(sub.nextBillingDate).toLocaleDateString('es-CO')}</p>
-                  )}
                   <p style={{ margin: 0 }}>
                     <strong>Vehículo:</strong> {vehicle.isFeatured ? 'Destacado' : 'Normal'}
                   </p>
                 </div>
 
-                {isCanceled ? (
-                  <div style={{ background: "rgba(248,113,113,0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(248,113,113,0.2)" }}>
-                    <h4 style={{ color: "#f87171", margin: "0 0 0.5rem 0" }}>Suscripción cancelada</h4>
-                    <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem" }}>
-                      No se realizarán nuevos cobros. Tu vehículo continuará destacado hasta el {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}.
-                    </p>
-                    <p style={{ color: "#fff", margin: "0.5rem 0 1rem 0", fontWeight: "bold" }}>
-                      Fecha de finalización: {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}
-                    </p>
-                    <button 
-                      onClick={() => setReactivateModalSub(sub)}
-                      style={{ padding: "0.5rem 1.5rem", background: "var(--interaction-color)", color: "#000", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-                    >
-                      Reactivar suscripción
-                    </button>
-                  </div>
-                ) : isExpired ? (
+                {isExpired ? (
                   <div style={{ background: "rgba(255,255,255,0.05)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                    <h4 style={{ color: "#aaa", margin: "0 0 0.5rem 0" }}>Suscripción Finalizada</h4>
+                    <h4 style={{ color: "#aaa", margin: "0 0 0.5rem 0" }}>Destacado Finalizado</h4>
                     <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem", marginBottom: "1rem" }}>
-                      El periodo de suscripción ha terminado y tu vehículo ya no está destacado. Puedes renovar para volver a destacarlo.
+                      El periodo ha terminado y tu vehículo ya no está destacado. Puedes volver a destacarlo.
                     </p>
                     <WompiWidgetModal 
                       vehicleId={vehicle.id} 
                       vehicleName={`${vehicle.brand?.name} ${vehicle.model?.name}`} 
-                      buttonText="RENOVAR SUSCRIPCIÓN" 
-                    />
-                  </div>
-                ) : isPastDue ? (
-                  <div style={{ background: "rgba(248,113,113,0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(248,113,113,0.2)" }}>
-                    <h4 style={{ color: "#f87171", margin: "0 0 0.5rem 0" }}>🔴 Renovación fallida</h4>
-                    <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem", marginBottom: "1rem" }}>
-                      No pudimos procesar el pago de renovación. Tu vehículo volvió al inventario normal.
-                    </p>
-                    <WompiWidgetModal 
-                      vehicleId={vehicle.id} 
-                      vehicleName={`${vehicle.brand?.name} ${vehicle.model?.name}`} 
-                      buttonText="RENOVAR SUSCRIPCIÓN" 
+                      buttonText="VOLVER A DESTACAR" 
                     />
                   </div>
                 ) : isActive ? (
-                  <div>
-                    <button 
-                      onClick={() => setCancelModalSub(sub)}
-                      style={{ padding: "0.5rem 1.5rem", background: "transparent", color: "#f87171", border: "1px solid rgba(248,113,113,0.3)", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
-                    >
-                      Cancelar suscripción
-                    </button>
+                  <div style={{ background: "rgba(16,185,129,0.1)", padding: "1rem", borderRadius: "8px", border: "1px solid rgba(16,185,129,0.2)" }}>
+                    <h4 style={{ color: "#10b981", margin: "0 0 0.5rem 0" }}>Destacado activo</h4>
+                    <p style={{ color: "#ccc", margin: 0, fontSize: "0.9rem" }}>
+                      Este es un pago único sin renovación automática. Tu vehículo continuará destacado hasta el {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}.
+                    </p>
+                    <p style={{ color: "#fff", margin: "0.5rem 0 0 0", fontWeight: "bold" }}>
+                      Fecha de finalización: {sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString('es-CO') : '-'}
+                    </p>
                   </div>
                 ) : null}
               </div>
