@@ -63,7 +63,6 @@ export default function AdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               style={{ width: "100%", padding: "1rem", backgroundColor: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", fontSize: "1rem", outline: "none" }}
-              placeholder="admin@autosdelpatron.com"
             />
           </div>
 
@@ -75,7 +74,6 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               style={{ width: "100%", padding: "1rem", backgroundColor: "#000", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", fontSize: "1rem", outline: "none" }}
-              placeholder="••••••••"
             />
           </div>
 
