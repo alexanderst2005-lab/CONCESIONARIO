@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function ImageGallery({ images }: { images: any[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -60,6 +61,7 @@ export default function ImageGallery({ images }: { images: any[] }) {
           src={getUrl(images[currentIndex])} 
           alt="Vista del vehículo" 
           className={styles.mainImage} 
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsLightboxOpen(true); }}
         />
         
         {images.length > 1 && (
@@ -83,6 +85,24 @@ export default function ImageGallery({ images }: { images: any[] }) {
           </>
         )}
       </div>
+      
+      {isLightboxOpen && (
+        <div className={styles.lightbox} onClick={() => setIsLightboxOpen(false)}>
+          <button className={styles.closeBtn} onClick={() => setIsLightboxOpen(false)}>✕</button>
+          <img src={getUrl(images[currentIndex])} alt="Vista completa" className={styles.lightboxImage} onClick={(e) => e.stopPropagation()} />
+          
+          {images.length > 1 && (
+            <>
+              <button className={`${styles.navButton} ${styles.navPrev}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); prevImage(); }}>
+                <ChevronLeft size={48} strokeWidth={1} />
+              </button>
+              <button className={`${styles.navButton} ${styles.navNext}`} onClick={(e) => { e.preventDefault(); e.stopPropagation(); nextImage(); }}>
+                <ChevronRight size={48} strokeWidth={1} />
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
