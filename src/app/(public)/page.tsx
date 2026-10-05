@@ -131,7 +131,7 @@ export default async function Home() {
         <div className={`container`}>
           <div className={styles.sectionHeader}>
             <h2 className={`${styles.sectionTitle} serif-title`}>Vehículos destacados</h2>
-            <Link href="/vehiculos" className={styles.viewAllLink}>Ver todos</Link>
+            <Link href="/vehiculos?destacados=true" className={styles.viewAllLink}>Ver todos</Link>
           </div>
           <div className={styles.featuredGrid}>
             {featuredVehicles.length > 0 ? (

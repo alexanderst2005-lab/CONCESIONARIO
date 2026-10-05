@@ -7,9 +7,13 @@ import FilterPanel from "@/components/FilterPanel";
 import { Car } from "lucide-react";
 
 export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
-  const { marca, categoria, modelo, ciudad } = await searchParams;
+  const { marca, categoria, modelo, ciudad, destacados } = await searchParams;
 
   let conditions: any[] = [inArray(vehicles.status, ["ACTIVO", "VENDIDO", "approved", "APPROVED"])];
+  
+  if (destacados === 'true') {
+    conditions.push(eq(vehicles.isFeatured, true));
+  }
   
   if (marca) {
     const matchingBrands = await db.select({ id: brands.id }).from(brands).where(ilike(brands.name, `%${marca}%`));
@@ -86,7 +90,7 @@ export default async function VehiculosPage({ searchParams }: { searchParams: Pr
         <div className={styles.catalogHeader}>
           <div>
             <h1 className={`${styles.catalogTitle} serif-title`}>
-              {marca ? `Vehículos ${marca}` : categoria ? `Tipo ${categoria}` : "Catálogo"}
+              {destacados === 'true' ? "Vehículos Destacados" : marca ? `Vehículos ${marca}` : categoria ? `Tipo ${categoria}` : "Catálogo"}
             </h1>
             <div style={{ display: 'none' }} id="debug-info">
               {JSON.stringify({ marca, categoria, modelo, ciudad })}
