@@ -16,9 +16,12 @@ export default function AdminSidebar() {
     { name: "Vehículos", href: "/admin/vehiculos", icon: <Car size={18} /> },
     { name: "Marcas", href: "/admin/marcas", icon: <Tags size={18} /> },
     { name: "Tipos de Vehículo", href: "/admin/categorias", icon: <ListTree size={18} /> },
+    { name: "Solicitudes Crédito", href: "/admin/financiacion", icon: <FileText size={18} /> },
     { name: "Bancos / Financiación", href: "/admin/financiacion/bancos", icon: <Building size={18} /> },
     { name: "Planes Promoción", href: "/admin/promociones/planes", icon: <Tags size={18} /> },
     { name: "Suscripciones", href: "/admin/promociones/suscripciones", icon: <MessageSquare size={18} /> },
+    { name: "Usuarios", href: "/admin/usuarios", icon: <Users size={18} /> },
+    { name: "Interesados", href: "/admin/leads", icon: <MessageSquare size={18} /> },
   ];
 
   return (
