@@ -43,9 +43,17 @@ export async function GET() {
       .where(eq(vehicles.userId, userId))
       .orderBy(desc(destacadosActivos.creadoEn));
 
+    // For each featured vehicle, fetch its main image
+    const vehicleIds = destacados.map(d => d.vehiculo.id);
+    const images = vehicleIds.length > 0 ? await db.query.vehicleImages.findMany({
+      where: (vi, { inArray }) => inArray(vi.vehicleId, vehicleIds)
+    }) : [];
+
     // Map to the format SubscriptionsTab expects (so we don't have to rewrite the whole UI yet)
     const mapped = destacados.map(d => {
       const isExpired = new Date(d.terminaEn) < new Date() || d.estado === 'expirado';
+      const mainImage = images.find(img => img.vehicleId === d.vehiculo.id && img.isMain) || images.find(img => img.vehicleId === d.vehiculo.id);
+
       return {
         id: d.id,
         status: isExpired ? 'expired' : 'active',
@@ -60,7 +68,8 @@ export async function GET() {
           id: d.vehiculo.id,
           isFeatured: d.vehiculo.isFeatured,
           brand: { name: d.vehiculo.brandName },
-          model: { name: d.vehiculo.modelName }
+          model: { name: d.vehiculo.modelName },
+          imageUrl: mainImage?.url
         }
       };
     });
