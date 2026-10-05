@@ -28,18 +28,34 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Pago no encontrado en la base de datos" }, { status: 404 });
     }
 
+    // Para mayor seguridad, no confiamos ciegamente en el frontend.
+    // Consultamos la API pública de Wompi para verificar el estado REAL de la transacción.
+    let realStatus = status;
+    try {
+      // Wompi permite consultar transacciones públicamente
+      const isSandbox = process.env.NEXT_PUBLIC_WOMPI_PUBLIC_KEY?.includes("test_");
+      const baseUrl = isSandbox ? "https://sandbox.wompi.co/v1" : "https://production.wompi.co/v1";
+      const wompiRes = await fetch(`${baseUrl}/transactions/${transactionId}`);
+      if (wompiRes.ok) {
+        const wompiData = await wompiRes.json();
+        realStatus = wompiData.data.status;
+      }
+    } catch (err) {
+      console.warn("No se pudo verificar con Wompi API, usando estado del frontend", err);
+    }
+
     // Solo procesamos si el pago está pendiente (evita conflictos si el webhook llegó primero)
     if (pagoDB.estado === "pendiente") {
-      if (status === "APPROVED") {
+      if (realStatus === "APPROVED") {
         await activarOExtenderDestacado(pagoDB.id, transactionId, paymentMethod || "WIDGET");
-      } else if (["DECLINED", "ERROR", "VOIDED"].includes(status)) {
+      } else if (["DECLINED", "ERROR", "VOIDED"].includes(realStatus)) {
         await rechazarPago(pagoDB.id, transactionId);
       }
     }
 
     return NextResponse.json({ 
       success: true, 
-      estadoFinal: status === "APPROVED" ? "aprobado" : "rechazado_o_pendiente" 
+      estadoFinal: realStatus === "APPROVED" ? "aprobado" : "rechazado_o_pendiente" 
     });
 
   } catch (error: any) {
