@@ -61,16 +61,15 @@ export default function SolicitudesCreditoPage() {
               <th style={{ padding: "1rem", color: "#aaa", fontWeight: "normal" }}>Cliente</th>
               <th style={{ padding: "1rem", color: "#aaa", fontWeight: "normal" }}>Vehículo</th>
               <th style={{ padding: "1rem", color: "#aaa", fontWeight: "normal" }}>Entidad</th>
-              <th style={{ padding: "1rem", color: "#aaa", fontWeight: "normal" }}>Estado</th>
               <th style={{ padding: "1rem", color: "#aaa", fontWeight: "normal", textAlign: "right" }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={6} style={{ padding: "2rem", textAlign: "center", color: "#aaa" }}>Cargando solicitudes...</td></tr>
+              <tr><td colSpan={5} style={{ padding: "2rem", textAlign: "center", color: "#aaa" }}>Cargando solicitudes...</td></tr>
             ) : requests.length === 0 ? (
               <tr>
-                <td colSpan={6} style={{ padding: "4rem 2rem", textAlign: "center", color: "#aaa" }}>
+                <td colSpan={5} style={{ padding: "4rem 2rem", textAlign: "center", color: "#aaa" }}>
                   <FileText size={48} color="rgba(255,255,255,0.1)" style={{ marginBottom: "1rem", display: "inline-block" }} />
                   <p>Aún no hay solicitudes de crédito registradas.</p>
                   <p style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>Aparecerán aquí cuando un cliente complete el formulario de financiación.</p>
@@ -83,15 +82,6 @@ export default function SolicitudesCreditoPage() {
                   <td style={{ padding: "1rem" }}>{req.personalData?.firstName} {req.personalData?.lastName}</td>
                   <td style={{ padding: "1rem" }}>{req.vehicle?.brand?.name} {req.vehicle?.model?.name}</td>
                   <td style={{ padding: "1rem" }}>{req.bank?.name}</td>
-                  <td style={{ padding: "1rem" }}>
-                    <span style={{ 
-                      padding: "0.25rem 0.5rem", borderRadius: "4px", fontSize: "0.9rem",
-                      background: req.status === 'Pendiente' ? 'rgba(234,179,8,0.2)' : 'rgba(59,130,246,0.2)',
-                      color: req.status === 'Pendiente' ? '#eab308' : '#3b82f6'
-                    }}>
-                      {req.status}
-                    </span>
-                  </td>
                   <td style={{ padding: "1rem", textAlign: "right" }}>
                     <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
                       <a href={`/api/financing-requests/${req.id}/pdf`} target="_blank" rel="noopener noreferrer" style={{ background: "transparent", border: "1px solid rgba(255,255,255,0.2)", padding: "0.5rem 1rem", borderRadius: "4px", color: "#fff", display: "inline-flex", alignItems: "center", gap: "0.25rem", textDecoration: "none" }}>

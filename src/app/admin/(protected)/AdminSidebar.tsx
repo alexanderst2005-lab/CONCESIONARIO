@@ -21,7 +21,6 @@ export default function AdminSidebar() {
     { name: "Planes Promoción", href: "/admin/promociones/planes", icon: <Tags size={18} /> },
     { name: "Suscripciones", href: "/admin/promociones/suscripciones", icon: <MessageSquare size={18} /> },
     { name: "Usuarios", href: "/admin/usuarios", icon: <Users size={18} /> },
-    { name: "Interesados", href: "/admin/leads", icon: <MessageSquare size={18} /> },
   ];
 
   return (
