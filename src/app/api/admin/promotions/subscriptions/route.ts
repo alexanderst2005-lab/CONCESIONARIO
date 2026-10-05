@@ -16,30 +16,52 @@ export async function GET() {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const allSubscriptions = await db.query.subscriptions.findMany({
-      where: and(
-        ne(subscriptions.status, 'pending'),
-        or(
-          isNotNull(subscriptions.startDate),
-          and(ne(subscriptions.status, 'past_due'), ne(subscriptions.status, 'canceled'))
-        )
-      ),
-      orderBy: (subs, { desc }) => [desc(subs.createdAt)],
+    const destacados = await db.query.destacadosActivos.findMany({
+      orderBy: (dest, { desc }) => [desc(dest.creadoEn)],
       with: {
-        user: true,
-        plan: true,
-        vehicle: {
+        vehiculo: {
           with: {
+            user: true,
             brand: true,
             model: true
           }
         },
-        payments: true
+        plan: true,
+        pago: true
       }
     });
 
-    return NextResponse.json(allSubscriptions);
+    // Map to the format the admin UI expects
+    const mapped = destacados.map(d => {
+      const isExpired = new Date(d.terminaEn) < new Date() || d.estado === 'expirado';
+      
+      return {
+        id: d.id,
+        status: isExpired ? 'expired' : 'active',
+        amount: d.pago?.monto || d.plan?.precio || 0,
+        nextBillingDate: d.terminaEn, // We use this field to show when it ends
+        user: d.vehiculo?.user,
+        plan: {
+          name: d.plan?.nombre || "Plan Único",
+          interval: "pago único"
+        },
+        vehicle: {
+          id: d.vehiculo?.id,
+          isFeatured: d.vehiculo?.isFeatured,
+          brand: { name: d.vehiculo?.brand?.name },
+          model: { name: d.vehiculo?.model?.name }
+        },
+        payments: d.pago ? [{
+          id: d.pago.id,
+          status: d.pago.estado === 'aprobado' ? 'APPROVED' : d.pago.estado.toUpperCase(),
+          amount: d.pago.monto
+        }] : []
+      };
+    });
+
+    return NextResponse.json(mapped, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
+    console.error("[admin/promotions/subscriptions]", error);
     return NextResponse.json({ message: "Error" }, { status: 500 });
   }
 }
