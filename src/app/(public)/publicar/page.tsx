@@ -68,10 +68,14 @@ export default function PublicarPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // Si el nombre es vehicleYear, lo guardamos en year
+    const actualName = name === "vehicleYear" ? "year" : name;
+    
     setFormData((prev) => {
-      const nextData = { ...prev, [name]: value };
+      const nextData = { ...prev, [actualName]: value };
       // If changing category, reset the brand
-      if (name === "categoryName") {
+      if (actualName === "categoryName") {
         nextData.brandName = "";
       }
       return nextData;
@@ -246,7 +250,7 @@ export default function PublicarPage() {
               </div>
               <div className={styles.inputGroup}>
                 <label>Año</label>
-                <input type="number" name="year" value={formData.year} onChange={handleInputChange} placeholder="Ej: 2024" required />
+                <input type="number" name="vehicleYear" value={formData.year} onChange={handleInputChange} placeholder="Ej: 2024" required autoComplete="off" />
               </div>
             </div>
           </div>

@@ -53,7 +53,8 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const actualName = name === "vehicleYear" ? "year" : name;
+    setFormData((prev) => ({ ...prev, [actualName]: value }));
   };
 
   const { toast } = useUI();
@@ -222,7 +223,7 @@ export default function EditVehicleForm({ initialData }: { initialData: any }) {
               </div>
               <div className={styles.inputGroup}>
                 <label>Año</label>
-                <input type="number" name="year" value={formData.year} onChange={handleInputChange} required />
+                <input type="number" name="vehicleYear" value={formData.year} onChange={handleInputChange} required autoComplete="off" />
               </div>
             </div>
           </div>
