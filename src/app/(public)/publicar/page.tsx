@@ -46,25 +46,17 @@ export default function PublicarPage() {
     plate: "",
     description: "",
     color: "",
-    soat: "true",
-    tecnomecanica: "true",
-    ownersCount: "1",
-    prenda: "false",
+    soat: "",
+    tecnomecanica: "",
+    ownersCount: "",
+    prenda: "",
     accessories: "",
-    hasGas: "false",
-    hasGps: "false",
-    locationStatus: "Vitrina",
+    hasGas: "",
+    hasGps: "",
+    locationStatus: "",
     cityRegistered: "",
     contactPhone: "",
   });
-
-  // Prellenar con el teléfono del perfil si el usuario ya lo tiene
-  React.useEffect(() => {
-    const profilePhone = (session?.user as any)?.phone;
-    if (profilePhone) {
-      setFormData((prev) => (prev.contactPhone ? prev : { ...prev, contactPhone: profilePhone }));
-    }
-  }, [session]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -290,14 +282,16 @@ export default function PublicarPage() {
               </div>
               <div className={styles.inputGroup}>
                 <label>Si tuvo Gas</label>
-                <select name="hasGas" value={formData.hasGas} onChange={handleInputChange}>
+                <select name="hasGas" value={formData.hasGas} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="false">No</option>
                   <option value="true">Sí</option>
                 </select>
               </div>
               <div className={styles.inputGroup}>
                 <label>Si tiene GPS</label>
-                <select name="hasGps" value={formData.hasGps} onChange={handleInputChange}>
+                <select name="hasGps" value={formData.hasGps} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="false">No</option>
                   <option value="true">Sí</option>
                 </select>
@@ -334,32 +328,36 @@ export default function PublicarPage() {
               </div>
               <div className={styles.inputGroup}>
                 <label>Soat Vigente</label>
-                <select name="soat" value={formData.soat} onChange={handleInputChange}>
+                <select name="soat" value={formData.soat} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="true">Sí</option>
                   <option value="false">No</option>
                 </select>
               </div>
               <div className={styles.inputGroup}>
                 <label>Tecnomecánica Vigente</label>
-                <select name="tecnomecanica" value={formData.tecnomecanica} onChange={handleInputChange}>
+                <select name="tecnomecanica" value={formData.tecnomecanica} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="true">Sí</option>
                   <option value="false">No</option>
                 </select>
               </div>
               <div className={styles.inputGroup}>
                 <label>Número de Dueños</label>
-                <input type="number" name="ownersCount" value={formData.ownersCount} onChange={handleInputChange} min="1" required />
+                <input type="number" name="ownersCount" value={formData.ownersCount} onChange={handleInputChange} min="1" placeholder="Ej: 1" required />
               </div>
               <div className={styles.inputGroup}>
                 <label>Prenda</label>
-                <select name="prenda" value={formData.prenda} onChange={handleInputChange}>
+                <select name="prenda" value={formData.prenda} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="false">No (Libre)</option>
                   <option value="true">Sí</option>
                 </select>
               </div>
               <div className={styles.inputGroup}>
                 <label>Cita o Vitrina</label>
-                <select name="locationStatus" value={formData.locationStatus} onChange={handleInputChange}>
+                <select name="locationStatus" value={formData.locationStatus} onChange={handleInputChange} required>
+                  <option value="" disabled>Selecciona una opción</option>
                   <option value="Cita">Con Cita</option>
                   <option value="Vitrina">En Vitrina</option>
                 </select>
