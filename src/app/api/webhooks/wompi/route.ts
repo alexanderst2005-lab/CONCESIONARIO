@@ -1,198 +1,152 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { subscriptions, subscriptionPayments, vehicles, promotionPlans } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
-import crypto from "crypto";
+import { eventosPago, pagos } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { validarFirmaWebhook } from "@/lib/wompi/crypto";
+import { activarOExtenderDestacado, rechazarPago } from "@/lib/destacados/activacion";
+
+export const dynamic = "force-dynamic";
+
+/**
+ * Registra un evento en la tabla de auditoría.
+ */
+async function registrarAuditoria(payload: {
+  pagoId?: string;
+  referencia?: string;
+  evento: string;
+  estadoWompi?: string;
+  firmaValida?: boolean;
+  ip?: string;
+}) {
+  try {
+    await db.insert(eventosPago).values({
+      pagoId: payload.pagoId,
+      referencia: payload.referencia,
+      origen: "webhook",
+      evento: payload.evento,
+      estadoWompi: payload.estadoWompi,
+      firmaValida: payload.firmaValida,
+      ip: payload.ip,
+    });
+  } catch (e) {
+    console.error("[Wompi Webhook] Error registrando auditoría:", e);
+  }
+}
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") || "desconocida";
+  let payload: any;
+  
   try {
-    const data = await req.json();
-
-    // En producción, aquí se valida la firma (signature) del evento de Wompi 
-    // usando la llave de eventos (Events Key) para comprobar que la petición realmente viene de Wompi.
-    // const signature = req.headers.get("x-event-checksum");
-
-    if (data.event === "transaction.updated") {
-      const transaction = data.data.transaction;
-      const status = transaction.status; // "APPROVED", "DECLINED", "ERROR", etc.
-      const reference = transaction.reference; // Ej: SUB_5_1638202...
-      
-      // Extraemos la información del intento de pago de la referencia
-      // Formato: PAYINT_{userId}_{vehicleId}_{planId}_{timestamp}
-      // O para compatibilidad hacia atrás: SUB_{subId}_{timestamp}
-      const refParts = reference.split("_");
-      
-      let userId, vehicleId, planId, oldSubId;
-      let isNewFlow = refParts[0] === "PAYINT";
-
-      if (isNewFlow) {
-        userId = parseInt(refParts[1]);
-        vehicleId = parseInt(refParts[2]);
-        planId = parseInt(refParts[3]);
-      } else if (refParts[0] === "SUB") {
-        oldSubId = parseInt(refParts[1]);
-      }
-
-      if (!isNewFlow && isNaN(oldSubId as number)) return NextResponse.json({ message: "Referencia inválida" }, { status: 400 });
-      if (isNewFlow && (isNaN(userId as number) || isNaN(vehicleId as number) || isNaN(planId as number))) return NextResponse.json({ message: "Referencia PAYINT inválida" }, { status: 400 });
-
-      // Actualizamos el historial de transacciones (el intento de pago)
-      // Buscamos si existe el intento previo
-      const paymentIntent = await db.query.subscriptionPayments.findFirst({
-        where: eq(subscriptionPayments.reference, reference)
-      });
-
-      if (paymentIntent) {
-        await db.update(subscriptionPayments).set({
-          status: status,
-          transactionId: transaction.id,
-          amount: transaction.amount_in_cents / 100,
-          paidAt: status === "APPROVED" ? new Date() : null,
-        }).where(eq(subscriptionPayments.id, paymentIntent.id));
-      } else {
-        // Por si llega primero el webhook o no se guardó el pending
-        await db.insert(subscriptionPayments).values({
-          subscriptionId: oldSubId || null,
-          userId: userId || null,
-          vehicleId: vehicleId || null,
-          planId: planId || null,
-          amount: transaction.amount_in_cents / 100,
-          transactionId: transaction.id,
-          reference: reference,
-          status: status,
-          paidAt: status === "APPROVED" ? new Date() : null,
-        });
-      }
-
-      if (status === "APPROVED") {
-        const now = new Date();
-        const nextBilling = new Date();
-        
-        // Obtener el plan para el intervalo
-        let thePlanId = planId;
-        if (!isNewFlow && oldSubId) {
-          const oldSub = await db.query.subscriptions.findFirst({ where: eq(subscriptions.id, oldSubId) });
-          if (oldSub) thePlanId = oldSub.planId;
-        }
-
-        const plan = thePlanId ? await db.query.promotionPlans.findFirst({ where: eq(promotionPlans.id, thePlanId) }) : null;
-
-        if (plan && plan.interval === 'month') {
-          nextBilling.setMonth(nextBilling.getMonth() + 1);
-        } else if (plan && plan.interval === 'year') {
-          nextBilling.setFullYear(nextBilling.getFullYear() + 1);
-        } else {
-          nextBilling.setDate(nextBilling.getDate() + 30);
-        }
-
-        let activeSubscriptionId = oldSubId;
-
-        if (isNewFlow && userId && vehicleId && planId) {
-          // Buscamos si ya existe una suscripción para evitar duplicados por webhooks idempotentes
-          const existingSub = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, userId), eq(subscriptions.vehicleId, vehicleId))
-          });
-
-          if (existingSub) {
-             // Es una renovación o webhook duplicado
-             activeSubscriptionId = existingSub.id;
-             await db.update(subscriptions).set({
-               status: 'active',
-               planId: planId,
-               amount: transaction.amount_in_cents / 100,
-               lastPaymentDate: now,
-               nextBillingDate: nextBilling,
-               currentPeriodEnd: nextBilling,
-               wompiPaymentSourceId: transaction.payment_method?.token || existingSub.wompiPaymentSourceId,
-               updatedAt: now
-             }).where(eq(subscriptions.id, existingSub.id));
-          } else {
-             // Creamos la SUSCRIPCIÓN REAL ahora sí
-             const [newSub] = await db.insert(subscriptions).values({
-               userId: userId,
-               vehicleId: vehicleId,
-               planId: planId,
-               status: 'active',
-               amount: transaction.amount_in_cents / 100,
-               startDate: now,
-               lastPaymentDate: now,
-               nextBillingDate: nextBilling,
-               currentPeriodEnd: nextBilling,
-               wompiPaymentSourceId: transaction.payment_method?.token || null,
-             }).returning();
-             activeSubscriptionId = newSub.id;
-          }
-          
-          // Actualizamos el intento de pago para linkearlo a la suscripción real
-          await db.update(subscriptionPayments).set({
-            subscriptionId: activeSubscriptionId
-          }).where(eq(subscriptionPayments.reference, reference));
-
-        } else if (oldSubId) {
-           // Flujo antiguo: la suscripción ya existía como pending
-           await db.update(subscriptions).set({
-             status: 'active',
-             startDate: now, // Si ya tenía no importa, se actualiza
-             lastPaymentDate: now,
-             nextBillingDate: nextBilling,
-             currentPeriodEnd: nextBilling,
-             wompiPaymentSourceId: transaction.payment_method?.token || null,
-             updatedAt: now
-           }).where(eq(subscriptions.id, oldSubId));
-        }
-
-        // Destacamos el vehículo! (Regla 10)
-        let finalVehicleId: number | null = null;
-        if (isNewFlow && vehicleId) {
-            finalVehicleId = vehicleId;
-        } else if (oldSubId) {
-            const tempSub = await db.query.subscriptions.findFirst({where: eq(subscriptions.id, oldSubId)});
-            if (tempSub) finalVehicleId = tempSub.vehicleId;
-        }
-
-        if (finalVehicleId) {
-            await db.update(vehicles)
-              .set({ isFeatured: true })
-              .where(eq(vehicles.id, finalVehicleId));
-        }
-
-      } else if (status === "DECLINED" || status === "ERROR" || status === "FAILED") {
-        // Si es flujo nuevo, no hay suscripción que poner en past_due si era intento inicial.
-        // Si ya existía suscripción (renovación fallida), la ponemos en past_due.
-        if (isNewFlow && userId && vehicleId) {
-          const existingSub = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, userId), eq(subscriptions.vehicleId, vehicleId))
-          });
-          if (existingSub) {
-             await db.update(subscriptions).set({
-               status: 'past_due',
-               updatedAt: new Date()
-             }).where(eq(subscriptions.id, existingSub.id));
-             
-             // Si el currentPeriodEnd ya pasó, quitar el destacado (Regla 13)
-             if (existingSub.currentPeriodEnd && existingSub.currentPeriodEnd < new Date()) {
-                await db.update(vehicles).set({ isFeatured: false }).where(eq(vehicles.id, vehicleId));
-             }
-          }
-        } else if (oldSubId) {
-           await db.update(subscriptions).set({
-             status: 'past_due',
-             updatedAt: new Date()
-           }).where(eq(subscriptions.id, oldSubId));
-           
-           const oldSub = await db.query.subscriptions.findFirst({ where: eq(subscriptions.id, oldSubId) });
-           if (oldSub && oldSub.currentPeriodEnd && oldSub.currentPeriodEnd < new Date()) {
-              await db.update(vehicles).set({ isFeatured: false }).where(eq(vehicles.id, oldSub.vehicleId));
-           }
-        }
-      }
-    }
-
-    // Wompi exige que siempre se responda con 200 OK para saber que recibimos el evento
-    return NextResponse.json({ received: true }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error en Webhook de Wompi:", error);
-    return NextResponse.json({ message: "Error interno" }, { status: 500 });
+    payload = await req.json();
+  } catch (e) {
+    return NextResponse.json({ message: "Payload inválido" }, { status: 400 });
   }
+
+  const eventoWompi = payload?.event;
+  const dataTransaccion = payload?.data?.transaction;
+  const referencia = dataTransaccion?.reference;
+  const estadoWompi = dataTransaccion?.status; // APPROVED, DECLINED, VOIDED, ERROR
+  const montoEnCentavos = dataTransaccion?.amount_in_cents;
+  const idTransaccionWompi = dataTransaccion?.id;
+  const metodoPago = dataTransaccion?.payment_method_type;
+
+  if (!referencia || !idTransaccionWompi || eventoWompi !== "transaction.updated") {
+    // Si no es transaction.updated o faltan datos, lo ignoramos respondiendo 200 para que Wompi no reintente
+    return NextResponse.json({ received: true });
+  }
+
+  // 1. Validar la firma
+  const firmaValida = validarFirmaWebhook(payload);
+  
+  if (!firmaValida) {
+    console.error(`[Wompi Webhook] Firma INVÁLIDA para referencia: ${referencia}`);
+    await registrarAuditoria({
+      referencia,
+      evento: "firma_invalida",
+      estadoWompi,
+      firmaValida: false,
+      ip,
+    });
+    return NextResponse.json({ received: true }); // Respondemos 200 para evitar reintentos de ataque
+  }
+
+  // 2. Buscar el pago en la BD
+  // No usamos dbTx aquí para la lectura porque solo queremos validar que exista y obtener el ID real.
+  const [pagoDB] = await db.select().from(pagos).where(eq(pagos.referenciaUnica, referencia)).limit(1);
+
+  if (!pagoDB) {
+    console.error(`[Wompi Webhook] Pago no encontrado: ${referencia}`);
+    await registrarAuditoria({
+      referencia,
+      evento: "pago_no_encontrado",
+      estadoWompi,
+      firmaValida: true,
+      ip,
+    });
+    return NextResponse.json({ received: true });
+  }
+
+  // 3. Validar consistencia del monto (Sección 10-A)
+  if (pagoDB.monto * 100 !== montoEnCentavos) {
+    console.error(`[Wompi Webhook] Monto no coincide para ${referencia}. BD: ${pagoDB.monto * 100}, Wompi: ${montoEnCentavos}`);
+    await registrarAuditoria({
+      pagoId: pagoDB.id,
+      referencia,
+      evento: "monto_no_coincide",
+      estadoWompi,
+      firmaValida: true,
+      ip,
+    });
+    return NextResponse.json({ received: true });
+  }
+
+  // 4. Procesar según el estado de Wompi (usando las transacciones de dbTx)
+  try {
+    if (estadoWompi === "APPROVED") {
+      const resultado = await activarOExtenderDestacado(pagoDB.id, idTransaccionWompi, metodoPago);
+      await registrarAuditoria({
+        pagoId: pagoDB.id,
+        referencia,
+        evento: resultado.yaEstabaAprobado ? "idempotencia_exitosa" : "aprobado",
+        estadoWompi,
+        firmaValida: true,
+        ip,
+      });
+    } else if (["DECLINED", "ERROR", "VOIDED"].includes(estadoWompi)) {
+      await rechazarPago(pagoDB.id, idTransaccionWompi);
+      await registrarAuditoria({
+        pagoId: pagoDB.id,
+        referencia,
+        evento: "rechazado",
+        estadoWompi,
+        firmaValida: true,
+        ip,
+      });
+    } else {
+      // Estado pendiente o irrelevante
+      await registrarAuditoria({
+        pagoId: pagoDB.id,
+        referencia,
+        evento: "ignorado_por_estado",
+        estadoWompi,
+        firmaValida: true,
+        ip,
+      });
+    }
+  } catch (error) {
+    console.error(`[Wompi Webhook] Error procesando pago ${referencia}:`, error);
+    await registrarAuditoria({
+      pagoId: pagoDB.id,
+      referencia,
+      evento: "error_interno",
+      estadoWompi,
+      firmaValida: true,
+      ip,
+    });
+    // Respondemos 500 para que Wompi reintente luego
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+
+  return NextResponse.json({ received: true });
 }
