@@ -370,40 +370,48 @@ export async function generateFinancingPdfBuffer(request: any) {
 
     // ADJUNTOS (Foto del Documento)
     if (reqAny.idDocumentUrl) {
-      try {
-        const imgRes = await fetch(reqAny.idDocumentUrl);
-        if (imgRes.ok) {
-          const imgBytes = await imgRes.arrayBuffer();
-          let embeddedImg;
-          try {
-            embeddedImg = await pdfDoc.embedJpg(imgBytes);
-          } catch (e) {
-            try {
-              embeddedImg = await pdfDoc.embedPng(imgBytes);
-            } catch (e2) {
-              console.error("No se pudo embedder la imagen del documento", e2);
-            }
-          }
-          if (embeddedImg) {
-            const imgPage = pdfDoc.addPage([width, height]);
-            imgPage.drawRectangle({ x: 0, y: height - 90, width: width, height: 90, color: colDark });
-            imgPage.drawText('DOCUMENTO DE IDENTIDAD ADJUNTO', { x: margin, y: height - 50, font: fontBold, size: 14, color: colPrimary });
-            imgPage.drawText(`No. Solicitud: ${request.requestNumber}`, { x: width - margin - 150, y: height - 50, font: fontReg, size: 9, color: rgb(1,1,1) });
+      const urls = reqAny.idDocumentUrl.split(',').filter((u: string) => u.trim() !== '');
+      if (urls.length > 0) {
+        const imgPage = pdfDoc.addPage([width, height]);
+        imgPage.drawRectangle({ x: 0, y: height - 90, width: width, height: 90, color: colDark });
+        imgPage.drawText('DOCUMENTOS ADJUNTOS', { x: margin, y: height - 50, font: fontBold, size: 14, color: colPrimary });
+        imgPage.drawText(`No. Solicitud: ${request.requestNumber}`, { x: width - margin - 150, y: height - 50, font: fontReg, size: 9, color: rgb(1,1,1) });
 
-            const maxImgW = width - (margin * 2);
-            const maxImgH = height - 130 - margin; // leave space for header and footer
-            const imgDims = embeddedImg.scaleToFit(maxImgW, maxImgH);
-            
-            imgPage.drawImage(embeddedImg, {
-              x: (width - imgDims.width) / 2, // center horizontal
-              y: height - 110 - imgDims.height, // anchor to top
-              width: imgDims.width,
-              height: imgDims.height,
-            });
+        let currentImgY = height - 110;
+        const maxImgW = width - (margin * 2);
+        const maxImgH = (height - 130 - margin) / urls.length; // Dividir espacio según cantidad de fotos
+
+        for (const url of urls) {
+          try {
+            const imgRes = await fetch(url.trim());
+            if (imgRes.ok) {
+              const imgBytes = await imgRes.arrayBuffer();
+              let embeddedImg;
+              try {
+                embeddedImg = await pdfDoc.embedJpg(imgBytes);
+              } catch (e) {
+                try {
+                  embeddedImg = await pdfDoc.embedPng(imgBytes);
+                } catch (e2) {
+                  console.error("No se pudo embedder la imagen del documento", e2);
+                }
+              }
+
+              if (embeddedImg) {
+                const imgDims = embeddedImg.scaleToFit(maxImgW, maxImgH - 20); // -20 for gap
+                imgPage.drawImage(embeddedImg, {
+                  x: (width - imgDims.width) / 2, // centrar horizontalmente
+                  y: currentImgY - imgDims.height, // anclar desde arriba
+                  width: imgDims.width,
+                  height: imgDims.height,
+                });
+                currentImgY -= (imgDims.height + 20);
+              }
+            }
+          } catch (err) {
+            console.error("Error fetching or embedding image:", err);
           }
         }
-      } catch (err) {
-        console.error("Error al obtener la imagen del documento:", err);
       }
     }
 

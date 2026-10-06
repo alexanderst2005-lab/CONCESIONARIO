@@ -52,42 +52,51 @@ function SolicitudFormContent() {
     refRelation: "",
   });
 
-  const [idImage, setIdImage] = useState<File | null>(null);
-  const [idImagePreview, setIdImagePreview] = useState<string | null>(null);
+  const [idImages, setIdImages] = useState<File[]>([]);
+  const [idImagePreviews, setIdImagePreviews] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setIdImage(file);
-      setIdImagePreview(URL.createObjectURL(file));
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      if (idImages.length + selectedFiles.length > 2) {
+        toast("Solo puedes subir un máximo de 2 fotos (frontal y trasera).", "warning");
+        return;
+      }
+      setIdImages(prev => [...prev, ...selectedFiles]);
+      setIdImagePreviews(prev => [...prev, ...selectedFiles.map(f => URL.createObjectURL(f))]);
     }
   };
 
-  const removeImage = () => {
-    setIdImage(null);
-    setIdImagePreview(null);
+  const removeImage = (index: number) => {
+    setIdImages(prev => prev.filter((_, i) => i !== index));
+    setIdImagePreviews(prev => prev.filter((_, i) => i !== index));
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const uploadToCloudinary = async (): Promise<string | null> => {
-    if (!idImage) return null;
-    const data = new FormData();
-    data.append("file", idImage);
-    data.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    if (idImages.length === 0) return null;
+    const urls: string[] = [];
+    
+    for (const file of idImages) {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-        method: "POST",
-        body: data,
-      });
-      const result = await res.json();
-      return result.secure_url || null;
-    } catch (err) {
-      console.error("Error uploading ID image:", err);
-      return null;
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+          method: "POST",
+          body: data,
+        });
+        const result = await res.json();
+        if (result.secure_url) urls.push(result.secure_url);
+      } catch (err) {
+        console.error("Error uploading ID image:", err);
+      }
     }
+    
+    return urls.length > 0 ? urls.join(',') : null;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -104,8 +113,8 @@ function SolicitudFormContent() {
   };
 
   const submitApplication = async () => {
-    if (!idImage) {
-      toast("Por favor adjunta una foto de tu documento de identidad", "error");
+    if (idImages.length === 0) {
+      toast("Por favor adjunta al menos una foto de tu documento de identidad", "error");
       return;
     }
 
@@ -190,23 +199,27 @@ function SolicitudFormContent() {
             </div>
 
             <div style={{ marginTop: "2rem", background: "rgba(0,0,0,0.3)", padding: "1.5rem", borderRadius: "8px", border: "1px dashed rgba(255,255,255,0.2)" }}>
-              <label style={{...labelStyle, marginBottom: "1rem", color: "#cda434", fontWeight: "bold"}}>Foto del Documento de Identidad *</label>
+              <label style={{...labelStyle, marginBottom: "1rem", color: "#cda434", fontWeight: "bold"}}>Fotos del Documento de Identidad (Frontal y Trasera) *</label>
               
-              {!idImagePreview ? (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", cursor: "pointer" }} onClick={() => fileInputRef.current?.click()}>
-                  <ImageIcon size={48} color="#aaa" style={{ marginBottom: "1rem" }} />
-                  <p style={{ color: "#fff", marginBottom: "0.5rem" }}>Haz clic para subir la foto</p>
-                  <p style={{ color: "#888", fontSize: "0.8rem", textAlign: "center" }}>Sube una foto clara por lado y lado o un solo archivo combinado (JPG, PNG)</p>
-                  <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" style={{ display: "none" }} />
-                </div>
-              ) : (
-                <div style={{ position: "relative", width: "100%", maxWidth: "300px", margin: "0 auto", borderRadius: "8px", overflow: "hidden", border: "2px solid #cda434" }}>
-                  <img src={idImagePreview} alt="Documento" style={{ width: "100%", height: "auto", display: "block" }} />
-                  <button type="button" onClick={removeImage} style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
-                    <X size={16} />
-                  </button>
-                </div>
-              )}
+              <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", justifyContent: "center" }}>
+                {idImagePreviews.map((preview, index) => (
+                  <div key={index} style={{ position: "relative", width: "100%", maxWidth: "250px", borderRadius: "8px", overflow: "hidden", border: "2px solid #cda434" }}>
+                    <img src={preview} alt={`Documento ${index + 1}`} style={{ width: "100%", height: "auto", display: "block" }} />
+                    <button type="button" onClick={() => removeImage(index)} style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", borderRadius: "50%", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                      <X size={16} />
+                    </button>
+                  </div>
+                ))}
+                
+                {idImages.length < 2 && (
+                  <div style={{ flex: "1 1 200px", maxWidth: "250px", border: "2px dashed #aaa", borderRadius: "8px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem", cursor: "pointer" }} onClick={() => fileInputRef.current?.click()}>
+                    <ImageIcon size={48} color="#aaa" style={{ marginBottom: "1rem" }} />
+                    <p style={{ color: "#fff", marginBottom: "0.5rem", textAlign: "center" }}>Subir foto</p>
+                    <p style={{ color: "#888", fontSize: "0.8rem", textAlign: "center" }}>Puedes subir hasta 2 fotos (JPG, PNG)</p>
+                    <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" multiple style={{ display: "none" }} />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
