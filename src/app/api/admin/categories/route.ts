@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { categories } from "@/db/schema";
+import { categories, vehicles } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
@@ -66,7 +66,16 @@ export async function DELETE(request: NextRequest) {
     if (!id) return NextResponse.json({ message: "Bad request" }, { status: 400 });
 
     try {
-      const [eliminado] = await db.delete(categories).where(eq(categories.id, parseInt(id))).returning();
+      const parsedId = parseInt(id);
+      
+      // Check for associated vehicles manually to prevent obscure postgres errors
+      const associatedVehicles = await db.select({ id: vehicles.id }).from(vehicles).where(eq(vehicles.categoryId, parsedId)).limit(1);
+      
+      if (associatedVehicles.length > 0) {
+        return NextResponse.json({ message: "No se puede eliminar porque hay vehículos asociados a este tipo. En su lugar, desactívalo." }, { status: 409 });
+      }
+
+      const [eliminado] = await db.delete(categories).where(eq(categories.id, parsedId)).returning();
       if (!eliminado) return NextResponse.json({ message: "No encontrado" }, { status: 404 });
       return NextResponse.json({ success: true });
     } catch (e: any) {
