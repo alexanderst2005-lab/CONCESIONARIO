@@ -256,35 +256,53 @@ export async function generateFinancingPdfBuffer(request: any) {
     }
 
     // VEHÍCULO (datos reales del vehículo seleccionado, nada quemado)
-    const vehicleFields: Field[] = [
-      { label: 'Marca', value: val(reqAny.vehicle?.brand?.name) },
-      { label: 'Modelo / Línea', value: val(reqAny.vehicle?.model?.name) },
-      { label: 'Año', value: val(reqAny.vehicle?.year) },
-    ];
-    if (hasAny(vehicleFields)) {
-      drawSectionHeader('VEHÍCULO');
-      drawGrid(vehicleFields, 3);
+    if (reqAny.tipoSolicitud !== 'libre') {
+      const vehicleFields: Field[] = [
+        { label: 'Marca', value: val(reqAny.vehicle?.brand?.name) },
+        { label: 'Modelo / Línea', value: val(reqAny.vehicle?.model?.name) },
+        { label: 'Año', value: val(reqAny.vehicle?.year) },
+      ];
+      if (hasAny(vehicleFields)) {
+        drawSectionHeader('VEHÍCULO');
+        drawGrid(vehicleFields, 3);
+      }
     }
 
     // RESUMEN DE FINANCIACIÓN
-    // Estos tres campos se imprimen SIEMPRE vacíos a propósito: el proceso actual no
-    // los diligencia y quedan para llenado manual. No usar request.vehiclePrice, etc.
     drawSectionHeader('RESUMEN DE FINANCIACIÓN');
-    currentY -= 5;
-    checkPageBreak(70);
-    const summaryH = 60;
-    const summaryBoxY = currentY - summaryH;
-    page.drawRectangle({ x: margin, y: summaryBoxY, width: contentWidth, height: summaryH, color: colBg, borderColor: colBorder, borderWidth: 1 });
-    const summaryLabels = ['PRECIO DEL VEHÍCULO', 'CUOTA INICIAL', 'MONTO A FINANCIAR'];
-    const summaryColW = contentWidth / summaryLabels.length;
-    summaryLabels.forEach((label, i) => {
-      const x = margin + i * summaryColW + 15;
-      drawText(label, x, summaryBoxY + summaryH - 20, fontBold, 8, colTextLight);
-      // Línea en blanco para diligenciar a mano
-      page.drawLine({ start: { x, y: summaryBoxY + 15 }, end: { x: x + summaryColW - 30, y: summaryBoxY + 15 }, color: colBorder, thickness: 1 });
-      drawText('$', x, summaryBoxY + 19, fontReg, 10, colTextLight);
-    });
-    currentY = summaryBoxY - 10;
+    
+    if (reqAny.tipoSolicitud === 'libre') {
+      let rangoStr = '';
+      if (reqAny.rangoMin && reqAny.rangoMax) {
+        rangoStr = `De ${money(reqAny.rangoMin)} a ${money(reqAny.rangoMax)}`;
+      } else if (reqAny.rangoMin) {
+        rangoStr = `${money(reqAny.rangoMin)} en adelante`;
+      }
+
+      const financeFields: Field[] = [
+        { label: 'Rango de Vehículo', value: val(rangoStr) },
+        { label: 'Cuota Inicial Disponible', value: money(reqAny.downPayment) },
+        { label: 'Plazo Estimado', value: reqAny.term ? `${reqAny.term} meses` : undefined },
+      ];
+      drawGrid(financeFields, 3);
+    } else {
+      // Flujo Vehículo: campos vacíos para llenar a mano
+      currentY -= 5;
+      checkPageBreak(70);
+      const summaryH = 60;
+      const summaryBoxY = currentY - summaryH;
+      page.drawRectangle({ x: margin, y: summaryBoxY, width: contentWidth, height: summaryH, color: colBg, borderColor: colBorder, borderWidth: 1 });
+      const summaryLabels = ['PRECIO DEL VEHÍCULO', 'CUOTA INICIAL', 'MONTO A FINANCIAR'];
+      const summaryColW = contentWidth / summaryLabels.length;
+      summaryLabels.forEach((label, i) => {
+        const x = margin + i * summaryColW + 15;
+        drawText(label, x, summaryBoxY + summaryH - 20, fontBold, 8, colTextLight);
+        // Línea en blanco para diligenciar a mano
+        page.drawLine({ start: { x, y: summaryBoxY + 15 }, end: { x: x + summaryColW - 30, y: summaryBoxY + 15 }, color: colBorder, thickness: 1 });
+        drawText('$', x, summaryBoxY + 19, fontReg, 10, colTextLight);
+      });
+      currentY = summaryBoxY - 10;
+    }
 
     // REFERENCIA PERSONAL
     const refFields: Field[] = [

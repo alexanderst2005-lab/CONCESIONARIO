@@ -220,8 +220,12 @@ export const financingRequests = pgTable('financing_requests', {
   id: serial('id').primaryKey(),
   requestNumber: text('request_number').notNull().unique(), // SOL-2026-000124
   userId: integer('user_id').notNull().references(() => users.id),
-  vehicleId: integer('vehicle_id').notNull().references(() => vehicles.id),
-  bankId: integer('bank_id').notNull().references(() => banks.id),
+  vehicleId: integer('vehicle_id').references(() => vehicles.id),
+  bankId: integer('bank_id').references(() => banks.id),
+  
+  tipoSolicitud: text('tipo_solicitud').default('vehiculo').notNull(),
+  rangoMin: integer('rango_min'),
+  rangoMax: integer('rango_max'),
   
   personalData: jsonb('personal_data').notNull(),
   laborData: jsonb('labor_data').notNull(),

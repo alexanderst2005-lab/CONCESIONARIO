@@ -19,10 +19,13 @@ export async function POST(req: Request) {
     const { 
       vehicleId, bankId, vehiclePrice, downPayment, financedAmount, 
       term, rate, estimatedMonthly, 
-      formData
+      formData,
+      tipoSolicitud, rangoMin, rangoMax
     } = body;
 
-    if (!vehicleId || !bankId) {
+    const esLibre = tipoSolicitud === 'libre';
+
+    if (!esLibre && (!vehicleId || !bankId)) {
       return NextResponse.json({ message: "Faltan parámetros del vehículo o banco" }, { status: 400 });
     }
 
@@ -39,8 +42,11 @@ export async function POST(req: Request) {
     const newRequest = await db.insert(financingRequests).values({
       requestNumber,
       userId,
-      vehicleId: Number(vehicleId) || 0,
-      bankId: Number(bankId) || 0,
+      vehicleId: !esLibre ? (Number(vehicleId) || null) : null,
+      bankId: !esLibre ? (Number(bankId) || null) : null,
+      tipoSolicitud: esLibre ? 'libre' : 'vehiculo',
+      rangoMin: esLibre ? (Number(rangoMin) || null) : null,
+      rangoMax: esLibre ? (Number(rangoMax) || null) : null,
       personalData,
       laborData,
       financialData,
@@ -93,11 +99,19 @@ export async function POST(req: Request) {
           const adminEmail = process.env.ADMIN_EMAIL || process.env.SMTP_USER;
           const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER;
 
+          const subject = esLibre 
+            ? `Nueva Solicitud de Crédito Libre - ${requestNumber}`
+            : `Nueva Solicitud de Crédito por Vehículo - ${requestNumber}`;
+            
+          const textMsg = esLibre
+            ? `Se ha recibido una nueva solicitud de crédito libre. Adjunto encontrarás el documento PDF con todos los detalles.`
+            : `Se ha recibido una nueva solicitud de crédito para el vehículo ${fullRequest.vehicle?.brand?.name || ''} ${fullRequest.vehicle?.model?.name || ''}. Adjunto encontrarás el documento PDF con todos los detalles.`;
+
           await transporter.sendMail({
             from: `"Autos El Patrón" <${fromEmail}>`,
             to: adminEmail,
-            subject: `Nueva Solicitud de Crédito - ${requestNumber}`,
-            text: `Se ha recibido una nueva solicitud de crédito para el vehículo ${fullRequest.vehicle?.brand?.name || ''} ${fullRequest.vehicle?.model?.name || ''}. Adjunto encontrarás el documento PDF con todos los detalles.`,
+            subject,
+            text: textMsg,
             attachments: [
               {
                 filename: `Solicitud_${requestNumber}.pdf`,

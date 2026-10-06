@@ -84,7 +84,7 @@ export default function Header({ session }: { session: any }) {
           <Link href="/" className={styles.navLink}>INICIO</Link>
           <Link href="/vehiculos" className={styles.navLink}>VEHÍCULOS</Link>
           <Link href="/favoritos" className={styles.navLink}>FAVORITOS</Link>
-          <Link href="/solicitud-credito" className={styles.navLink}>SOLICITAR CRÉDITO</Link>
+          <Link href="/credito-libre" className={styles.navLink}>SOLICITAR CRÉDITO</Link>
         </nav>
 
         {/* Acciones Derecha (LOGIN y PUBLICAR) */}
@@ -160,7 +160,7 @@ export default function Header({ session }: { session: any }) {
           <Link href="/" onClick={toggleMenu} className={styles.mobileNavLink}>INICIO</Link>
           <Link href="/vehiculos" onClick={toggleMenu} className={styles.mobileNavLink}>VEHÍCULOS</Link>
           <Link href="/favoritos" onClick={toggleMenu} className={styles.mobileNavLink}>FAVORITOS</Link>
-          <Link href="/solicitud-credito" onClick={toggleMenu} className={styles.mobileNavLink}>SOLICITAR CRÉDITO</Link>
+          <Link href="/credito-libre" onClick={toggleMenu} className={styles.mobileNavLink}>SOLICITAR CRÉDITO</Link>
           <Link href="/publicar" onClick={toggleMenu} className={styles.mobileNavLink}>PUBLICAR VEHÍCULO</Link>
         </nav>
       </div>
