@@ -119,9 +119,26 @@ export default function AdminCategoriesPage() {
 
   const handleDeactivate = async (id: number) => {
     confirmAction("¿Desactivar esta categoría?", async () => {
-      await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
+      await fetch(`/api/admin/categories`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, isActive: false }),
+      });
       toast("Categoría desactivada", "success");
       fetchCategories();
+    });
+  };
+
+  const handleDelete = async (id: number) => {
+    confirmAction("¿Eliminar definitivamente este tipo de vehículo?", async () => {
+      const res = await fetch(`/api/admin/categories?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast("Tipo de vehículo eliminado", "success");
+        fetchCategories();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        toast(body?.message || "Error al eliminar", "error");
+      }
     });
   };
 
@@ -255,6 +272,7 @@ export default function AdminCategoriesPage() {
                     setImagePreview(cat.imageUrl || null);
                   }} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "4px", cursor: "pointer" }}>Editar</button>
                   {cat.isActive && <button onClick={() => handleDeactivate(cat.id)} style={{ padding: "0.5rem 1rem", background: "rgba(248,113,113,0.1)", color: "#f87171", border: "none", borderRadius: "4px", cursor: "pointer" }}>Desactivar</button>}
+                  <button onClick={() => handleDelete(cat.id)} style={{ padding: "0.5rem 1rem", background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "4px", cursor: "pointer" }}>Eliminar</button>
                 </div>
               </div>
               );

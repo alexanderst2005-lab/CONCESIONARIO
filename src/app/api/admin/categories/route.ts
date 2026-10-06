@@ -65,8 +65,16 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ message: "Bad request" }, { status: 400 });
 
-    await db.update(categories).set({ isActive: false }).where(eq(categories.id, parseInt(id)));
-    return NextResponse.json({ success: true });
+    try {
+      const [eliminado] = await db.delete(categories).where(eq(categories.id, parseInt(id))).returning();
+      if (!eliminado) return NextResponse.json({ message: "No encontrado" }, { status: 404 });
+      return NextResponse.json({ success: true });
+    } catch (e: any) {
+      if (e.code === "23503") {
+        return NextResponse.json({ message: "No se puede eliminar porque hay vehículos asociados a este tipo. En su lugar, desactívalo." }, { status: 409 });
+      }
+      throw e;
+    }
   } catch (error) {
     return NextResponse.json({ message: "Error" }, { status: 500 });
   }
