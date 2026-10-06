@@ -75,7 +75,8 @@ export async function DELETE(request: NextRequest) {
       }
       throw e;
     }
-  } catch (error) {
-    return NextResponse.json({ message: "Error" }, { status: 500 });
+  } catch (error: any) {
+    console.error("DELETE category error:", error);
+    return NextResponse.json({ message: error?.message || "Error interno del servidor" }, { status: 500 });
   }
 }
