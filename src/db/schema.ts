@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, uuid, varchar, text, integer, boolean, timestamp, primaryKey, index, jsonb, check } from 'drizzle-orm/pg-core';
+import { pgTable, pgEnum, serial, uuid, varchar, text, integer, bigint, boolean, timestamp, primaryKey, index, jsonb, check } from 'drizzle-orm/pg-core';
 import { relations, sql } from 'drizzle-orm';
 
 // Usuarios
@@ -78,7 +78,7 @@ export const vehicles = pgTable('vehicles', {
     locationStatus: text('location_status').default('Cita'),
     contactPhone: text('contact_phone'), // WhatsApp de contacto del vendedor para este vehículo
   
-  price: integer('price').notNull(), // Precio comercial
+  price: bigint('price', { mode: 'number' }).notNull(), // Precio comercial
   
   // Ubicación
   city: text('city').notNull(),
@@ -224,19 +224,19 @@ export const financingRequests = pgTable('financing_requests', {
   bankId: integer('bank_id').references(() => banks.id),
   
   tipoSolicitud: text('tipo_solicitud').default('vehiculo').notNull(),
-  rangoMin: integer('rango_min'),
-  rangoMax: integer('rango_max'),
+  rangoMin: bigint('rango_min', { mode: 'number' }),
+  rangoMax: bigint('rango_max', { mode: 'number' }),
   
   personalData: jsonb('personal_data').notNull(),
   laborData: jsonb('labor_data').notNull(),
   financialData: jsonb('financial_data').notNull(),
   
-  vehiclePrice: integer('vehicle_price').notNull(),
-  downPayment: integer('down_payment').notNull(),
-  financedAmount: integer('financed_amount').notNull(),
+  vehiclePrice: bigint('vehicle_price', { mode: 'number' }).notNull(),
+  downPayment: bigint('down_payment', { mode: 'number' }).notNull(),
+  financedAmount: bigint('financed_amount', { mode: 'number' }).notNull(),
   term: integer('term').notNull(),
   rate: text('rate').notNull(),
-  estimatedMonthly: integer('estimated_monthly').notNull(),
+  estimatedMonthly: bigint('estimated_monthly', { mode: 'number' }).notNull(),
   
   status: text('status').notNull().default('Pendiente'),
   
