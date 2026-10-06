@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { dbTx } from "@/db/tx";
 import { destacadosActivos, vehicles } from "@/db/schema";
-import { eq, lt, and, sql } from "drizzle-orm";
+import { eq, lt, and, inArray } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
@@ -22,10 +22,7 @@ export async function GET(req: Request) {
       .select({ id: destacadosActivos.id, vehiculoId: destacadosActivos.vehiculoId })
       .from(destacadosActivos)
       .where(
-        and(
-          eq(destacadosActivos.estado, 'activo'),
-          lt(destacadosActivos.terminaEn, sql`now()`)
-        )
+        lt(destacadosActivos.terminaEn, new Date())
       );
 
     if (expirados.length === 0) {
@@ -37,19 +34,14 @@ export async function GET(req: Request) {
       const idsExpirados = expirados.map(e => e.id);
       const vehiculosIds = expirados.map(e => e.vehiculoId);
 
-      // 1. Marcar el registro en destacados_activos como inactivo
-      await tx.execute(
-        sql`UPDATE destacados_activos 
-            SET estado = 'inactivo', actualizado_en = now() 
-            WHERE id = ANY(${idsExpirados})`
-      );
+      // 1. Apagar la bandera en la tabla de vehículos
+      await tx.update(vehicles)
+        .set({ isFeatured: false })
+        .where(inArray(vehicles.id, vehiculosIds));
 
-      // 2. Apagar la bandera en la tabla de vehículos
-      await tx.execute(
-        sql`UPDATE vehicles 
-            SET is_featured = false 
-            WHERE id = ANY(${vehiculosIds})`
-      );
+      // 2. Eliminar el registro en destacados_activos para no acumular basura
+      await tx.delete(destacadosActivos)
+        .where(inArray(destacadosActivos.id, idsExpirados));
     });
 
     console.log(`[Cron] Se desactivaron ${expirados.length} vehículos destacados.`);
