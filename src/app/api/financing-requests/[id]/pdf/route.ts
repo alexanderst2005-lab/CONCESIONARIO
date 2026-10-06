@@ -255,7 +255,8 @@ export async function generateFinancingPdfBuffer(request: any) {
       drawGrid(laborFields, 3);
     }
 
-    // VEHÍCULO (datos reales del vehículo seleccionado, nada quemado)
+    // VEHÍCULO
+    drawSectionHeader('VEHÍCULO');
     if (reqAny.tipoSolicitud !== 'libre') {
       const vehicleFields: Field[] = [
         { label: 'Marca', value: val(reqAny.vehicle?.brand?.name) },
@@ -263,9 +264,24 @@ export async function generateFinancingPdfBuffer(request: any) {
         { label: 'Año', value: val(reqAny.vehicle?.year) },
       ];
       if (hasAny(vehicleFields)) {
-        drawSectionHeader('VEHÍCULO');
         drawGrid(vehicleFields, 3);
       }
+    } else {
+      // Crédito Libre: campos vacíos para diligenciar a mano
+      currentY -= 5;
+      checkPageBreak(60);
+      const vBoxH = 60;
+      const vBoxY = currentY - vBoxH;
+      page.drawRectangle({ x: margin, y: vBoxY, width: contentWidth, height: vBoxH, color: colBg, borderColor: colBorder, borderWidth: 1 });
+      const vLabels = ['MARCA', 'MODELO / LÍNEA', 'AÑO'];
+      const vColW = contentWidth / vLabels.length;
+      vLabels.forEach((label, i) => {
+        const x = margin + i * vColW + 15;
+        drawText(label, x, vBoxY + vBoxH - 20, fontBold, 8, colTextLight);
+        // Línea en blanco para escribir a mano
+        page.drawLine({ start: { x, y: vBoxY + 15 }, end: { x: x + vColW - 30, y: vBoxY + 15 }, color: colBorder, thickness: 1 });
+      });
+      currentY = vBoxY - 10;
     }
 
     // RESUMEN DE FINANCIACIÓN
