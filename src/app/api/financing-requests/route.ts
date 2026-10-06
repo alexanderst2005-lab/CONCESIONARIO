@@ -20,7 +20,8 @@ export async function POST(req: Request) {
       vehicleId, bankId, vehiclePrice, downPayment, financedAmount, 
       term, rate, estimatedMonthly, 
       formData,
-      tipoSolicitud, rangoMin, rangoMax
+      tipoSolicitud, rangoMin, rangoMax,
+      idDocumentUrl
     } = body;
 
     const esLibre = tipoSolicitud === 'libre';
@@ -57,6 +58,7 @@ export async function POST(req: Request) {
       rate: rate ? rate.toString() : "0",
       estimatedMonthly: Math.round(Number(estimatedMonthly)) || 0,
       status: "Pendiente",
+      idDocumentUrl: idDocumentUrl || null,
     }).returning();
 
     // Actualizar con la URL del PDF dinámico

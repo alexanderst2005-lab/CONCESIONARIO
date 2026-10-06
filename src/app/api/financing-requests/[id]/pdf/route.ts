@@ -334,7 +334,8 @@ export async function generateFinancingPdfBuffer(request: any) {
     // DOCUMENTACIÓN Y DECLARACIÓN
     drawSectionHeader('DOCUMENTACIÓN Y DECLARACIÓN');
     drawText('Documento de identidad:', margin, currentY, fontBold, 9, colText);
-    drawText('Pendiente de entrega física', margin + 120, currentY, fontReg, 9, colTextLight);
+    const docStatusText = reqAny.idDocumentUrl ? 'Adjunto al final de este documento' : 'Pendiente de entrega física';
+    drawText(docStatusText, margin + 120, currentY, fontReg, 9, colTextLight);
     currentY -= 20;
 
     const disclaimer = 'La información suministrada por el solicitante corresponde a los datos registrados durante el proceso de solicitud y será utilizada para la gestión y evaluación de la financiación solicitada. Al firmar este documento, el solicitante autoriza el tratamiento de sus datos personales bajo las leyes vigentes.';
@@ -366,6 +367,45 @@ export async function generateFinancingPdfBuffer(request: any) {
     drawText(fpLabel, fpX + fpW / 2 - fpLabelW / 2, fpBottom - 13, fontBold, 9, colText);
 
     currentY = fpBottom - 25;
+
+    // ADJUNTOS (Foto del Documento)
+    if (reqAny.idDocumentUrl) {
+      try {
+        const imgRes = await fetch(reqAny.idDocumentUrl);
+        if (imgRes.ok) {
+          const imgBytes = await imgRes.arrayBuffer();
+          let embeddedImg;
+          try {
+            embeddedImg = await pdfDoc.embedJpg(imgBytes);
+          } catch (e) {
+            try {
+              embeddedImg = await pdfDoc.embedPng(imgBytes);
+            } catch (e2) {
+              console.error("No se pudo embedder la imagen del documento", e2);
+            }
+          }
+          if (embeddedImg) {
+            const imgPage = pdfDoc.addPage([width, height]);
+            imgPage.drawRectangle({ x: 0, y: height - 90, width: width, height: 90, color: colDark });
+            imgPage.drawText('DOCUMENTO DE IDENTIDAD ADJUNTO', { x: margin, y: height - 50, font: fontBold, size: 14, color: colPrimary });
+            imgPage.drawText(`No. Solicitud: ${request.requestNumber}`, { x: width - margin - 150, y: height - 50, font: fontReg, size: 9, color: rgb(1,1,1) });
+
+            const maxImgW = width - (margin * 2);
+            const maxImgH = height - 130 - margin; // leave space for header and footer
+            const imgDims = embeddedImg.scaleToFit(maxImgW, maxImgH);
+            
+            imgPage.drawImage(embeddedImg, {
+              x: (width - imgDims.width) / 2, // center horizontal
+              y: height - 110 - imgDims.height, // anchor to top
+              width: imgDims.width,
+              height: imgDims.height,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Error al obtener la imagen del documento:", err);
+      }
+    }
 
     // PIE DE PÁGINA GLOBAL
     const pages = pdfDoc.getPages();
