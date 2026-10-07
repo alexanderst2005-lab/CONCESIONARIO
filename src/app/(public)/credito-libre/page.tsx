@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, Suspense, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronRight, CheckCircle2, AlertCircle, FileText, Upload, Image as ImageIcon, X } from "lucide-react";
+import { ChevronRight, CheckCircle2, AlertCircle, FileText, Upload, Image as ImageIcon, X, PenTool } from "lucide-react";
+import SignatureCanvas from 'react-signature-canvas';
 import { useUI } from "@/components/UIProvider";
 
 const CLOUDINARY_CLOUD_NAME = "ofcfneae";
@@ -51,6 +52,7 @@ function SolicitudFormContent() {
 
   const [idImages, setIdImages] = useState<File[]>([]);
   const [idImagePreviews, setIdImagePreviews] = useState<string[]>([]);
+  const sigCanvasRef = useRef<SignatureCanvas>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,6 +98,24 @@ function SolicitudFormContent() {
     return urls.length > 0 ? urls.join(',') : null;
   };
 
+  const uploadSignatureToCloudinary = async (base64Img: string): Promise<string | null> => {
+    const data = new FormData();
+    data.append("file", base64Img);
+    data.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: data,
+      });
+      const result = await res.json();
+      return result.secure_url || null;
+    } catch (err) {
+      console.error("Error uploading signature image:", err);
+      return null;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -122,10 +142,17 @@ function SolicitudFormContent() {
       return;
     }
 
+    if (!sigCanvasRef.current || sigCanvasRef.current.isEmpty()) {
+      toast("Por favor dibuja tu firma al final del formulario", "error");
+      return;
+    }
+
     setIsUploading(true);
-    toast("Subiendo documento y procesando...");
+    toast("Subiendo documentos y procesando...");
     
     const uploadedUrl = await uploadToCloudinary();
+    const signatureDataUrl = sigCanvasRef.current.getTrimmedCanvas().toDataURL("image/png");
+    const signatureUrl = await uploadSignatureToCloudinary(signatureDataUrl);
     
     if (!uploadedUrl) {
       setIsUploading(false);
@@ -144,6 +171,7 @@ function SolicitudFormContent() {
           downPayment: formData.downPayment,
           term: formData.term,
           idDocumentUrl: uploadedUrl,
+          signatureUrl: signatureUrl,
           formData
         }),
       });
@@ -295,6 +323,28 @@ function SolicitudFormContent() {
               <p style={{ color: "#fff", marginBottom: "0.5rem" }}><strong>Rango Deseado:</strong> {formData.range || 'No seleccionado'}</p>
               <p style={{ color: "#fff", marginBottom: "0.5rem" }}><strong>Plazo Seleccionado:</strong> {formData.term} meses</p>
               <p style={{ color: "#aaa", fontSize: "0.9rem", marginTop: "1rem" }}>Al enviar esta solicitud autorizas la consulta en centrales de riesgo y aceptas los términos y condiciones.</p>
+            </div>
+
+            <div style={{ marginTop: "2rem", background: "rgba(0,0,0,0.3)", padding: "1.5rem", borderRadius: "8px", border: "1px dashed rgba(255,255,255,0.2)" }}>
+              <label style={{...labelStyle, marginBottom: "1rem", color: "#cda434", fontWeight: "bold", display: "flex", alignItems: "center", gap: "0.5rem"}}>
+                <PenTool size={18} /> Firma del Solicitante *
+              </label>
+              <p style={{ color: "#888", fontSize: "0.8rem", marginBottom: "1rem" }}>Por favor, dibuja tu firma en el recuadro blanco usando tu mouse o tu dedo.</p>
+              
+              <div style={{ background: "#fff", borderRadius: "8px", overflow: "hidden", border: "2px solid #ccc" }}>
+                <SignatureCanvas 
+                  ref={sigCanvasRef}
+                  penColor="black"
+                  canvasProps={{ width: 500, height: 200, className: 'sigCanvas', style: { width: "100%", height: "200px" } }}
+                />
+              </div>
+              <button 
+                type="button" 
+                onClick={() => sigCanvasRef.current?.clear()} 
+                style={{ marginTop: "1rem", padding: "0.5rem 1rem", background: "transparent", border: "1px solid #888", color: "#ccc", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
+              >
+                Limpiar Firma
+              </button>
             </div>
           </div>
         )}

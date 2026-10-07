@@ -241,6 +241,7 @@ export const financingRequests = pgTable('financing_requests', {
   status: text('status').notNull().default('Pendiente'),
   
   idDocumentUrl: text('id_document_url'),
+  signatureUrl: text('signature_url'),
   pdfUrl: text('pdf_url'),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),

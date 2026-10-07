@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       term, rate, estimatedMonthly, 
       formData,
       tipoSolicitud, rangoMin, rangoMax,
-      idDocumentUrl
+      idDocumentUrl, signatureUrl
     } = body;
 
     const esLibre = tipoSolicitud === 'libre';
@@ -59,6 +59,7 @@ export async function POST(req: Request) {
       estimatedMonthly: Math.round(Number(estimatedMonthly)) || 0,
       status: "Pendiente",
       idDocumentUrl: idDocumentUrl || null,
+      signatureUrl: signatureUrl || null,
     }).returning();
 
     // Actualizar con la URL del PDF dinámico

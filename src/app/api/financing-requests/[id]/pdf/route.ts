@@ -384,6 +384,27 @@ export async function generateFinancingPdfBuffer(request: any) {
     // Firma: espacio a la izquierda, línea alineada con la parte baja de la huella
     const sigLineY = fpBottom + 30;
     const sigW = 220;
+    
+    // Si hay firma, se incrusta sobre la línea
+    if (reqAny.signatureUrl) {
+      try {
+        const sigRes = await fetch(reqAny.signatureUrl);
+        if (sigRes.ok) {
+          const sigBytes = await sigRes.arrayBuffer();
+          const sigImg = await pdfDoc.embedPng(sigBytes);
+          const sigImgDims = sigImg.scaleToFit(sigW, 80);
+          page.drawImage(sigImg, {
+            x: margin,
+            y: sigLineY, 
+            width: sigImgDims.width,
+            height: sigImgDims.height
+          });
+        }
+      } catch (err) {
+        console.error("Error al incrustar la firma", err);
+      }
+    }
+
     page.drawLine({ start: { x: margin, y: sigLineY }, end: { x: margin + sigW, y: sigLineY }, color: colDark, thickness: 1 });
     drawText('Firma del solicitante', margin, sigLineY - 13, fontBold, 9, colText);
     if (fullName) drawText(fitText(`Nombre: ${fullName}`, fontReg, 9, sigW).text, margin, sigLineY - 25, fontReg, 9, colText);
