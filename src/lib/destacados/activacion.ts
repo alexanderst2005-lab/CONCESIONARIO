@@ -69,7 +69,7 @@ export async function activarOExtenderDestacado(pagoId: string, transaccionWompi
             ${pago.plan_id}, 
             'pago',
             ${iniciaEnSql},
-            ${iniciaEnSql} + (${pago.duracion_dias_compra} * interval '1 day')
+            ${iniciaEnSql} + (CAST(${pago.duracion_dias_compra} AS integer) * interval '1 day')
           )`
     );
 

@@ -94,14 +94,16 @@ export default function WompiWidgetModal({ vehicleId, vehicleName, buttonText = 
             const errData = await verifyRes.json();
             toast(`Error de sincronización: ${errData.message}`, "error");
           } else {
-            if (transaction.status === "APPROVED") {
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.estadoFinal === "aprobado") {
               toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
               setTimeout(() => window.location.reload(), 2000);
-            } else if (transaction.status === "PENDING") {
-              toast("El pago está pendiente de confirmación.", "success");
-              setTimeout(() => window.location.reload(), 2000);
+            } else if (verifyData.estadoFinal === "rechazado_o_pendiente") {
+              toast("El pago se está verificando. Si es aprobado, tu vehículo destacará en un par de minutos.", "success");
+              setTimeout(() => window.location.reload(), 4000);
             } else {
-              toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
+              toast(`Pago no aprobado. Revisa tu medio de pago.`, "error");
             }
           }
         } catch (err) {
