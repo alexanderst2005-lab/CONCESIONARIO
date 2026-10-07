@@ -58,9 +58,9 @@ const val = (v: unknown): string | undefined => {
 };
 
 /** Formatea un monto escrito por el usuario. Si no es numérico, se imprime tal cual. */
-const money = (v: unknown): string | undefined => {
+const money = (v: unknown): string => {
   const s = val(v);
-  if (!s) return undefined;
+  if (!s) return "-";
   const digits = s.replace(/[^\d]/g, "");
   if (!digits) return s;
   return `$${Number(digits).toLocaleString('es-CO')}`;
