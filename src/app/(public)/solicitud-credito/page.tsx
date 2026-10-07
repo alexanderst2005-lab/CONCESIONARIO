@@ -299,20 +299,22 @@ function SolicitudFormContent() {
               </label>
               <p style={{ color: "#888", fontSize: "0.8rem", marginBottom: "1rem" }}>Por favor, dibuja tu firma en el recuadro blanco usando tu mouse o tu dedo.</p>
               
-              <div style={{ background: "#fff", borderRadius: "8px", overflow: "hidden", border: "2px solid #ccc" }}>
+              <div style={{ background: "#fff", borderRadius: "8px", overflow: "hidden", border: "2px solid #ccc", display: "flex", justifyContent: "center", width: "fit-content", margin: "0 auto" }}>
                 <SignatureCanvas 
                   ref={sigCanvasRef}
                   penColor="black"
-                  canvasProps={{ width: 500, height: 200, className: 'sigCanvas', style: { width: "100%", height: "200px" } }}
+                  canvasProps={{ width: 320, height: 200, className: 'sigCanvas', style: { touchAction: "none" } }}
                 />
               </div>
-              <button 
-                type="button" 
-                onClick={() => sigCanvasRef.current?.clear()} 
-                style={{ marginTop: "1rem", padding: "0.5rem 1rem", background: "transparent", border: "1px solid #888", color: "#ccc", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
-              >
-                Limpiar Firma
-              </button>
+              <div style={{ textAlign: "center" }}>
+                <button 
+                  type="button" 
+                  onClick={() => sigCanvasRef.current?.clear()} 
+                  style={{ marginTop: "1rem", padding: "0.5rem 1rem", background: "transparent", border: "1px solid #888", color: "#ccc", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
+                >
+                  Limpiar Firma
+                </button>
+              </div>
             </div>
           </div>
         )}
