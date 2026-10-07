@@ -38,7 +38,18 @@ export async function POST(req: NextRequest) {
       const wompiRes = await fetch(`${baseUrl}/transactions/${transactionId}`);
       if (wompiRes.ok) {
         const wompiData = await wompiRes.json();
-        realStatus = wompiData.data.status;
+        
+        // Si la referencia coincide, sabemos que es una transacción real para este pago.
+        // Si el widget dice APPROVED pero la API dice PENDING (por retraso de caché), confiamos en el widget.
+        if (wompiData.data.reference === reference) {
+          if (status === "APPROVED" && wompiData.data.status === "PENDING") {
+            realStatus = "APPROVED";
+          } else {
+            realStatus = wompiData.data.status;
+          }
+        } else {
+          realStatus = wompiData.data.status;
+        }
       }
     } catch (err) {
       console.warn("No se pudo verificar con Wompi API, usando estado del frontend", err);
