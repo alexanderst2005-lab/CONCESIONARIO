@@ -302,22 +302,51 @@ export async function generateFinancingPdfBuffer(request: any) {
       ];
       drawGrid(financeFields, 3);
     } else {
-      // Flujo Vehículo: campos vacíos para llenar a mano
+      // Flujo Vehículo: resumen detallado de la simulación
       currentY -= 5;
       checkPageBreak(70);
       const summaryH = 60;
       const summaryBoxY = currentY - summaryH;
+      
+      // Caja exterior
       page.drawRectangle({ x: margin, y: summaryBoxY, width: contentWidth, height: summaryH, color: colBg, borderColor: colBorder, borderWidth: 1 });
-      const summaryLabels = ['PRECIO DEL VEHÍCULO', 'CUOTA INICIAL', 'MONTO A FINANCIAR'];
-      const summaryColW = contentWidth / summaryLabels.length;
-      summaryLabels.forEach((label, i) => {
-        const x = margin + i * summaryColW + 15;
-        drawText(label, x, summaryBoxY + summaryH - 20, fontBold, 8, colTextLight);
-        // Línea en blanco para diligenciar a mano
-        page.drawLine({ start: { x, y: summaryBoxY + 15 }, end: { x: x + summaryColW - 30, y: summaryBoxY + 15 }, color: colBorder, thickness: 1 });
-        drawText('$', x, summaryBoxY + 19, fontReg, 10, colTextLight);
-      });
-      currentY = summaryBoxY - 10;
+      
+      // Caja cuota estimada (fondo oscuro)
+      const estW = 140;
+      page.drawRectangle({ x: margin + contentWidth - estW, y: summaryBoxY, width: estW, height: summaryH, color: colDark });
+      
+      // Separadores
+      const col1X = margin;
+      const col1W = (contentWidth - estW) / 3;
+      page.drawLine({ start: { x: col1X + col1W, y: summaryBoxY }, end: { x: col1X + col1W, y: summaryBoxY + summaryH }, color: colBorder, thickness: 1 });
+      page.drawLine({ start: { x: col1X + col1W * 2, y: summaryBoxY }, end: { x: col1X + col1W * 2, y: summaryBoxY + summaryH }, color: colBorder, thickness: 1 });
+      
+      // Textos
+      const yLabel = summaryBoxY + summaryH - 15;
+      const yVal = summaryBoxY + summaryH - 35;
+      const ySub = summaryBoxY + 12;
+      
+      // Col 1: Precio
+      drawText('PRECIO DEL VEHÍCULO', col1X + 15, yLabel, fontBold, 7, colTextLight);
+      drawText(money(reqAny.vehiclePrice), col1X + 15, yVal, fontBold, 11, colText);
+      const pct = reqAny.vehiclePrice ? Math.round(((reqAny.downPayment || 0) / reqAny.vehiclePrice) * 100) : 0;
+      drawText(`Porcentaje inicial: ${pct}%`, col1X + 15, ySub, fontReg, 8, colTextLight);
+      
+      // Col 2: Cuota Inicial
+      drawText('CUOTA INICIAL', col1X + col1W + 15, yLabel, fontBold, 7, colTextLight);
+      drawText(money(reqAny.downPayment), col1X + col1W + 15, yVal, fontBold, 11, colText);
+      drawText(`Entidad: ${reqAny.bank?.name || 'No especificada'}`, col1X + col1W + 15, ySub, fontReg, 8, colTextLight);
+      
+      // Col 3: Monto
+      drawText('MONTO A FINANCIAR', col1X + col1W * 2 + 15, yLabel, fontBold, 7, colTextLight);
+      drawText(money(reqAny.financedAmount), col1X + col1W * 2 + 15, yVal, fontBold, 11, colText);
+      drawText(`Plazo: ${reqAny.term || 0} meses`, col1X + col1W * 2 + 15, ySub, fontReg, 8, colTextLight);
+      
+      // Col 4: Cuota (Dark Box)
+      drawText('CUOTA ESTIMADA', margin + contentWidth - estW + 20, yLabel, fontBold, 7, colPrimary);
+      drawText(money(reqAny.estimatedMonthly), margin + contentWidth - estW + 20, yVal, fontBold, 16, rgb(1,1,1));
+      
+      currentY = summaryBoxY - 15;
     }
 
     // REFERENCIA PERSONAL
