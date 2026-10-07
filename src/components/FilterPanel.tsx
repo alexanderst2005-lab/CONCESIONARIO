@@ -33,8 +33,31 @@ export default function FilterPanel({
   const [filteredBrands, setFilteredBrands] = useState(allBrands);
 
   useEffect(() => {
-    setFilteredBrands(allBrands);
-  }, [allBrands]); // Only run when category changes
+    if (selectedCat) {
+      const catObj = allCats.find((c) => c.name === selectedCat);
+      let newFiltered = allBrands;
+      if (catObj && catObj.brandsList) {
+        try {
+          const allowedBrands: string[] = JSON.parse(catObj.brandsList);
+          if (allowedBrands.length > 0) {
+            newFiltered = allBrands.filter((b) => allowedBrands.includes(b.name));
+          } else {
+            newFiltered = [];
+          }
+        } catch (e) {
+          newFiltered = [];
+        }
+      } else {
+        newFiltered = [];
+      }
+      setFilteredBrands(newFiltered);
+      if (selectedBrand && !newFiltered.some(b => b.name === selectedBrand)) {
+        setSelectedBrand("");
+      }
+    } else {
+      setFilteredBrands(allBrands);
+    }
+  }, [selectedCat, allBrands, allCats, selectedBrand]);
 
   const hasActiveFilters = !!(currentMarca || currentCategoria || currentModelo || currentCiudad);
   const activeCount = [currentMarca, currentCategoria, currentModelo, currentCiudad].filter(Boolean).length;
@@ -113,21 +136,23 @@ export default function FilterPanel({
               </div>
 
               {/* Marca */}
-              <div className={styles.filterGroup}>
-                <label className={styles.filterLabel}>
-                  <Car size={12} strokeWidth={2} /> Marca
-                </label>
-                <select 
-                  value={selectedBrand} 
-                  onChange={(e) => setSelectedBrand(e.target.value)} 
-                  className={styles.filterSelect}
-                >
-                  <option value="">Todas</option>
-                  {filteredBrands.map(b => (
-                    <option key={b.id} value={b.name}>{b.name}</option>
-                  ))}
-                </select>
-              </div>
+              {(!selectedCat || filteredBrands.length > 0) && (
+                <div className={styles.filterGroup}>
+                  <label className={styles.filterLabel}>
+                    <Car size={12} strokeWidth={2} /> Marca
+                  </label>
+                  <select 
+                    value={selectedBrand} 
+                    onChange={(e) => setSelectedBrand(e.target.value)} 
+                    className={styles.filterSelect}
+                  >
+                    <option value="">Todas</option>
+                    {filteredBrands.map(b => (
+                      <option key={b.id} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Modelo */}
               <div className={styles.filterGroup}>
