@@ -181,11 +181,20 @@ export default function PublicarPage() {
       }
     }
     
-    if (parsedBrands.length === 0) return dbBrands;
+    if (parsedBrands.length === 0) return [];
     
     const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
     return dbBrands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
   }, [formData.categoryName, dbCategories, dbBrands]);
+
+  // Si se cambia la categoría y la marca seleccionada ya no es válida, la borramos
+  React.useEffect(() => {
+    if (formData.brandName && allowedBrands.length > 0) {
+      if (!allowedBrands.some(b => b.name === formData.brandName)) {
+        setFormData(prev => ({ ...prev, brandName: "" }));
+      }
+    }
+  }, [allowedBrands, formData.brandName]);
 
   return (
     <div className={styles.publishContainer}>
@@ -219,19 +228,17 @@ export default function PublicarPage() {
                   )}
                 </select>
               </div>
-              <div className={styles.inputGroup}>
-                <label>Marca</label>
-                <select name="brandName" value={formData.brandName} onChange={handleInputChange} required disabled={!formData.categoryName}>
-                  <option value="" disabled>Selecciona una marca</option>
-                  {allowedBrands.length > 0 ? (
-                    allowedBrands.map(b => (
+              {allowedBrands.length > 0 && (
+                <div className={styles.inputGroup}>
+                  <label>Marca</label>
+                  <select name="brandName" value={formData.brandName} onChange={handleInputChange} required disabled={!formData.categoryName}>
+                    <option value="" disabled>Selecciona una marca</option>
+                    {allowedBrands.map(b => (
                       <option key={b.id} value={b.name}>{b.name}</option>
-                    ))
-                  ) : (
-                    <option value="" disabled>No hay marcas asociadas</option>
-                  )}
-                </select>
-              </div>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className={styles.inputGroup}>
                 <label>Modelo (Ej: CX-5)</label>
                 <input type="text" name="modelName" value={formData.modelName} onChange={handleInputChange} placeholder="Ej: CX-5" required />
