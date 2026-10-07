@@ -95,16 +95,40 @@ export default function PlansTab({ userId, userVehicles }: { userId: number, use
         signature: { integrity: data.firmaIntegridad }
       });
 
-      checkout.open(function (result: any) {
+      checkout.open(async function (result: any) {
         const transaction = result.transaction;
-        if (transaction.status === "APPROVED") {
-          toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
-          setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 2000);
-        } else if (transaction.status === "PENDING") {
-          toast("El pago está pendiente de confirmación. Te notificaremos cuando se apruebe.", "success");
-          setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 2000);
-        } else {
-          toast(`Pago ${transaction.status}. Intenta nuevamente.`, "error");
+        
+        try {
+          const verifyRes = await fetch("/api/pagos-destacado/verificar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              reference: transaction.reference, 
+              transactionId: transaction.id, 
+              status: transaction.status,
+              paymentMethod: transaction.payment_method_type
+            }),
+          });
+
+          if (!verifyRes.ok) {
+            const errData = await verifyRes.json();
+            toast(`Error de sincronización: ${errData.message}`, "error");
+          } else {
+            const verifyData = await verifyRes.json();
+            
+            if (verifyData.estadoFinal === "aprobado") {
+              toast("¡Pago exitoso! Tu vehículo ahora está destacado.", "success");
+              setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 2000);
+            } else if (verifyData.estadoFinal === "rechazado_o_pendiente") {
+              toast("El pago se está verificando. Te notificaremos pronto.", "success");
+              setTimeout(() => window.location.href = "/mi-cuenta?tab=suscripciones", 3000);
+            } else {
+              toast(`Pago no aprobado. Revisa tu medio de pago.`, "error");
+            }
+          }
+        } catch (e) {
+          console.error("Error verificando pago:", e);
+          toast("Error de red al verificar pago", "error");
         }
       });
       
