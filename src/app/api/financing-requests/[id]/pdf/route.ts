@@ -335,7 +335,6 @@ export async function generateFinancingPdfBuffer(request: any) {
       // Col 2: Cuota Inicial
       drawText('CUOTA INICIAL', col1X + col1W + 15, yLabel, fontBold, 7, colTextLight);
       drawText(money(reqAny.downPayment), col1X + col1W + 15, yVal, fontBold, 11, colText);
-      drawText(`Entidad: ${reqAny.bank?.name || 'No especificada'}`, col1X + col1W + 15, ySub, fontReg, 8, colTextLight);
       
       // Col 3: Monto
       drawText('MONTO A FINANCIAR', col1X + col1W * 2 + 15, yLabel, fontBold, 7, colTextLight);
