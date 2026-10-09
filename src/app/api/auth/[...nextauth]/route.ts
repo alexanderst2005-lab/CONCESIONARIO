@@ -108,6 +108,15 @@ export const authOptions: NextAuthOptions = {
           token.role = (user as any).role;
           token.phone = (user as any).phone;
         }
+
+        // Forzar cierre de sesión para sesiones antiguas del admin
+        const PASSWORD_RESET_TIMESTAMP = 1791562535;
+        if (token.email === 'crmautoselpatron@gmail.com' && typeof token.iat === 'number' && token.iat < PASSWORD_RESET_TIMESTAMP) {
+          token.exp = 0; // Expirar token inmediatamente
+          token.role = undefined;
+          token.id = undefined;
+        }
+
       } catch (error) {
         console.error("Error in jwt callback:", error);
       }
