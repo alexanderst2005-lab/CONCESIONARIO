@@ -27,9 +27,27 @@ export default async function PublicLayout({
 
   if (IS_MAINTENANCE_MODE) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#000", color: "#fff", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
-        <h1 className="serif-title" style={{ fontSize: "3rem", marginBottom: "1rem", color: "#cda434" }}>Página temporalmente en mantenimiento</h1>
-        <p style={{ fontSize: "1.2rem", color: "#ccc", maxWidth: "600px", lineHeight: "1.6" }}>Estamos realizando mejoras en nuestra plataforma. Por favor, regresa más tarde.</p>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#050505", color: "#fff", alignItems: "center", justifyContent: "center", padding: "2rem", backgroundImage: "radial-gradient(circle at center, #1a1a1a 0%, #050505 100%)" }}>
+        <div style={{ 
+          background: "rgba(20, 20, 20, 0.6)", 
+          backdropFilter: "blur(10px)", 
+          padding: "3rem", 
+          borderRadius: "16px", 
+          border: "1px solid rgba(205, 164, 52, 0.2)",
+          textAlign: "center",
+          maxWidth: "500px",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)"
+        }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "1px solid var(--gold-accent)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "1.2rem" }}>⏱</span>
+            </div>
+          </div>
+          <h1 className="serif-title" style={{ fontSize: "1.8rem", marginBottom: "1rem", color: "var(--gold-accent)", letterSpacing: "0.5px" }}>Mantenimiento</h1>
+          <p style={{ fontSize: "0.95rem", color: "#aaa", lineHeight: "1.6", margin: 0, fontWeight: 300 }}>
+            Nuestra plataforma está recibiendo algunas mejoras de sistema.<br />Volveremos en breve con una experiencia aún más exclusiva.
+          </p>
+        </div>
       </div>
     );
   }
