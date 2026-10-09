@@ -23,6 +23,17 @@ export default async function PublicLayout({
     console.error(e);
   }
 
+  const IS_MAINTENANCE_MODE = true; // TODO: Cambiar a false para desactivar el mantenimiento
+
+  if (IS_MAINTENANCE_MODE) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#000", color: "#fff", alignItems: "center", justifyContent: "center", padding: "2rem", textAlign: "center" }}>
+        <h1 className="serif-title" style={{ fontSize: "3rem", marginBottom: "1rem", color: "#cda434" }}>Página temporalmente en mantenimiento</h1>
+        <p style={{ fontSize: "1.2rem", color: "#ccc", maxWidth: "600px", lineHeight: "1.6" }}>Estamos realizando mejoras en nuestra plataforma. Por favor, regresa más tarde.</p>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Header session={session} />
