@@ -43,10 +43,9 @@ export default async function PublicLayout({
               <span style={{ fontSize: "1.2rem" }}>⏱</span>
             </div>
           </div>
-          <h1 className="serif-title" style={{ fontSize: "1.8rem", marginBottom: "1rem", color: "var(--gold-accent)", letterSpacing: "0.5px" }}>Mantenimiento</h1>
-          <p style={{ fontSize: "0.95rem", color: "#aaa", lineHeight: "1.6", margin: 0, fontWeight: 300 }}>
-            Nuestra plataforma está recibiendo algunas mejoras de sistema.<br />Volveremos en breve con una experiencia aún más exclusiva.
-          </p>
+          <h1 className="serif-title" style={{ fontSize: "1.8rem", margin: 0, color: "var(--gold-accent)", letterSpacing: "0.5px" }}>
+            Página temporalmente en mantenimiento
+          </h1>
         </div>
       </div>
     );
