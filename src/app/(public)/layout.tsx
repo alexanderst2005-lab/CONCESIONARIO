@@ -23,7 +23,7 @@ export default async function PublicLayout({
     console.error(e);
   }
 
-  const IS_MAINTENANCE_MODE = true; // TODO: Cambiar a false para desactivar el mantenimiento
+  const IS_MAINTENANCE_MODE = false; // TODO: Cambiar a true para activar el mantenimiento
 
   if (IS_MAINTENANCE_MODE) {
     return (
