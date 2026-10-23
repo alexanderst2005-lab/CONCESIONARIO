@@ -26,12 +26,21 @@ export default function AdminBrandsPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const { confirmAction, toast } = useUI();
+
   const fetchBrands = async () => {
     setLoading(true);
-    const res = await fetch("/api/brands");
-    const data = await res.json();
-    setBrands(data);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/brands?all=true");
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setBrands(data);
+      }
+    } catch {
+      toast("Error al cargar las marcas", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchBrands(); }, []);
@@ -77,19 +86,33 @@ export default function AdminBrandsPage() {
 
     try {
       if (editingId) {
-        await fetch("/api/brands", {
+        const res = await fetch("/api/brands", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: editingId, ...form }),
         });
-        setMessage("✓ Marca actualizada correctamente.");
+        if (res.ok) {
+          setMessage("✓ Marca actualizada correctamente.");
+          toast("✓ Marca actualizada correctamente", "success");
+        } else {
+          const err = await res.json();
+          setMessage(err.message || "Error al actualizar la marca.");
+          toast(err.message || "Error al actualizar la marca", "error");
+        }
       } else {
-        await fetch("/api/brands", {
+        const res = await fetch("/api/brands", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(form),
         });
-        setMessage("✓ Marca creada correctamente.");
+        if (res.ok) {
+          setMessage("✓ Marca creada correctamente.");
+          toast("✓ Marca creada correctamente", "success");
+        } else {
+          const err = await res.json();
+          setMessage(err.message || "Error al crear la marca.");
+          toast(err.message || "Error al crear la marca", "error");
+        }
       }
       setForm({ name: "", logoUrl: "", sortOrder: 0 });
       setLogoPreview(null);
@@ -97,6 +120,7 @@ export default function AdminBrandsPage() {
       fetchBrands();
     } catch {
       setMessage("Error al guardar la marca.");
+      toast("Error de red al guardar la marca", "error");
     } finally {
       setSaving(false);
     }
@@ -109,22 +133,55 @@ export default function AdminBrandsPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const { confirmAction } = useUI();
-
   const handleDeactivate = async (id: number) => {
-    confirmAction("¿Desactivar esta marca?", async () => {
-      await fetch(`/api/brands?id=${id}`, { method: "DELETE" });
-      fetchBrands();
+    confirmAction("¿Desactivar esta marca? No se mostrará en las búsquedas ni en los filtros públicos.", async () => {
+      try {
+        await fetch(`/api/brands?id=${id}`, { method: "DELETE" });
+        toast("Marca desactivada", "warning");
+        fetchBrands();
+      } catch {
+        toast("Error al desactivar la marca", "error");
+      }
     });
   };
 
   const handleActivate = async (id: number) => {
-    await fetch("/api/brands", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, isActive: true }),
-    });
-    fetchBrands();
+    try {
+      await fetch("/api/brands", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, isActive: true }),
+      });
+      toast("Marca activada", "success");
+      fetchBrands();
+    } catch {
+      toast("Error al activar la marca", "error");
+    }
+  };
+
+  const handleDeletePermanent = (brand: Brand) => {
+    confirmAction(
+      `¿Estás seguro de que deseas ELIMINAR permanentemente la marca "${brand.name}"? Esta acción no se puede deshacer.`,
+      async () => {
+        try {
+          const res = await fetch(`/api/brands?id=${brand.id}&permanent=true`, {
+            method: "DELETE",
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            setMessage(data.message || "Error al eliminar la marca");
+            toast(data.message || "Error al eliminar la marca", "error");
+          } else {
+            setMessage("✓ Marca eliminada permanentemente.");
+            toast("✓ Marca eliminada con éxito", "success");
+            fetchBrands();
+          }
+        } catch {
+          setMessage("Error de conexión al eliminar la marca.");
+          toast("Error de conexión al eliminar la marca", "error");
+        }
+      }
+    );
   };
 
   const handleCancel = () => {
@@ -357,18 +414,64 @@ export default function AdminBrandsPage() {
                 </p>
               </div>
               <div style={{ display: "flex", gap: "0.5rem" }}>
-                <button onClick={() => handleEdit(brand)} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#f5c60b", border: "1px solid rgba(245,198,11,0.3)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                <button
+                  type="button"
+                  onClick={() => handleEdit(brand)}
+                  style={{ padding: "0.5rem 1rem", background: "transparent", color: "#f5c60b", border: "1px solid rgba(245,198,11,0.3)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
+                >
                   Editar
                 </button>
                 {brand.isActive ? (
-                  <button onClick={() => handleDeactivate(brand.id)} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleDeactivate(brand.id)}
+                    style={{ padding: "0.5rem 1rem", background: "transparent", color: "#888", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
+                  >
                     Desactivar
                   </button>
                 ) : (
-                  <button onClick={() => handleActivate(brand.id)} style={{ padding: "0.5rem 1rem", background: "transparent", color: "#f5c60b", border: "1px solid rgba(245,198,11,0.3)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}>
+                  <button
+                    type="button"
+                    onClick={() => handleActivate(brand.id)}
+                    style={{ padding: "0.5rem 1rem", background: "transparent", color: "#f5c60b", border: "1px solid rgba(245,198,11,0.3)", borderRadius: "4px", cursor: "pointer", fontSize: "0.8rem" }}
+                  >
                     Activar
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => handleDeletePermanent(brand)}
+                  style={{
+                    padding: "0.5rem 1rem",
+                    background: "rgba(239, 68, 68, 0.08)",
+                    color: "#ef4444",
+                    border: "1px solid rgba(239, 68, 68, 0.3)",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    transition: "all 0.2s ease"
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.background = "#ef4444";
+                    e.currentTarget.style.color = "#ffffff";
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.background = "rgba(239, 68, 68, 0.08)";
+                    e.currentTarget.style.color = "#ef4444";
+                  }}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
+                  </svg>
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}

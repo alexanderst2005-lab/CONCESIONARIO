@@ -1,16 +1,21 @@
 import { drizzle } from 'drizzle-orm/neon-http';
 import { neon } from '@neondatabase/serverless';
 import { sql } from 'drizzle-orm';
+import * as dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
 
-const connectionString = "postgresql://neondb_owner:npg_VmXMIP6hYU2N@ep-round-bonus-b4fl69lk-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require";
-
-const neonClient = neon(connectionString);
+const neonClient = neon(process.env.DATABASE_URL!);
 const db = drizzle(neonClient);
 
 async function makeAdmin() {
+  const email = process.argv[2] || 'santanamateo352@gmail.com';
   try {
-    await db.execute(sql`UPDATE users SET role = 'ADMIN' WHERE email = 'santanamateo352@gmail.com'`);
-    console.log("Rol actualizado a ADMIN para santanamateo352@gmail.com");
+    const res: any = await db.execute(sql`UPDATE users SET role = 'ADMIN' WHERE email = ${email} RETURNING id, email, role`);
+    if (res?.length > 0 || res?.rowCount > 0) {
+      console.log(`✓ Rol actualizado a ADMIN para ${email}`);
+    } else {
+      console.log(`Aviso: No se encontró usuario con el correo ${email}. Inicia sesión primero y luego ejecuta este script.`);
+    }
   } catch (err: any) {
     console.error("Error:", err.message);
   }
