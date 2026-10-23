@@ -36,7 +36,7 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
 
   return (
     <div className={styles.container}>
-      {/* Scrollable Categories Row */}
+      {/* Scrollable / Centered Categories Row */}
       <div className={styles.scrollableRow}>
         {categories.map(cat => {
           const nameUpper = cat.name.toUpperCase();
@@ -50,6 +50,7 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
           return (
             <button
               key={cat.id}
+              type="button"
               onClick={() => handleSelectCategory(cat)}
               className={`${styles.categoryCard} ${isSelected ? styles.selectedCard : ""}`}
             >
@@ -58,7 +59,9 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
                   <img src={cat.imageUrl} alt={cat.name} className={styles.categoryImage} />
                 </div>
               ) : (
-                <Icon className={styles.categoryIcon} strokeWidth={1.5} style={{ color: isSelected ? "#000" : "var(--gold-accent)" }} />
+                <div className={styles.iconWrapper}>
+                  <Icon className={styles.categoryIcon} strokeWidth={1.8} />
+                </div>
               )}
               <span className={styles.categoryName}>
                 {cat.name}
@@ -71,14 +74,14 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
       {/* Filter Panel below selected category */}
       {selectedCat && (
         <div className={styles.filterPanel}>
-          <h3 className={styles.filterPanelTitle}>Filtrar {selectedCat.name}</h3>
+          <h3 className={styles.filterPanelTitle}>
+            Filtrar {selectedCat.name}
+          </h3>
           
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
-            {/* Selector de marca general */}
             {(() => {
               let allowedBrands = brands;
               
-              // Filter brands based on category's brandsList if available
               if (selectedCat.brandsList) {
                 let parsedBrands: string[] = [];
                 try {
@@ -86,7 +89,7 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
                   if (Array.isArray(parsed)) {
                     parsedBrands = parsed;
                   }
-                } catch(e) {
+                } catch {
                   if (typeof selectedCat.brandsList === 'string' && selectedCat.brandsList.trim() !== '') {
                     parsedBrands = selectedCat.brandsList.split(',').map((s: string) => s.trim());
                   }
@@ -100,11 +103,13 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
 
               return (
                 <div style={{ flex: "1 1 100%" }}>
-                  <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Marca</label>
+                  <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem", fontWeight: 500 }}>
+                    Marca
+                  </label>
                   <select
                     value={selectedBrand}
                     onChange={e => setSelectedBrand(e.target.value)}
-                    style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
+                    className={styles.selectInput}
                   >
                     <option value="">Todas las marcas</option>
                     {allowedBrands.map(b => (
@@ -116,10 +121,11 @@ export default function CategoryFilterSelector({ categories, brands }: CategoryF
             })()}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.5rem" }}>
             <button
+              type="button"
               onClick={handleSearch}
-              style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem 2.5rem", background: "var(--gold-accent)", color: "#000", fontWeight: "bold", border: "none", borderRadius: "30px", cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.05em", fontSize: "0.9rem" }}
+              className={styles.btnSearch}
             >
               Buscar Vehículos
             </button>
