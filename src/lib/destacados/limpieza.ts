@@ -2,23 +2,18 @@ import { db } from "@/db";
 import { sql } from "drizzle-orm";
 
 /**
- * Limpia y sincroniza con precisión al segundo todos los destacados y suscripciones que hayan expirado.
- * 
- * Acciones:
- * 1. Pone estado = 'expirado' en `destacados_activos` cuando `termina_en < now()`.
- * 2. Apaga `is_featured = false` en `vehicles` para los vehículos cuyo tiempo terminó.
- * 3. Actualiza el estado en `subscriptions` a 'expired' cuando `current_period_end < now()`.
- * 
- * Es ultra-rápido (ejecución atómica en PostgreSQL) y seguro contra errores.
+ * Limpia y elimina de forma atómica los destacados expirados:
+ * 1. BORRA el registro de `destacados_activos` cuando `termina_en < now()` para que no quede basura.
+ * 2. Apaga `is_featured = false` en `vehicles` para que deje de aparecer como destacado.
+ * 3. También limpia las suscripciones que ya cumplieron su ciclo.
  */
 export async function sincronizarDestacadosExpirados() {
   try {
-    // 1. Sincronizar destacados activos individuales
+    // 1. Eliminar destacados activos cuyo tiempo ya terminó y apagar is_featured
     await db.execute(sql`
       WITH exp AS (
-        UPDATE destacados_activos
-        SET estado = 'expirado'
-        WHERE termina_en < now() AND estado != 'expirado'
+        DELETE FROM destacados_activos
+        WHERE termina_en < now() OR estado = 'expirado'
         RETURNING vehiculo_id
       )
       UPDATE vehicles v
@@ -27,17 +22,15 @@ export async function sincronizarDestacadosExpirados() {
         AND NOT EXISTS (
           SELECT 1 FROM destacados_activos da
           WHERE da.vehiculo_id = v.id 
-            AND da.termina_en >= now() 
-            AND da.estado = 'activo'
+            AND da.termina_en >= now()
         );
     `);
 
-    // 2. Sincronizar suscripciones recurrentes canceladas que hayan expirado
+    // 2. Limpiar suscripciones canceladas que ya cumplieron su periodo
     await db.execute(sql`
       WITH exp_sub AS (
-        UPDATE subscriptions
-        SET status = 'expired'
-        WHERE status = 'canceled' AND current_period_end < now()
+        DELETE FROM subscriptions
+        WHERE status = 'expired' OR (status = 'canceled' AND current_period_end < now())
         RETURNING vehicle_id
       )
       UPDATE vehicles v
@@ -46,8 +39,7 @@ export async function sincronizarDestacadosExpirados() {
         AND NOT EXISTS (
           SELECT 1 FROM destacados_activos da
           WHERE da.vehiculo_id = v.id 
-            AND da.termina_en >= now() 
-            AND da.estado = 'activo'
+            AND da.termina_en >= now()
         );
     `);
   } catch (error) {

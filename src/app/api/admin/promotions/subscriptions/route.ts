@@ -17,10 +17,12 @@ export async function GET() {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    // Sincronizar en el acto cualquier destacado que ya haya expirado su hora/fecha
+    // Sincronizar y eliminar de la BD cualquier destacado que ya haya cumplido su tiempo
     await sincronizarDestacadosExpirados();
 
+    // Solo consultar destacados que sigan activos y vigentes
     const destacados = await db.query.destacadosActivos.findMany({
+      where: (dest, { gte }) => gte(dest.terminaEn, new Date()),
       orderBy: (dest, { desc }) => [desc(dest.creadoEn)],
       with: {
         vehiculo: {
@@ -35,13 +37,11 @@ export async function GET() {
       }
     });
 
-    // Map to the format the admin UI expects
+    // Mapear solo las suscripciones activas
     const mapped = destacados.map(d => {
-      const isExpired = new Date(d.terminaEn) < new Date() || d.estado === 'expirado';
-      
       return {
         id: d.id,
-        status: isExpired ? 'expired' : 'active',
+        status: 'active',
         amount: d.pago?.monto || d.plan?.precio || 0,
         nextBillingDate: d.terminaEn,
         user: d.vehiculo?.user,
@@ -51,7 +51,7 @@ export async function GET() {
         },
         vehicle: {
           id: d.vehiculo?.id,
-          isFeatured: !isExpired && Boolean(d.vehiculo?.isFeatured),
+          isFeatured: Boolean(d.vehiculo?.isFeatured),
           brand: { name: d.vehiculo?.brand?.name },
           model: { name: d.vehiculo?.model?.name }
         },
