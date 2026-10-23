@@ -4,6 +4,7 @@ import { destacadosActivos, vehicles, planesDestacado, brands, models } from "@/
 import { eq, desc } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { sincronizarDestacadosExpirados } from "@/lib/destacados/limpieza";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,9 @@ export async function GET() {
       return NextResponse.json({ message: "No autorizado" }, { status: 401 });
     }
     const userId = Number((session.user as any).id);
+
+    // Sincronizar expirados antes de listar
+    await sincronizarDestacadosExpirados();
 
     // Fetch user's active/expired features from Phase 1 tables
     const destacados = await db

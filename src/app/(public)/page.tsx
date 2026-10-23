@@ -9,10 +9,12 @@ import { db } from "@/db";
 import { vehicles as vehiclesTable, brands as brandsTable } from "@/db/schema";
 import { eq, desc, asc, and, inArray } from "drizzle-orm";
 import { Search, MapPin, Car, Settings2, CarFront, Truck, Bike } from "lucide-react";
+import { sincronizarDestacadosExpirados } from "@/lib/destacados/limpieza";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
+  await sincronizarDestacadosExpirados();
   
   const featuredRaw = await db.query.vehicles.findMany({
     where: and(inArray(vehiclesTable.status, ["ACTIVO", "VENDIDO"]), eq(vehiclesTable.isFeatured, true)),

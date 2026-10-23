@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { subscriptions, users } from "@/db/schema";
-import { eq, ne, and, or, isNotNull } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { sincronizarDestacadosExpirados } from "@/lib/destacados/limpieza";
 
 async function checkAdmin() {
   const session = await getServerSession(authOptions);
@@ -15,6 +16,9 @@ async function checkAdmin() {
 export async function GET() {
   try {
     if (!(await checkAdmin())) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    // Sincronizar en el acto cualquier destacado que ya haya expirado su hora/fecha
+    await sincronizarDestacadosExpirados();
 
     const destacados = await db.query.destacadosActivos.findMany({
       orderBy: (dest, { desc }) => [desc(dest.creadoEn)],
@@ -39,7 +43,7 @@ export async function GET() {
         id: d.id,
         status: isExpired ? 'expired' : 'active',
         amount: d.pago?.monto || d.plan?.precio || 0,
-        nextBillingDate: d.terminaEn, // We use this field to show when it ends
+        nextBillingDate: d.terminaEn,
         user: d.vehiculo?.user,
         plan: {
           name: d.plan?.nombre || "Plan Único",
@@ -47,7 +51,7 @@ export async function GET() {
         },
         vehicle: {
           id: d.vehiculo?.id,
-          isFeatured: d.vehiculo?.isFeatured,
+          isFeatured: !isExpired && Boolean(d.vehiculo?.isFeatured),
           brand: { name: d.vehiculo?.brand?.name },
           model: { name: d.vehiculo?.model?.name }
         },

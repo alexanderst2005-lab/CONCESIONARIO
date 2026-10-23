@@ -5,8 +5,11 @@ import styles from "./page.module.css";
 import VehicleCard from "@/components/VehicleCard";
 import FilterPanel from "@/components/FilterPanel";
 import { Car } from "lucide-react";
+import { sincronizarDestacadosExpirados } from "@/lib/destacados/limpieza";
 
 export default async function VehiculosPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
+  await sincronizarDestacadosExpirados();
+
   const { marca, categoria, modelo, ciudad, destacados } = await searchParams;
 
   let conditions: any[] = [inArray(vehicles.status, ["ACTIVO", "VENDIDO", "approved", "APPROVED"])];
