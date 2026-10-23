@@ -2,29 +2,25 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Car, Bike, CarFront, Truck } from "lucide-react";
 import styles from "./CategoryFilterSelector.module.css";
+import { Car, Bike, CarFront, Truck } from "lucide-react";
 
-export default function CategoryFilterSelector({
-  categories,
-  brands
-}: {
+interface CategoryFilterProps {
   categories: any[];
   brands: any[];
-}) {
+}
+
+export default function CategoryFilterSelector({ categories, brands }: CategoryFilterProps) {
   const router = useRouter();
   const [selectedCat, setSelectedCat] = useState<any | null>(null);
-  const [selectedSubtype, setSelectedSubtype] = useState<string>("");
   const [selectedBrand, setSelectedBrand] = useState<string>("");
 
   const handleSelectCategory = (cat: any) => {
     if (selectedCat?.id === cat.id) {
       setSelectedCat(null);
-      setSelectedSubtype("");
       setSelectedBrand("");
     } else {
       setSelectedCat(cat);
-      setSelectedSubtype("");
       setSelectedBrand("");
     }
   };
@@ -33,7 +29,6 @@ export default function CategoryFilterSelector({
     if (!selectedCat) return;
     
     let url = `/vehiculos?categoria=${encodeURIComponent(selectedCat.name)}`;
-    if (selectedSubtype) url += `&modelo=${encodeURIComponent(selectedSubtype)}`; // Map subtypes to "modelo" search just to filter
     if (selectedBrand) url += `&marca=${encodeURIComponent(selectedBrand)}`;
     
     router.push(url);
@@ -56,16 +51,11 @@ export default function CategoryFilterSelector({
             <button
               key={cat.id}
               onClick={() => handleSelectCategory(cat)}
-              className={styles.categoryButton}
-              style={{
-                background: isSelected ? "var(--gold-accent)" : "#111",
-                color: isSelected ? "#000" : "#fff",
-                border: isSelected ? "1px solid var(--gold-accent)" : "1px solid rgba(255,255,255,0.05)"
-              }}
+              className={`${styles.categoryCard} ${isSelected ? styles.selectedCard : ""}`}
             >
               {cat.imageUrl ? (
-                <div className={styles.categoryImage} style={{ border: isSelected ? "1px solid rgba(0,0,0,0.1)" : "none" }}>
-                  <img src={cat.imageUrl} alt={cat.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div className={styles.imageWrapper}>
+                  <img src={cat.imageUrl} alt={cat.name} className={styles.categoryImage} />
                 </div>
               ) : (
                 <Icon className={styles.categoryIcon} strokeWidth={1.5} style={{ color: isSelected ? "#000" : "var(--gold-accent)" }} />
@@ -84,41 +74,6 @@ export default function CategoryFilterSelector({
           <h3 className={styles.filterPanelTitle}>Filtrar {selectedCat.name}</h3>
           
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
-            
-            {/* Si tiene subtipos, mostrar selector */}
-            {(() => {
-              let subtypesArr: string[] = [];
-              try {
-                if (selectedCat.subtypes) {
-                  const parsed = JSON.parse(selectedCat.subtypes);
-                  if (Array.isArray(parsed) && parsed.length > 0) subtypesArr = parsed;
-                }
-              } catch (e) {
-                if (selectedCat.subtypes && typeof selectedCat.subtypes === "string") {
-                  subtypesArr = [selectedCat.subtypes];
-                }
-              }
-
-              if (subtypesArr.length > 0) {
-                return (
-                  <div style={{ flex: "1 1 100%" }}>
-                    <label style={{ display: "block", color: "#888", fontSize: "0.85rem", marginBottom: "0.5rem" }}>Subtipo</label>
-                    <select
-                      value={selectedSubtype}
-                      onChange={e => setSelectedSubtype(e.target.value)}
-                      style={{ width: "100%", boxSizing: "border-box", padding: "0.8rem", background: "#050505", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", color: "#fff", outline: "none" }}
-                    >
-                      <option value="">Cualquiera</option>
-                      {subtypesArr.map(st => (
-                        <option key={st} value={st}>{st}</option>
-                      ))}
-                    </select>
-                  </div>
-                );
-              }
-              return null;
-            })()}
-
             {/* Selector de marca general */}
             {(() => {
               let allowedBrands = brands;
@@ -132,16 +87,15 @@ export default function CategoryFilterSelector({
                     parsedBrands = parsed;
                   }
                 } catch(e) {
-                  // Fallback for old comma-separated strings
                   if (typeof selectedCat.brandsList === 'string' && selectedCat.brandsList.trim() !== '') {
                     parsedBrands = selectedCat.brandsList.split(',').map((s: string) => s.trim());
                   }
                 }
                 
-                // Si la categoría tiene la propiedad brandsList definida (incluso si está vacía []),
-                // strictly filter the brands. If the admin intentionally selected 0 brands, it shows 0 brands.
                 const lowercaseParsed = parsedBrands.map(b => b.toLowerCase().trim());
-                allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+                if (lowercaseParsed.length > 0) {
+                  allowedBrands = brands.filter(b => lowercaseParsed.includes(b.name.toLowerCase().trim()));
+                }
               }
 
               return (
